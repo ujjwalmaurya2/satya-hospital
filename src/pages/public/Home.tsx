@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
@@ -19,17 +19,25 @@ import {
   Users,
   Search,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Building2,
+  Building,
   Syringe,
   FileText,
   BadgeCheck,
-  PhoneForwarded,
   HelpCircle,
-  Check
+  Milestone,
+  Images,
+  MessageSquareQuote,
+  Maximize2,
+  X,
+  Bed,
+  Quote
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/common/Button';
-import { Card, CardBody } from '../../components/common/Card';
+import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { useHospital } from '../../context/HospitalContext';
 import { 
@@ -37,6 +45,10 @@ import {
   checkOnlineBookingCutoff, 
   getHospitalTodayDate 
 } from '../../lib/tokens';
+import { journeyMilestones } from './Journey';
+import { hospitalFacilities } from './Facilities';
+import { hospitalGalleryItems, GalleryItem } from './Gallery';
+import { patientTestimonials } from './Testimonials';
 
 export const Home: React.FC = () => {
   const { settings, departments, doctors, pathologyTests, getTodayQueueStats } = useHospital();
@@ -59,6 +71,16 @@ export const Home: React.FC = () => {
   const [doctorSearch, setDoctorSearch] = useState<string>('');
   const [selectedSpecialtyFilter, setSelectedSpecialtyFilter] = useState<string>('all');
 
+  // Facilities Tab State
+  const [activeFacilityCategory, setActiveFacilityCategory] = useState<'all' | 'opd' | 'lab' | 'daycare' | 'tech'>('all');
+
+  // Gallery Filter & Lightbox State
+  const [galleryCategory, setGalleryCategory] = useState<string>('all');
+  const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
+
+  // Testimonials Carousel State
+  const [testimonialIdx, setTestimonialIdx] = useState<number>(0);
+
   // FAQ Accordion State
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
@@ -80,6 +102,16 @@ export const Home: React.FC = () => {
     return matchesSearch && matchesSpecialty;
   });
 
+  // Filter facilities
+  const filteredFacilities = activeFacilityCategory === 'all'
+    ? hospitalFacilities.slice(0, 4)
+    : hospitalFacilities.filter(f => f.category === activeFacilityCategory).slice(0, 4);
+
+  // Filter gallery items for home
+  const filteredGallery = galleryCategory === 'all'
+    ? hospitalGalleryItems.slice(0, 6)
+    : hospitalGalleryItems.filter(item => item.category === galleryCategory).slice(0, 6);
+
   // Live Cutoff Verification for the Hero Quick Booking card
   const heroCutoffStatus = checkOnlineBookingCutoff(heroDate, {
     cutoffTimeStr: settings.onlineCutoffTime,
@@ -93,6 +125,25 @@ export const Home: React.FC = () => {
     const dateParam = heroDate ? `&date=${encodeURIComponent(heroDate)}` : '';
     navigate(`/book-appointment?${docParam}${dateParam}`.replace('?&', '?'));
   };
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeLightboxIndex === null) return;
+      if (e.key === 'Escape') {
+        setActiveLightboxIndex(null);
+      } else if (e.key === 'ArrowRight') {
+        setActiveLightboxIndex((prev) => (prev !== null ? (prev + 1) % filteredGallery.length : 0));
+      } else if (e.key === 'ArrowLeft') {
+        setActiveLightboxIndex((prev) => (prev !== null ? (prev - 1 + filteredGallery.length) % filteredGallery.length : 0));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeLightboxIndex, filteredGallery.length]);
+
+  const activeGalleryItem = activeLightboxIndex !== null ? filteredGallery[activeLightboxIndex] : null;
 
   // Frequently Asked Questions Content
   const faqItems = [
@@ -124,7 +175,7 @@ export const Home: React.FC = () => {
       {/* =========================================================================
           1. HERO SECTION WITH EMBEDDED APPOINTMENT BOOKING MODULE
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF6FC]/90 via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[#E1E8ED]">
+      <section id="home" className="scroll-mt-28 relative overflow-hidden bg-gradient-to-b from-[#EBF6FC]/90 via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[#E1E8ED]">
         {/* Subtle decorative background blur shapes */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
         <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#91BB40]/10 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -190,7 +241,7 @@ export const Home: React.FC = () => {
                   </Button>
                 </Link>
 
-                <Link to="/doctors" className="w-full sm:w-auto">
+                <a href="#doctors" className="w-full sm:w-auto">
                   <Button 
                     variant="outline" 
                     size="lg" 
@@ -199,7 +250,7 @@ export const Home: React.FC = () => {
                   >
                     View Doctors ({doctors.length})
                   </Button>
-                </Link>
+                </a>
               </div>
 
               {/* Verified Trust Signals */}
@@ -256,7 +307,6 @@ export const Home: React.FC = () => {
                         value={heroDeptId}
                         onChange={(e) => {
                           setHeroDeptId(e.target.value);
-                          // Reset doctor to first available in selected department
                           const filtered = e.target.value === 'all' 
                             ? doctors 
                             : doctors.filter(d => {
@@ -331,7 +381,7 @@ export const Home: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setHeroDate(heroCutoffStatus.nextEligibleDate!)}
-                          className="mt-1 text-[11px] text-[#1E78A4] font-semibold underline block"
+                          className="mt-1 text-[11px] text-[#1E78A4] font-semibold underline block cursor-pointer"
                         >
                           Switch to next eligible date: {heroCutoffStatus.nextEligibleDate} &rarr;
                         </button>
@@ -372,7 +422,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          2. HOSPITAL METRICS & TRUST INDICATORS
+          2. HOSPITAL METRICS & TRUST INDICATORS (STATIC LITERAL NUMBERS - ZERO ANIMATION)
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -439,9 +489,84 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          3. MEDICAL DEPARTMENTS & SPECIALTIES
+          3. ABOUT US & FOUNDING PRINCIPLES
          ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="about" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold">
+              <Building2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>About Satya Hospital &amp; Pathology</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] tracking-tight">
+              Compassionate Healthcare Rooted in Clinical Precision &amp; Transparency
+            </h2>
+            <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
+              Satya Hospital was established in Prayagraj to provide structured, ethical outpatient healthcare and high-precision diagnostic pathology. We combine experienced medical practitioners with modern digital queue management and secure health record access.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
+              <div className="p-4 rounded-xl bg-white border border-[#E1E8ED] space-y-1">
+                <span className="font-bold text-[#243447] block">Zero Fabricated Claims</span>
+                <p className="text-[#667085] text-[11px]">Strict adherence to factual reporting and certified pathologist verifications.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-white border border-[#E1E8ED] space-y-1">
+                <span className="font-bold text-[#243447] block">Queue Transparency</span>
+                <p className="text-[#667085] text-[11px]">Online and walk-in patients share a single predictable sequential token queue.</p>
+              </div>
+            </div>
+            <div className="pt-2">
+              <Link to="/about">
+                <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+                  Read Our Full Hospital Story &rarr;
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6">
+            <div className="bg-white rounded-3xl border border-[#CBD5E1] p-6 sm:p-8 shadow-sm space-y-5">
+              <div className="flex items-center gap-3 pb-4 border-b border-[#E1E8ED]">
+                <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold">
+                  <ShieldCheck className="w-5 h-5 text-[#688D23]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#243447]">Core Clinical Commitments</h3>
+                  <p className="text-[11px] text-[#667085]">Standards followed across all OPD chambers &amp; diagnostics</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-[#243447] block">Credentialed Medical Faculty:</strong>
+                    <span className="text-[#667085]">All consultants hold verified postgraduate medical degrees (MD, MS, DNB).</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-[#243447] block">DPDP-Compliant Health Data:</strong>
+                    <span className="text-[#667085]">Prescriptions and lab reports stored under strict digital access control.</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-[#243447] block">In-House Quality Control:</strong>
+                    <span className="text-[#667085]">Automated analyzers calibrated daily with multi-level internal standards.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          4. MEDICAL DEPARTMENTS & SPECIALTIES
+         ========================================================================= */}
+      <section id="services" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
           <div>
             <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
@@ -499,9 +624,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          4. FIND THE RIGHT DOCTOR (INTERACTIVE DISCOVERY SECTION)
+          5. FIND THE RIGHT DOCTOR (INTERACTIVE DISCOVERY SECTION)
          ========================================================================= */}
-      <section className="bg-white py-16 sm:py-20 border-y border-[#E1E8ED]">
+      <section id="doctors" className="scroll-mt-28 bg-white py-16 sm:py-20 border-y border-[#E1E8ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-xs font-bold text-[#91BB40] tracking-wider uppercase">
@@ -626,9 +751,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          5. PATHOLOGY LABORATORY & DIAGNOSTIC EXCELLENCE
+          6. PATHOLOGY LABORATORY & DIAGNOSTIC EXCELLENCE
          ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="pathology" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
           {/* Left Text & Value Props */}
@@ -734,11 +859,347 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          6. HOW OPD QUEUE & APPOINTMENT PROCESS WORKS (3-STEP WALKTHROUGH)
+          7. THE SATYA HOSPITAL JOURNEY (TIMELINE LAYOUT)
+         ========================================================================= */}
+      <section id="journey" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold mb-2">
+              <Milestone className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Milestones &amp; Evolution</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
+              The Satya Hospital Journey
+            </h2>
+            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
+              Explore the clinical milestones that shaped our ethical healthcare, in-house pathology, and transparent queue model in Prayagraj.
+            </p>
+          </div>
+          <Link to="/journey" className="mt-4 md:mt-0">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+              Full Journey History
+            </Button>
+          </Link>
+        </div>
+
+        {/* Timeline Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {journeyMilestones.slice(0, 3).map((item, idx) => (
+            <motion.div
+              key={item.title}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className={`w-10 h-10 rounded-xl ${item.iconBg} ${item.iconColor} flex items-center justify-center font-bold`}>
+                    {item.icon}
+                  </div>
+                  <Badge variant="medical-blue" size="sm">
+                    {item.badge}
+                  </Badge>
+                </div>
+
+                <div className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">
+                  {item.period}
+                </div>
+
+                <h3 className="text-base font-bold text-[#243447]">
+                  {item.title}
+                </h3>
+
+                <p className="text-xs text-[#667085] leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-[#E1E8ED] text-xs space-y-1.5">
+                {item.highlights.slice(0, 2).map((h, hIdx) => (
+                  <div key={hIdx} className="flex items-center gap-2 text-[#243447]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40] shrink-0" />
+                    <span className="truncate">{h}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* =========================================================================
+          8. CLINICAL FACILITIES & INFRASTRUCTURE
+         ========================================================================= */}
+      <section id="facilities" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#688D23] text-xs font-semibold mb-2">
+              <Building className="w-3.5 h-3.5 text-[#91BB40]" />
+              <span>Campus Infrastructure</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
+              Hospital Facilities &amp; Amenities
+            </h2>
+            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
+              Equipped with modern outpatient consultation suites, diagnostic auto-analyzers, and sterile minor procedure facilities.
+            </p>
+          </div>
+          <Link to="/facilities" className="mt-4 md:mt-0">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+              Explore All Facilities
+            </Button>
+          </Link>
+        </div>
+
+        {/* 4 Featured Facility Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {hospitalFacilities.slice(0, 4).map((fac) => (
+            <motion.div
+              key={fac.id}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className={`w-11 h-11 rounded-xl ${fac.iconBg} ${fac.iconColor} flex items-center justify-center`}>
+                  {fac.icon}
+                </div>
+                <Badge variant="medical-blue" size="sm">
+                  {fac.badge}
+                </Badge>
+                <h3 className="text-base font-bold text-[#243447]">
+                  {fac.title}
+                </h3>
+                <p className="text-xs text-[#667085] leading-relaxed line-clamp-3">
+                  {fac.description}
+                </p>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-[#E1E8ED] text-xs">
+                <span className="text-[#91BB40] font-semibold block text-[11px] mb-1">
+                  {fac.location}
+                </span>
+                <span className="text-[#667085] text-[11px]">
+                  {fac.timing}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* =========================================================================
+          9. HOSPITAL & DIAGNOSTIC LAB GALLERY
+         ========================================================================= */}
+      <section id="gallery" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold mb-2">
+              <Images className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Campus Visual Tour</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
+              Hospital &amp; Laboratory Gallery
+            </h2>
+            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
+              Explore our clinical consultation chambers, automated diagnostic pathology suites, day care recovery rooms, and patient amenities.
+            </p>
+          </div>
+          <Link to="/gallery" className="mt-4 md:mt-0">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+              Full Gallery Lightbox
+            </Button>
+          </Link>
+        </div>
+
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredGallery.map((item, gIdx) => (
+            <motion.div
+              key={item.id}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setActiveLightboxIndex(gIdx)}
+              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className={`h-40 bg-gradient-to-br ${item.gradient} p-4 flex flex-col justify-between relative`}>
+                <div className="flex justify-between items-start">
+                  <Badge variant="medical-blue" size="sm" className="bg-white/90">
+                    {item.categoryLabel}
+                  </Badge>
+                  <div className="w-7 h-7 rounded-lg bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Maximize2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-center group-hover:scale-110 transition-transform">
+                  {item.icon}
+                </div>
+                <span className="text-[10px] font-semibold text-[#243447] bg-white/70 px-2 py-0.5 rounded-md w-fit">
+                  {item.roomInfo}
+                </span>
+              </div>
+
+              <div className="p-4 space-y-1.5">
+                <h3 className="text-sm font-bold text-[#243447] group-hover:text-[#3DA9DF] transition-colors truncate">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-[#667085] line-clamp-2 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Lightbox for Gallery */}
+        <AnimatePresence>
+          {activeGalleryItem && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-[#243447]/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+              onClick={() => setActiveLightboxIndex(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-3xl max-w-xl w-full border border-[#CBD5E1] shadow-2xl overflow-hidden relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveLightboxIndex(null)}
+                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white border border-[#E1E8ED] flex items-center justify-center text-[#243447] hover:bg-slate-50 cursor-pointer shadow-xs"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <div className={`h-48 bg-gradient-to-br ${activeGalleryItem.gradient} p-6 flex flex-col justify-between`}>
+                  <Badge variant="medical-blue" size="sm" className="w-fit bg-white">
+                    {activeGalleryItem.categoryLabel}
+                  </Badge>
+                  <div className="flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-white/90 flex items-center justify-center shadow-md">
+                      {activeGalleryItem.icon}
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold text-[#243447] bg-white/80 px-2.5 py-1 rounded-md w-fit">
+                    {activeGalleryItem.roomInfo}
+                  </span>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <h2 className="text-lg font-bold text-[#243447]">{activeGalleryItem.title}</h2>
+                  <p className="text-xs text-[#667085] leading-relaxed">{activeGalleryItem.description}</p>
+                  <div className="pt-2 border-t border-[#E1E8ED]">
+                    <span className="text-[11px] font-bold text-[#243447] block mb-2">Equipment Available:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {activeGalleryItem.equipment.map((eq, i) => (
+                        <span key={i} className="text-[11px] bg-[#F4F8FA] border border-[#E1E8ED] px-2.5 py-1 rounded-lg text-[#243447]">
+                          {eq}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* =========================================================================
+          10. PATIENT TESTIMONIALS & REVIEWS
+         ========================================================================= */}
+      <section id="testimonials" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-12 shadow-sm relative overflow-hidden">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold">
+                <MessageSquareQuote className="w-3.5 h-3.5 text-[#3DA9DF]" />
+                <span>Verified Patient Testimonials</span>
+              </div>
+              <Badge variant="lime-green" size="sm" dot>
+                {patientTestimonials[testimonialIdx].verifiedStatus}
+              </Badge>
+            </div>
+
+            <div className="min-h-[120px] flex items-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={patientTestimonials[testimonialIdx].id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-3"
+                >
+                  <p className="text-base sm:text-lg text-[#243447] font-medium leading-relaxed italic">
+                    "{patientTestimonials[testimonialIdx].comment}"
+                  </p>
+
+                  <div className="pt-3 border-t border-[#E1E8ED] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+                    <div>
+                      <strong className="text-sm font-bold text-[#243447] block">
+                        {patientTestimonials[testimonialIdx].patientName}
+                      </strong>
+                      <span className="text-[#667085]">
+                        {patientTestimonials[testimonialIdx].locality} &bull; {patientTestimonials[testimonialIdx].department}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#91BB40] font-semibold">
+                      {patientTestimonials[testimonialIdx].serviceType}
+                    </span>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Controls */}
+            <div className="pt-4 border-t border-[#E1E8ED] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {patientTestimonials.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setTestimonialIdx(i)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      testimonialIdx === i ? 'w-6 bg-[#3DA9DF]' : 'w-2 bg-[#CBD5E1]'
+                    }`}
+                    aria-label={`Slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTestimonialIdx(prev => (prev === 0 ? patientTestimonials.length - 1 : prev - 1))}
+                  className="p-2 rounded-lg border border-[#CBD5E1] text-[#243447] hover:bg-[#F4F8FA] cursor-pointer"
+                  aria-label="Previous testimonial"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTestimonialIdx(prev => (prev === patientTestimonials.length - 1 ? 0 : prev + 1))}
+                  className="p-2 rounded-lg border border-[#CBD5E1] text-[#243447] hover:bg-[#F4F8FA] cursor-pointer"
+                  aria-label="Next testimonial"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          11. HOW OPD QUEUE & APPOINTMENT PROCESS WORKS (3-STEP WALKTHROUGH)
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#243447] text-white rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
-          {/* Subtle background glow */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#3DA9DF]/15 rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-2xl mb-10 relative z-10">
@@ -803,56 +1264,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          7. HOSPITAL INFRASTRUCTURE & PATIENT AMENITIES
-         ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
-            Clinical Infrastructure
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
-            Hospital Facilities &amp; Care Standards
-          </h2>
-          <p className="text-xs sm:text-sm text-[#667085] mt-1.5 leading-relaxed">
-            Equipped to deliver prompt outpatient consultations, day-care observations, and acute triage.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-[#E1E8ED] shadow-xs space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Activity className="w-5 h-5 stroke-[2]" />
-            </div>
-            <h3 className="text-base font-bold text-[#243447]">Emergency &amp; Acute Care</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              Equipped emergency desk for immediate patient stabilization, vital monitoring, and rapid triage coordination.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-[#E1E8ED] shadow-xs space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
-              <Syringe className="w-5 h-5 text-[#688D23]" />
-            </div>
-            <h3 className="text-base font-bold text-[#243447]">Minor Procedures &amp; Day Care</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              Sterile minor operation theatre for wound management, suturing, minor surgical interventions, and short observation.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-[#E1E8ED] shadow-xs space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Award className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-[#243447]">Diagnostics &amp; ECG Facilities</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              12-lead digital ECG and point-of-care vital evaluations supporting cardiology screening and clinical assessments.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          8. PATIENT RESOURCES & FREQUENTLY ASKED QUESTIONS (FAQ)
+          12. PATIENT RESOURCES & FREQUENTLY ASKED QUESTIONS (FAQ)
          ========================================================================= */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-10">
@@ -910,9 +1322,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          9. HOSPITAL LOCATION & CONTACT CARD
+          13. HOSPITAL LOCATION & CONTACT CARD
          ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="contact" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             

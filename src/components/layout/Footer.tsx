@@ -58,7 +58,7 @@ export const Footer: React.FC = () => {
           {/* Col 2: Quick Links & Patient Portals */}
           <div>
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Patient Care
+              Patient Care &amp; Hospital
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
@@ -67,8 +67,23 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/patient/dashboard" className="hover:text-[#3DA9DF] transition-colors">
-                  Patient Health Portal
+                <Link to="/facilities" className="hover:text-[#3DA9DF] transition-colors">
+                  Hospital Facilities &amp; Amenities
+                </Link>
+              </li>
+              <li>
+                <Link to="/journey" className="hover:text-[#3DA9DF] transition-colors">
+                  Hospital Journey &amp; Milestones
+                </Link>
+              </li>
+              <li>
+                <Link to="/gallery" className="hover:text-[#3DA9DF] transition-colors">
+                  Hospital &amp; Lab Gallery
+                </Link>
+              </li>
+              <li>
+                <Link to="/testimonials" className="hover:text-[#3DA9DF] transition-colors">
+                  Patient Testimonials
                 </Link>
               </li>
               <li>
@@ -82,8 +97,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="hover:text-[#3DA9DF] transition-colors">
-                  Clinical Departments
+                <Link to="/patient/dashboard" className="hover:text-[#3DA9DF] transition-colors">
+                  Patient Health Portal
                 </Link>
               </li>
               <li>

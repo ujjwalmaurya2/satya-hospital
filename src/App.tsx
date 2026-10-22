@@ -17,6 +17,10 @@ import { Doctors } from './pages/public/Doctors';
 import { Pathology } from './pages/public/Pathology';
 import { Contact } from './pages/public/Contact';
 import { BookAppointment } from './pages/public/BookAppointment';
+import { Journey } from './pages/public/Journey';
+import { Facilities } from './pages/public/Facilities';
+import { Gallery } from './pages/public/Gallery';
+import { Testimonials } from './pages/public/Testimonials';
 import { PrivacyPolicy } from './pages/public/PrivacyPolicy';
 import { TermsAndConditions } from './pages/public/TermsAndConditions';
 import { CancellationPolicy } from './pages/public/CancellationPolicy';
@@ -63,6 +67,10 @@ export const App: React.FC = () => {
             <Route path="/departments" element={<PublicLayout><Services /></PublicLayout>} />
             <Route path="/doctors" element={<PublicLayout><Doctors /></PublicLayout>} />
             <Route path="/pathology" element={<PublicLayout><Pathology /></PublicLayout>} />
+            <Route path="/journey" element={<PublicLayout><Journey /></PublicLayout>} />
+            <Route path="/facilities" element={<PublicLayout><Facilities /></PublicLayout>} />
+            <Route path="/gallery" element={<PublicLayout><Gallery /></PublicLayout>} />
+            <Route path="/testimonials" element={<PublicLayout><Testimonials /></PublicLayout>} />
             <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
             <Route path="/book-appointment" element={<PublicLayout><BookAppointment /></PublicLayout>} />
             
