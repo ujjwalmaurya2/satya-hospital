@@ -34,6 +34,7 @@ import {
 } from '../lib/tokens';
 import { auditLogger } from '../lib/audit';
 import { useAuth } from './AuthContext';
+import { supabaseService } from '../services/supabaseService';
 
 interface BookingResult {
   success: boolean;
@@ -201,6 +202,21 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       return {};
     }
   });
+
+  // Initial Supabase Sync
+  useEffect(() => {
+    async function syncSupabaseData() {
+      try {
+        const remoteSettings = await supabaseService.getHospitalSettings();
+        if (remoteSettings && remoteSettings.hospitalName) {
+          setSettings(prev => ({ ...prev, ...remoteSettings }));
+        }
+      } catch (err) {
+        console.warn('Initial Supabase settings sync skipped (local mode active):', err);
+      }
+    }
+    syncSupabaseData();
+  }, []);
 
   // Sync to localStorage
   useEffect(() => {
@@ -438,6 +454,11 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     setAppointments(prev => [newAppointment, ...prev]);
 
+    // Asynchronously synchronize with Supabase (if configured)
+    supabaseService.saveAppointment(newAppointment).catch(err => {
+      console.warn('Background Supabase appointment sync warning:', err);
+    });
+
     auditLogger.record({
       actorId: user?.id || patient.id,
       actorName: patient.fullName,
@@ -521,6 +542,11 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
 
     setAppointments(prev => [newAppointment, ...prev]);
+
+    // Asynchronously synchronize with Supabase (if configured)
+    supabaseService.saveAppointment(newAppointment).catch(err => {
+      console.warn('Background Supabase appointment sync warning:', err);
+    });
 
     auditLogger.record({
       actorId: user?.id || 'reception',

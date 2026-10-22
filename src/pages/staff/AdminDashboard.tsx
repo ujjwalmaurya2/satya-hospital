@@ -21,7 +21,7 @@ import { Table } from '../../components/common/Table';
 import { useHospital } from '../../context/HospitalContext';
 import { useAuth } from '../../context/AuthContext';
 import { auditLogger } from '../../lib/audit';
-import { getSupabaseStatus } from '../../lib/supabase';
+import { getSupabaseStatus, checkSupabaseHealth, SupabaseHealthStatus } from '../../lib/supabase';
 import { demoAccounts } from '../../data/mockData';
 import { UserRole } from '../../types';
 
@@ -55,6 +55,23 @@ export const AdminDashboard: React.FC = () => {
 
   // Active sub-tab
   const [adminTab, setAdminTab] = useState<'overview' | 'settings' | 'staff' | 'audit' | 'system'>('overview');
+  
+  // Supabase live health state
+  const [supabaseHealth, setSupabaseHealth] = useState<SupabaseHealthStatus | null>(null);
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+  const [showMigrationSql, setShowMigrationSql] = useState(false);
+
+  const handleCheckSupabaseHealth = async () => {
+    setIsCheckingHealth(true);
+    try {
+      const health = await checkSupabaseHealth();
+      setSupabaseHealth(health);
+    } catch {
+      // safe fallback
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  };
 
   // Audit Logs
   const auditLogs = auditLogger.getLogs();
@@ -549,23 +566,84 @@ export const AdminDashboard: React.FC = () => {
             </CardHeader>
 
             <CardBody className="space-y-4 text-xs">
-              <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E1E8ED] space-y-2">
+              <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E1E8ED] space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Database className="w-4 h-4 text-[#3DA9DF]" />
                     <span className="font-bold text-[#243447]">Supabase PostgreSQL &amp; Auth</span>
                   </div>
                   <Badge variant={supabaseStatus.configured ? 'lime-green' : 'warning'} size="sm">
-                    {supabaseStatus.configured ? 'Connected Live' : 'Local Fallback Active'}
+                    {supabaseStatus.configured ? 'Configured in Environment' : 'Local Fallback Active'}
                   </Badge>
                 </div>
                 <p className="text-[#667085]">
-                  Status: <strong>{supabaseStatus.url}</strong>
+                  Endpoint URL: <strong className="font-mono text-[11px] text-[#193247]">{supabaseStatus.url}</strong>
                 </p>
                 {supabaseStatus.missingVariables.length > 0 && (
                   <p className="text-amber-800 text-[11px]">
                     Missing environment variables: {supabaseStatus.missingVariables.join(', ')}
                   </p>
+                )}
+
+                <div className="pt-2 flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={handleCheckSupabaseHealth}
+                    isLoading={isCheckingHealth}
+                  >
+                    Test Live Database Health
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-[#3DA9DF]"
+                    onClick={() => setShowMigrationSql(!showMigrationSql)}
+                  >
+                    {showMigrationSql ? 'Hide Migration SQL' : 'View Migration SQL Instructions'}
+                  </Button>
+                </div>
+
+                {supabaseHealth && (
+                  <div className={`p-3 rounded-xl border text-xs space-y-2 mt-2 ${
+                    supabaseHealth.reachable 
+                      ? supabaseHealth.tablesDetected.length > 0 
+                        ? 'bg-[#F3F8EC] border-[#D5E8BA] text-[#486812]'
+                        : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
+                      : 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
+                  }`}>
+                    <div className="flex items-center justify-between font-bold">
+                      <span>Live Diagnostic Result:</span>
+                      <span className="text-[10px] text-[#647785]">Checked {new Date(supabaseHealth.lastChecked).toLocaleTimeString()}</span>
+                    </div>
+                    {supabaseHealth.errorMessage && (
+                      <p className="text-xs">{supabaseHealth.errorMessage}</p>
+                    )}
+                    {supabaseHealth.tablesDetected.length > 0 && (
+                      <div>
+                        <strong>Tables Detected ({supabaseHealth.tablesDetected.length}):</strong> {supabaseHealth.tablesDetected.join(', ')}
+                      </div>
+                    )}
+                    {supabaseHealth.tablesMissing.length > 0 && (
+                      <div className="text-[11px]">
+                        <strong>Pending Tables:</strong> {supabaseHealth.tablesMissing.join(', ')}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {showMigrationSql && (
+                  <div className="p-3 bg-white rounded-xl border border-[#CBD7DD] space-y-2 text-xs">
+                    <div className="font-bold text-[#193247]">Supabase SQL Migration Instructions:</div>
+                    <p className="text-[#647785] text-[11px] leading-relaxed">
+                      To initialize or verify all tables in Supabase, open your Supabase Dashboard &rarr; <strong>SQL Editor</strong>, and execute the migration file located at:
+                      <code className="block mt-1 p-2 bg-[#F8FAFC] rounded border font-mono text-[10px] text-[#193247]">
+                        supabase/migrations/20261022000001_satya_hospital_schema.sql<br />
+                        supabase/migrations/20261023000002_gallery_and_testimonials.sql
+                      </code>
+                    </p>
+                  </div>
                 )}
               </div>
 

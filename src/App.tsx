@@ -48,12 +48,14 @@ import { DoctorDashboard } from './pages/staff/DoctorDashboard';
 import { PathologyDashboard } from './pages/staff/PathologyDashboard';
 import { AdminDashboard } from './pages/staff/AdminDashboard';
 import { NotFound } from './pages/NotFound';
+import { FloatingAppointmentWidget } from './components/common/FloatingAppointmentWidget';
 
 // Public Layout Wrapper
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen flex flex-col bg-[#FCFDFB]">
     <Navbar />
     <main className="flex-1">{children}</main>
+    <FloatingAppointmentWidget />
     <Footer />
   </div>
 );
