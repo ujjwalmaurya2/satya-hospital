@@ -64,8 +64,8 @@ export const Contact: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Building className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <Building className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Hospital Administration &amp; Helpdesk &bull; Satya Hospital Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
@@ -86,26 +86,26 @@ export const Contact: React.FC = () => {
 
               <div className="space-y-4 text-xs">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center shrink-0 font-bold">
+                  <div className="w-9 h-9 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center shrink-0 font-bold">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
                     <strong className="text-[#193247] block text-sm">Hospital Location</strong>
                     <p className="text-[#647785] mt-0.5 leading-relaxed">{settings.address}</p>
-                    <span className="text-[11px] text-[#168C8C] font-semibold block mt-1">
+                    <span className="text-[11px] text-[#3DA9DF] font-semibold block mt-1">
                       Civil Lines, Prayagraj &bull; Near Medical Crossing
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center shrink-0 font-bold">
+                  <div className="w-9 h-9 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center shrink-0 font-bold">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
                     <strong className="text-[#193247] block text-sm">Reception &amp; OPD Booking Desk</strong>
                     <p className="text-[#193247] font-bold mt-0.5">{phoneRaw}</p>
-                    <span className="text-[11px] text-[#0F6B56] font-semibold">Lines open: 08:30 AM - 08:00 PM</span>
+                    <span className="text-[11px] text-[#486812] font-semibold">Lines open: 08:30 AM - 08:00 PM</span>
                   </div>
                 </div>
 
@@ -121,7 +121,7 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center shrink-0 font-bold">
+                  <div className="w-9 h-9 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center shrink-0 font-bold">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
@@ -129,7 +129,7 @@ export const Contact: React.FC = () => {
                     <p className="text-[#647785] mt-0.5">
                       Consultations begin at {settings.opdStartTime} AM daily (Mon&ndash;Sat).
                     </p>
-                    <span className="text-[11px] text-[#168C8C] font-bold">Same-day online cutoff: {settings.onlineCutoffTime} AM IST</span>
+                    <span className="text-[11px] text-[#3DA9DF] font-bold">Same-day online cutoff: {settings.onlineCutoffTime} AM IST</span>
                   </div>
                 </div>
 
@@ -169,7 +169,7 @@ export const Contact: React.FC = () => {
               <CardBody>
                 {submitted ? (
                   <div className="py-8 text-center space-y-3">
-                    <div className="w-14 h-14 rounded-full bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center mx-auto">
+                    <div className="w-14 h-14 rounded-full bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center mx-auto border border-[#D5E8BA]">
                       <CheckCircle2 className="w-8 h-8 stroke-[2.3]" />
                     </div>
                     <h3 className="text-lg font-bold text-[#193247]">Inquiry Dispatched Successfully</h3>
@@ -209,7 +209,7 @@ export const Contact: React.FC = () => {
                           placeholder="e.g. Anil Maurya"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                           required
                         />
                       </div>
@@ -224,7 +224,7 @@ export const Contact: React.FC = () => {
                           placeholder="e.g. 9839000000"
                           value={phone}
                           onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                           required
                         />
                       </div>
@@ -240,7 +240,7 @@ export const Contact: React.FC = () => {
                           placeholder="e.g. anil@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                         />
                       </div>
 
@@ -251,7 +251,7 @@ export const Contact: React.FC = () => {
                         <select
                           value={department}
                           onChange={(e) => setDepartment(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                         >
                           <option value="Pediatric Enquiry">Pediatric &amp; Newborn Care</option>
                           <option value="OPD Booking">OPD Appointment Booking</option>
@@ -271,7 +271,7 @@ export const Contact: React.FC = () => {
                         placeholder="Please describe your question or requirements..."
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                         required
                       />
                     </div>

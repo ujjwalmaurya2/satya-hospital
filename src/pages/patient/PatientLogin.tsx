@@ -66,7 +66,7 @@ export const PatientLogin: React.FC = () => {
       <div className="max-w-md w-full space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#168C8C] to-[#0E5C5C] text-white flex items-center justify-center mx-auto shadow-sm">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#3DA9DF] to-[#2B92C4] text-white flex items-center justify-center mx-auto shadow-sm">
             <Heart className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-extrabold text-[#193247] tracking-tight">
@@ -138,7 +138,7 @@ export const PatientLogin: React.FC = () => {
                     placeholder="e.g. SH-2026-00001"
                     value={patientIdInput}
                     onChange={(e) => setPatientIdInput(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs uppercase font-medium"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs uppercase font-medium"
                   />
                 </div>
                 <span className="text-[11px] text-[#647785] mt-1 block">
@@ -171,7 +171,7 @@ export const PatientLogin: React.FC = () => {
                       loginAsPatient(p.patientId);
                       navigate('/patient/dashboard');
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-[#FCFDFB] border border-[#CBD7DD] hover:border-[#168C8C] hover:bg-[#E6F5EF] text-[11px] text-[#193247] font-semibold transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-[#FCFDFB] border border-[#CBD7DD] hover:border-[#3DA9DF] hover:bg-[#EBF6FC] text-[11px] text-[#193247] font-semibold transition-colors cursor-pointer"
                   >
                     {p.fullName.split(' ')[0]} ({p.patientId})
                   </button>
@@ -181,7 +181,7 @@ export const PatientLogin: React.FC = () => {
 
             <div className="pt-2 text-center text-xs text-[#647785]">
               New to Satya Hospital?{' '}
-              <Link to="/book-appointment" className="text-[#168C8C] font-bold hover:underline">
+              <Link to="/book-appointment" className="text-[#3DA9DF] font-bold hover:underline">
                 Book an OPD Appointment
               </Link>{' '}
               to automatically receive your Hospital Patient ID.
@@ -190,8 +190,8 @@ export const PatientLogin: React.FC = () => {
         </Card>
 
         {/* Security Assurance */}
-        <div className="flex items-center justify-center gap-2 text-xs text-[#0F6B56]">
-          <ShieldCheck className="w-4 h-4 text-[#168C8C]" />
+        <div className="flex items-center justify-center gap-2 text-xs text-[#486812]">
+          <ShieldCheck className="w-4 h-4 text-[#91BB40]" />
           <span>DPDP Act 2023 Compliant &bull; End-to-end encrypted medical record storage</span>
         </div>
       </div>

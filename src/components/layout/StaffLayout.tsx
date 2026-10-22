@@ -77,13 +77,13 @@ export const StaffLayout: React.FC = () => {
       {/* Mobile Header */}
       <div className="md:hidden bg-white border-b border-[#E5ECEF] px-4 py-3 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#168C8C] flex items-center justify-center text-white">
+          <div className="w-8 h-8 rounded-lg bg-[#3DA9DF] flex items-center justify-center text-white">
             <Heart className="w-4 h-4" />
           </div>
           <div>
             <span className="text-sm font-bold text-[#193247]">Satya Hospital</span>
             <div className="flex items-center gap-1.5">
-              <Badge variant="teal" size="sm">
+              <Badge variant="medical-blue" size="sm">
                 {role.toUpperCase()}
               </Badge>
             </div>
@@ -91,7 +91,7 @@ export const StaffLayout: React.FC = () => {
         </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 text-[#193247] hover:bg-[#E6F5EF] rounded-lg"
+          className="p-2 text-[#193247] hover:bg-[#EBF6FC] rounded-lg"
           aria-label="Toggle staff sidebar"
         >
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -107,12 +107,12 @@ export const StaffLayout: React.FC = () => {
         {/* Brand Header */}
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#168C8C] flex items-center justify-center text-white shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-[#3DA9DF] flex items-center justify-center text-white shadow-sm">
               <Heart className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-bold text-white leading-tight">Satya Hospital</h2>
-              <span className="text-xs font-semibold text-[#DFF3FA] uppercase">
+              <span className="text-xs font-semibold text-[#EBF6FC] uppercase">
                 Staff Workspace
               </span>
             </div>
@@ -129,7 +129,7 @@ export const StaffLayout: React.FC = () => {
         <div className="p-4 bg-white/5 border-b border-white/10">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-white/60">Active Session:</span>
-            <Badge variant="teal" size="sm" dot>
+            <Badge variant="medical-blue" size="sm" dot>
               {role.toUpperCase()}
             </Badge>
           </div>
@@ -142,7 +142,7 @@ export const StaffLayout: React.FC = () => {
 
           {/* Quick Role Switcher */}
           <div className="mt-3 pt-3 border-t border-white/10">
-            <label className="text-[11px] font-bold text-[#DFF3FA] block mb-1.5 uppercase tracking-wider">
+            <label className="text-[11px] font-bold text-[#EBF6FC] block mb-1.5 uppercase tracking-wider">
               Switch Staff Panel:
             </label>
             <div className="grid grid-cols-2 gap-1.5 text-xs">
@@ -152,7 +152,7 @@ export const StaffLayout: React.FC = () => {
                   onClick={() => handleRoleSwitch(r)}
                   className={`px-2 py-1.5 rounded-md text-left text-xs font-medium transition-colors cursor-pointer ${
                     role === r
-                      ? 'bg-[#168C8C] text-white font-bold'
+                      ? 'bg-[#3DA9DF] text-white font-bold'
                       : 'bg-white/10 text-white/70 hover:bg-white/15 hover:text-white'
                   }`}
                 >
@@ -177,7 +177,7 @@ export const StaffLayout: React.FC = () => {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-[#168C8C] text-white shadow-xs font-bold'
+                    ? 'bg-[#3DA9DF] text-white shadow-xs font-bold'
                     : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`}
               >
@@ -195,14 +195,14 @@ export const StaffLayout: React.FC = () => {
               to="/"
               className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 hover:text-white"
             >
-              <Home className="w-4 h-4 text-[#DFF3FA]" />
+              <Home className="w-4 h-4 text-[#EBF6FC]" />
               <span>Public Hospital Website</span>
             </Link>
             <Link
               to="/patient/dashboard"
               className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 hover:text-white"
             >
-              <Users className="w-4 h-4 text-[#168C8C]" />
+              <Users className="w-4 h-4 text-[#91BB40]" />
               <span>View Patient Portal</span>
             </Link>
           </div>

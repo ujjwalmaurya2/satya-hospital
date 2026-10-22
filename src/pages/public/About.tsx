@@ -30,8 +30,8 @@ export const About: React.FC = () => {
         
         {/* Intro Hero */}
         <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Building2 className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] text-xs font-bold border border-[#D5E8BA]">
+            <Building2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>About Satya Hospital &amp; Pathology &bull; Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -46,7 +46,7 @@ export const About: React.FC = () => {
         <div className="relative rounded-3xl overflow-hidden border border-[#CBD7DD] shadow-sm bg-white">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
             <div className="lg:col-span-7 p-6 sm:p-10 space-y-4">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-[#168C8C] block">
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#3DA9DF] block">
                 Civil Lines Campus &bull; Prayagraj
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247]">
@@ -87,8 +87,8 @@ export const About: React.FC = () => {
 
         {/* Hospital Identity & Founding Principles */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 space-y-3 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
+          <Card className="p-6 space-y-3 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold">
               <Baby className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-[#193247]">Child &amp; Family Centred</h3>
@@ -97,8 +97,8 @@ export const About: React.FC = () => {
             </p>
           </Card>
 
-          <Card className="p-6 space-y-3 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center font-bold">
+          <Card className="p-6 space-y-3 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-[#193247]">Zero Fabricated Claims</h3>
@@ -107,7 +107,7 @@ export const About: React.FC = () => {
             </p>
           </Card>
 
-          <Card className="p-6 space-y-3 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-colors">
+          <Card className="p-6 space-y-3 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-colors">
             <div className="w-10 h-10 rounded-xl bg-[#FFF0E7] text-[#9A3412] flex items-center justify-center font-bold">
               <Clock className="w-5 h-5" />
             </div>
@@ -129,7 +129,7 @@ export const About: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-[#193247]">Modern Consultation Chambers</h4>
                 <p className="text-xs text-[#647785] mt-0.5">Spacious, private examination chambers equipped for clinical consultations.</p>
@@ -137,7 +137,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-[#193247]">Calibrated Auto-Analyzers</h4>
                 <p className="text-xs text-[#647785] mt-0.5">Automated biochemistry and hematology analyzers with daily internal quality controls.</p>
@@ -145,7 +145,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-[#193247]">Secure Digital Health Records</h4>
                 <p className="text-xs text-[#647785] mt-0.5">Immediate scanning of prescriptions and secure PDF delivery via Patient Portal.</p>
@@ -153,7 +153,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-[#193247]">Stroller &amp; Ramp Accessibility</h4>
                 <p className="text-xs text-[#647785] mt-0.5">Step-free entrance and accessible reception desk for parents with baby strollers.</p>
@@ -161,7 +161,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-[#193247]">Air-Conditioned Waiting Spaces</h4>
                 <p className="text-xs text-[#647785] mt-0.5">Real-time digital token display screens so families know their exact turn.</p>
@@ -169,7 +169,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-[#193247]">Dedicated Reception Desk</h4>
                 <p className="text-xs text-[#647785] mt-0.5">Helpful staff to assist walk-in parents, register infants, and clarify token status.</p>

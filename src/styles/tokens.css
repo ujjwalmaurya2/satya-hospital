@@ -1,19 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* Satya Hospital Pediatric & Family Healthcare Brand Colors */
-  --sh-primary-teal: #168C8C;
-  --sh-primary-teal-hover: #127272;
-  --sh-primary-teal-active: #0E5C5C;
-  --sh-primary-teal-light: #E6F5EF;
-  --sh-primary-teal-subtle: #F0FAF6;
+  /* Satya Hospital & Pathology Official Brand Palette */
+  /* Primary Medical Blue: PANTONE 16-4526 TPG Swim Cap (#3DA9DF) */
+  --sh-medical-blue: #3DA9DF;
+  --sh-medical-blue-hover: #2B92C4;
+  --sh-medical-blue-active: #1E78A4;
+  --sh-medical-blue-light: #EBF6FC;
+  --sh-medical-blue-subtle: #F4F9FD;
+  --sh-medical-blue-border: #BCE1F5;
 
-  /* Secondary & Accents */
-  --sh-sky-blue: #DFF3FA;
-  --sh-sky-blue-hover: #cbeaf5;
-  --sh-sky-blue-text: #0E6E8C;
-  --sh-soft-mint: #E6F5EF;
-  --sh-soft-mint-border: #C2EADE;
+  /* Accent Lime Green: PANTONE 16-0229 TPG Titanite (#91BB40) */
+  --sh-lime-green: #91BB40;
+  --sh-lime-green-hover: #7EA631;
+  --sh-lime-green-active: #6B8F27;
+  --sh-lime-green-light: #F3F8EC;
+  --sh-lime-green-subtle: #F9FCF5;
+  --sh-lime-green-border: #D5E8BA;
+  --sh-lime-green-text: #486812;
+
+  /* Color system aliases */
+  --sh-primary-teal: #3DA9DF;
+  --sh-primary-teal-hover: #2B92C4;
+  --sh-primary-teal-active: #1E78A4;
+  --sh-primary-teal-light: #EBF6FC;
+  --sh-primary-teal-subtle: #F4F9FD;
+
+  --sh-sky-blue: #EBF6FC;
+  --sh-sky-blue-hover: #D4EDF9;
+  --sh-sky-blue-text: #1E78A4;
+  --sh-soft-mint: #F3F8EC;
+  --sh-soft-mint-border: #D5E8BA;
   --sh-gentle-peach: #FFF0E7;
   --sh-gentle-peach-border: #FCD5C1;
   --sh-gentle-peach-text: #9A3412;
@@ -21,17 +38,9 @@
   /* Canvas & Backgrounds */
   --sh-white: #FFFFFF;
   --sh-canvas: #FCFDFB; /* Warm White */
-  --sh-canvas-subtle: #F4F8FA;
+  --sh-canvas-subtle: #F8FAFC;
   --sh-border: #E5ECEF;
   --sh-border-strong: #CBD7DD;
-
-  /* Legacy aliases for backward compatibility */
-  --sh-medical-blue: #168C8C;
-  --sh-medical-blue-hover: #127272;
-  --sh-medical-blue-light: #E6F5EF;
-  --sh-lime-green: #168C8C;
-  --sh-lime-green-hover: #127272;
-  --sh-lime-green-light: #DFF3FA;
 
   /* Typography Colors */
   --sh-navy-text: #193247;
@@ -40,14 +49,14 @@
   --sh-subtle-text: #8E9CA8;
 
   /* Status Tokens */
-  --sh-status-success: #15803D;
-  --sh-status-success-bg: #DCFCE7;
+  --sh-status-success: #91BB40;
+  --sh-status-success-bg: #F3F8EC;
   --sh-status-warning: #B45309;
   --sh-status-warning-bg: #FEF3C7;
   --sh-status-danger: #B91C1C;
   --sh-status-danger-bg: #FEE2E2;
-  --sh-status-info: #168C8C;
-  --sh-status-info-bg: #DFF3FA;
+  --sh-status-info: #3DA9DF;
+  --sh-status-info-bg: #EBF6FC;
 
   /* Shadows - Soft, Warm & Diffused */
   --sh-shadow-sm: 0 1px 2px 0 rgba(25, 50, 71, 0.04);
@@ -65,7 +74,7 @@ body {
 
 /* Accessible focus ring */
 :focus-visible {
-  outline: 2px solid var(--sh-primary-teal);
+  outline: 2px solid var(--sh-medical-blue);
   outline-offset: 2px;
 }
 

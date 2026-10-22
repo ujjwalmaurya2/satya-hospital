@@ -25,8 +25,8 @@ export const Doctors: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <UserCheck className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <UserCheck className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Medical Practitioners Directory &bull; Satya Hospital</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
@@ -53,30 +53,30 @@ export const Doctors: React.FC = () => {
         {/* Doctor Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {doctors.map((doc) => (
-            <Card key={doc.id} className="overflow-hidden border-[#CBD7DD] hover:border-[#168C8C]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md bg-white">
+            <Card key={doc.id} className="overflow-hidden border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md bg-white">
               <div className="p-6 space-y-4">
                 <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#168C8C]/15 to-[#DFF3FA] flex items-center justify-center text-[#168C8C] border border-[#C2EADE] font-bold text-lg">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#3DA9DF]/15 to-[#EBF6FC] flex items-center justify-center text-[#3DA9DF] border border-[#BCE1F5] font-bold text-lg">
                     {doc.fullName.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
                   </div>
-                  <Badge variant="teal" size="sm" dot>
+                  <Badge variant="medical-blue" size="sm" dot>
                     OPD Active
                   </Badge>
                 </div>
 
                 <div>
                   <h3 className="text-lg font-bold text-[#193247]">{doc.fullName}</h3>
-                  <p className="text-xs font-bold text-[#168C8C] mt-0.5">{doc.designation}</p>
+                  <p className="text-xs font-bold text-[#3DA9DF] mt-0.5">{doc.designation}</p>
                   <p className="text-xs text-[#647785] mt-1">{doc.qualifications}</p>
                 </div>
 
                 <div className="bg-[#FCFDFB] p-3.5 rounded-xl border border-[#E5ECEF] text-xs space-y-2">
                   <div className="flex items-center gap-2 text-[#193247]">
-                    <MapPin className="w-3.5 h-3.5 text-[#168C8C] shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-[#3DA9DF] shrink-0" />
                     <span>{doc.consultationRoom}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#193247]">
-                    <Clock className="w-3.5 h-3.5 text-[#168C8C] shrink-0" />
+                    <Clock className="w-3.5 h-3.5 text-[#3DA9DF] shrink-0" />
                     <span>{doc.opdTimings}</span>
                   </div>
                 </div>
@@ -89,7 +89,7 @@ export const Doctors: React.FC = () => {
                     {doc.availableDays.map((day) => (
                       <span 
                         key={day} 
-                        className="px-2 py-0.5 rounded-md bg-[#E6F5EF] border border-[#C2EADE] text-[10px] font-bold text-[#0F6B56]"
+                        className="px-2 py-0.5 rounded-md bg-[#F3F8EC] border border-[#D5E8BA] text-[10px] font-bold text-[#486812]"
                       >
                         {day.slice(0, 3)}
                       </span>

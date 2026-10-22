@@ -45,8 +45,8 @@ export const journeyMilestones: JourneyMilestone[] = [
       'Core clinical consultations in General Medicine and Family Care'
     ],
     icon: <HeartPulse className="w-6 h-6" />,
-    iconBg: 'bg-[#E6F5EF]',
-    iconColor: 'text-[#168C8C]',
+    iconBg: 'bg-[#F3F8EC]',
+    iconColor: 'text-[#91BB40]',
   },
   {
     period: 'Pediatric Care Focus',
@@ -60,8 +60,8 @@ export const journeyMilestones: JourneyMilestone[] = [
       'Infant wellness assessments and maternal feeding guidance'
     ],
     icon: <Baby className="w-6 h-6" />,
-    iconBg: 'bg-[#DFF3FA]',
-    iconColor: 'text-[#0E6E8C]',
+    iconBg: 'bg-[#EBF6FC]',
+    iconColor: 'text-[#3DA9DF]',
   },
   {
     period: 'Laboratory Expansion',
@@ -75,8 +75,8 @@ export const journeyMilestones: JourneyMilestone[] = [
       'Fast 2 to 4 hour turnaround for routine outpatient blood panels'
     ],
     icon: <Microscope className="w-6 h-6" />,
-    iconBg: 'bg-[#E6F5EF]',
-    iconColor: 'text-[#168C8C]',
+    iconBg: 'bg-[#F3F8EC]',
+    iconColor: 'text-[#91BB40]',
   },
   {
     period: 'Process Innovation',
@@ -105,8 +105,8 @@ export const journeyMilestones: JourneyMilestone[] = [
       'Instant access to authenticated digital pathology reports and receipts'
     ],
     icon: <ShieldCheck className="w-6 h-6" />,
-    iconBg: 'bg-[#E6F5EF]',
-    iconColor: 'text-[#168C8C]',
+    iconBg: 'bg-[#F3F8EC]',
+    iconColor: 'text-[#91BB40]',
   },
 ];
 
@@ -117,8 +117,8 @@ export const Journey: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Milestone className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <Milestone className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Clinical Evolution &amp; Milestones &bull; Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -132,7 +132,7 @@ export const Journey: React.FC = () => {
         {/* Timeline Section */}
         <div className="relative">
           {/* Central connecting vertical line */}
-          <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#168C8C] via-[#0E6E8C] to-[#CBD7DD] -translate-x-1/2" />
+          <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#3DA9DF] via-[#91BB40] to-[#CBD7DD] -translate-x-1/2" />
 
           <div className="space-y-12 md:space-y-16">
             {journeyMilestones.map((milestone, idx) => {
@@ -158,12 +158,12 @@ export const Journey: React.FC = () => {
 
                   {/* Content Card (Half width) */}
                   <div className="w-full md:w-1/2">
-                    <Card className="p-6 sm:p-7 border-[#CBD7DD] hover:border-[#168C8C]/50 transition-all hover:shadow-md bg-white">
+                    <Card className="p-6 sm:p-7 border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all hover:shadow-md bg-white">
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <span className="text-xs font-bold text-[#647785] uppercase tracking-wider">
                           {milestone.period}
                         </span>
-                        <Badge variant="teal" size="sm">
+                        <Badge variant="medical-blue" size="sm">
                           {milestone.badge}
                         </Badge>
                       </div>
@@ -171,7 +171,7 @@ export const Journey: React.FC = () => {
                       <h2 className="text-lg sm:text-xl font-bold text-[#193247] mb-1">
                         {milestone.title}
                       </h2>
-                      <h3 className="text-xs font-bold text-[#168C8C] mb-3">
+                      <h3 className="text-xs font-bold text-[#3DA9DF] mb-3">
                         {milestone.subtitle}
                       </h3>
 
@@ -182,7 +182,7 @@ export const Journey: React.FC = () => {
                       <div className="space-y-2 pt-3 border-t border-[#E5ECEF] text-xs">
                         {milestone.highlights.map((item, hIdx) => (
                           <div key={hIdx} className="flex items-start gap-2 text-[#193247]">
-                            <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                            <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
                             <span>{item}</span>
                           </div>
                         ))}

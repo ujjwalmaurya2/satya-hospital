@@ -57,21 +57,21 @@ export const PatientReports: React.FC = () => {
             placeholder="Search test or accession..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-teal-100 text-xs bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#168C8C]"
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-sky-100 text-xs bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#3DA9DF]"
           />
         </div>
       </div>
 
       {/* Clinical Disclaimer */}
-      <div className="bg-[#DFF3FA]/50 border border-teal-200/60 p-4 rounded-2xl text-xs text-[#193247] flex items-start gap-2.5 shadow-xs">
-        <AlertCircle className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+      <div className="bg-[#EBF6FC]/60 border border-[#BCE1F5] p-4 rounded-2xl text-xs text-[#193247] flex items-start gap-2.5 shadow-xs">
+        <AlertCircle className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
         <div>
           <strong className="block mb-0.5 text-[#193247]">Clinical Review Notice:</strong>
           Diagnostic laboratory values should always be interpreted by your consulting physician in conjunction with clinical symptoms. Self-interpreting reference values without clinical context is not advised.
         </div>
       </div>
 
-      <Card className="rounded-2xl border-teal-100 shadow-xs">
+      <Card className="rounded-2xl border-sky-100 shadow-xs">
         <CardBody className="p-0 divide-y divide-slate-100">
           {filteredReports.length === 0 ? (
             <div className="p-8 text-center text-xs text-[#647785]">

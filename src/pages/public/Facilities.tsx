@@ -53,8 +53,8 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Direct link to the unified sequential token queue'
     ],
     icon: <Baby className="w-6 h-6" />,
-    iconBg: 'bg-[#E6F5EF]',
-    iconColor: 'text-[#168C8C]',
+    iconBg: 'bg-[#F3F8EC]',
+    iconColor: 'text-[#91BB40]',
   },
   {
     id: 'fac-opd-chambers',
@@ -70,8 +70,8 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Workstation connection to hospital management software'
     ],
     icon: <Stethoscope className="w-6 h-6" />,
-    iconBg: 'bg-[#DFF3FA]',
-    iconColor: 'text-[#0E6E8C]',
+    iconBg: 'bg-[#EBF6FC]',
+    iconColor: 'text-[#3DA9DF]',
   },
   {
     id: 'fac-path-lab',
@@ -87,8 +87,8 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Mandatory two-step sign-off by Senior Pathologist'
     ],
     icon: <Microscope className="w-6 h-6" />,
-    iconBg: 'bg-[#E6F5EF]',
-    iconColor: 'text-[#168C8C]',
+    iconBg: 'bg-[#F3F8EC]',
+    iconColor: 'text-[#91BB40]',
   },
   {
     id: 'fac-daycare',
@@ -121,8 +121,8 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Strict infection control and biomedical waste disposal protocols'
     ],
     icon: <Syringe className="w-6 h-6" />,
-    iconBg: 'bg-[#DFF3FA]',
-    iconColor: 'text-[#0E6E8C]',
+    iconBg: 'bg-[#EBF6FC]',
+    iconColor: 'text-[#3DA9DF]',
   },
   {
     id: 'fac-reception-kiosk',
@@ -138,8 +138,8 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Instant verification and printed token slips'
     ],
     icon: <Clock className="w-6 h-6" />,
-    iconBg: 'bg-[#E6F5EF]',
-    iconColor: 'text-[#168C8C]',
+    iconBg: 'bg-[#EBF6FC]',
+    iconColor: 'text-[#3DA9DF]',
   },
 ];
 
@@ -165,8 +165,8 @@ export const Facilities: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Building className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <Building className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Hospital Infrastructure &amp; Amenities &bull; Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -185,7 +185,7 @@ export const Facilities: React.FC = () => {
               onClick={() => setActiveCategory(cat.id as any)}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 activeCategory === cat.id
-                  ? 'bg-[#168C8C] text-white shadow-xs'
+                  ? 'bg-[#3DA9DF] text-white shadow-xs'
                   : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
               }`}
             >
@@ -203,7 +203,7 @@ export const Facilities: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#168C8C]/50 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+              className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
@@ -215,12 +215,12 @@ export const Facilities: React.FC = () => {
                       <h3 className="text-base sm:text-lg font-bold text-[#193247]">
                         {fac.title}
                       </h3>
-                      <span className="text-[11px] font-bold text-[#168C8C]">
+                      <span className="text-[11px] font-bold text-[#3DA9DF]">
                         {fac.location}
                       </span>
                     </div>
                   </div>
-                  <Badge variant="teal" size="sm">
+                  <Badge variant="medical-blue" size="sm">
                     {fac.badge}
                   </Badge>
                 </div>
@@ -236,7 +236,7 @@ export const Facilities: React.FC = () => {
                   <ul className="space-y-1.5">
                     {fac.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-[#193247]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#168C8C] shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40] shrink-0 mt-0.5" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -246,10 +246,10 @@ export const Facilities: React.FC = () => {
 
               <div className="pt-4 border-t border-[#E5ECEF] mt-4 flex items-center justify-between text-xs">
                 <span className="text-[11px] text-[#647785] flex items-center gap-1.5 font-medium">
-                  <Clock className="w-3.5 h-3.5 text-[#168C8C]" />
+                  <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
                   <span>{fac.timing}</span>
                 </span>
-                <Link to="/book-appointment" className="text-xs font-bold text-[#168C8C] hover:text-[#127272] flex items-center gap-1">
+                <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1">
                   <span>Book Consultation</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>

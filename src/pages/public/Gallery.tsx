@@ -43,9 +43,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Suite 103, Ground Floor',
     description: 'Warm, child-friendly pediatric consultation chamber where consulting physicians conduct gentle, unhurried examinations with parents seated right beside.',
     equipment: ['Calibrated Pediatric Stethoscope', 'Child-Safe Examination Mat', 'Gentle Examination Lighting'],
-    gradient: 'from-[#168C8C]/15 to-[#DFF3FA]',
-    accentColor: '#168C8C',
-    icon: <Baby className="w-10 h-10 text-[#168C8C]" />,
+    gradient: 'from-[#3DA9DF]/15 to-[#EBF6FC]',
+    accentColor: '#3DA9DF',
+    icon: <Baby className="w-10 h-10 text-[#3DA9DF]" />,
     imageSrc: '/images/pediatric-hero.jpg',
   },
   {
@@ -56,9 +56,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Infant Wellness Room 105',
     description: 'Sterile, climate-regulated examination area equipped with high-precision digital baby scales, length measuring mats, and soothing natural daylight.',
     equipment: ['Digital Infant Scale', 'Infant Length Measuring Mat', 'Sanitized Disposable Bed Rolls'],
-    gradient: 'from-[#E6F5EF] to-[#DFF3FA]',
-    accentColor: '#168C8C',
-    icon: <Sparkles className="w-10 h-10 text-[#168C8C]" />,
+    gradient: 'from-[#F3F8EC] to-[#EBF6FC]',
+    accentColor: '#91BB40',
+    icon: <Sparkles className="w-10 h-10 text-[#91BB40]" />,
     imageSrc: '/images/newborn-care.jpg',
   },
   {
@@ -69,9 +69,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Civil Lines Road, Prayagraj',
     description: 'Exterior view of Satya Hospital & Pathology showing the multi-storey clinical facility, ground-floor reception, step-free patient ramp, and outpatient consultation suites.',
     equipment: ['Step-free Ramp Access', 'Ground Floor Emergency Intake', 'Ambulance & Patient Drop-off'],
-    gradient: 'from-[#168C8C]/20 to-[#193247]/15',
-    accentColor: '#168C8C',
-    icon: <Building className="w-10 h-10 text-[#168C8C]" />,
+    gradient: 'from-[#3DA9DF]/20 to-[#193247]/15',
+    accentColor: '#3DA9DF',
+    icon: <Building className="w-10 h-10 text-[#3DA9DF]" />,
     imageSrc: '/images/satya-hospital-building.jpg',
   },
   {
@@ -82,9 +82,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Room 101, Ground Floor',
     description: 'Private outpatient examination chamber equipped with diagnostic wall units, examination couch, and confidential consultation desk.',
     equipment: ['Diagnostic Wall Set', 'Digital Sphygmomanometer', 'Queue Terminal Link'],
-    gradient: 'from-[#DFF3FA] to-[#E6F5EF]',
-    accentColor: '#168C8C',
-    icon: <Stethoscope className="w-10 h-10 text-[#168C8C]" />,
+    gradient: 'from-[#EBF6FC] to-[#F3F8EC]',
+    accentColor: '#3DA9DF',
+    icon: <Stethoscope className="w-10 h-10 text-[#3DA9DF]" />,
   },
   {
     id: 'gal-2',
@@ -94,9 +94,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Lab Wing, Ground Floor',
     description: 'Calibrated automated biochemistry and hematology analyzers running daily multi-level quality control runs.',
     equipment: ['Auto-Biochemistry Analyzer', '3-Part Hematology Cell Counter', 'Cold-Chain Refrigerator'],
-    gradient: 'from-[#E6F5EF] to-[#FCFDFB]',
-    accentColor: '#168C8C',
-    icon: <Microscope className="w-10 h-10 text-[#168C8C]" />,
+    gradient: 'from-[#F3F8EC] to-[#FCFDFB]',
+    accentColor: '#91BB40',
+    icon: <Microscope className="w-10 h-10 text-[#91BB40]" />,
   },
   {
     id: 'gal-3',
@@ -118,9 +118,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Clinical Wing, Procedure Suite',
     description: 'Aseptic environment for minor surgical procedures, sterile wound suturing, abscess drainage, and dressing.',
     equipment: ['Shadowless Surgical LED Lamp', 'Autoclave Instrument Station', 'Cardiac Resuscitation Tray'],
-    gradient: 'from-[#DFF3FA] to-[#FCFDFB]',
-    accentColor: '#0E6E8C',
-    icon: <Building className="w-10 h-10 text-[#0E6E8C]" />,
+    gradient: 'from-[#EBF6FC] to-[#FCFDFB]',
+    accentColor: '#3DA9DF',
+    icon: <Building className="w-10 h-10 text-[#3DA9DF]" />,
   },
   {
     id: 'gal-5',
@@ -130,9 +130,9 @@ export const hospitalGalleryItems: GalleryItem[] = [
     roomInfo: 'Hospital Main Entrance',
     description: 'Spacious patient reception with single sequential queue display screen and registration verification counter.',
     equipment: ['Unified Queue Terminal', 'High-Speed Token Printer', 'Real-time Waiting Monitor'],
-    gradient: 'from-[#E6F5EF] to-[#DFF3FA]',
-    accentColor: '#168C8C',
-    icon: <Building className="w-10 h-10 text-[#168C8C]" />,
+    gradient: 'from-[#F3F8EC] to-[#EBF6FC]',
+    accentColor: '#3DA9DF',
+    icon: <Building className="w-10 h-10 text-[#3DA9DF]" />,
   },
 ];
 
@@ -169,8 +169,8 @@ export const Gallery: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Images className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <Images className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Visual Tour &amp; Clinical Campus &bull; Satya Hospital</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -198,7 +198,7 @@ export const Gallery: React.FC = () => {
               }}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === tab.id
-                  ? 'bg-[#168C8C] text-white shadow-xs'
+                  ? 'bg-[#3DA9DF] text-white shadow-xs'
                   : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
               }`}
             >
@@ -217,7 +217,7 @@ export const Gallery: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{ y: -4 }}
-              className="group cursor-pointer bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#168C8C]/50 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              className="group cursor-pointer bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
               onClick={() => setActiveLightboxIndex(index)}
             >
               {/* Visual Header / Graphic Card or Real Photo */}
@@ -230,11 +230,11 @@ export const Gallery: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#193247]/80 via-transparent to-black/20" />
                   <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
-                    <Badge variant="teal" size="sm" className="bg-white/95 backdrop-blur-xs">
+                    <Badge variant="medical-blue" size="sm" className="bg-white/95 backdrop-blur-xs">
                       {item.categoryLabel}
                     </Badge>
                     <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#193247] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
-                      <Maximize2 className="w-4 h-4 text-[#168C8C]" />
+                      <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
                     </div>
                   </div>
                   <div className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-[#193247]/80 backdrop-blur-xs px-2.5 py-1 rounded-md">
@@ -244,11 +244,11 @@ export const Gallery: React.FC = () => {
               ) : (
                 <div className={`h-44 bg-gradient-to-br ${item.gradient} p-5 flex flex-col justify-between relative overflow-hidden`}>
                   <div className="flex justify-between items-start z-10">
-                    <Badge variant="teal" size="sm" className="bg-white/90 backdrop-blur-xs">
+                    <Badge variant="medical-blue" size="sm" className="bg-white/90 backdrop-blur-xs">
                       {item.categoryLabel}
                     </Badge>
                     <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#193247] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
-                      <Maximize2 className="w-4 h-4 text-[#168C8C]" />
+                      <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
                     </div>
                   </div>
 
@@ -264,14 +264,14 @@ export const Gallery: React.FC = () => {
 
               {/* Info Body */}
               <div className="p-5 space-y-3">
-                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#168C8C] transition-colors leading-snug">
+                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors leading-snug">
                   {item.title}
                 </h3>
                 <p className="text-xs text-[#647785] leading-relaxed line-clamp-2">
                   {item.description}
                 </p>
 
-                <div className="pt-2 border-t border-[#E5ECEF] flex items-center justify-between text-[11px] text-[#168C8C] font-bold">
+                <div className="pt-2 border-t border-[#E5ECEF] flex items-center justify-between text-[11px] text-[#3DA9DF] font-bold">
                   <span>View Details</span>
                   <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </div>
@@ -316,7 +316,7 @@ export const Gallery: React.FC = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#193247]/85 via-transparent to-black/20" />
                     <div className="absolute top-4 left-4 z-10">
-                      <Badge variant="teal" size="sm" className="bg-white/95">
+                      <Badge variant="medical-blue" size="sm" className="bg-white/95">
                         {activeItem.categoryLabel}
                       </Badge>
                     </div>
@@ -326,7 +326,7 @@ export const Gallery: React.FC = () => {
                   </div>
                 ) : (
                   <div className={`h-56 sm:h-64 bg-gradient-to-br ${activeItem.gradient} p-8 flex flex-col justify-between relative`}>
-                    <Badge variant="teal" size="sm" className="w-fit bg-white shadow-xs">
+                    <Badge variant="medical-blue" size="sm" className="w-fit bg-white shadow-xs">
                       {activeItem.categoryLabel}
                     </Badge>
 
@@ -359,7 +359,7 @@ export const Gallery: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                       {activeItem.equipment.map((eq, eqIdx) => (
                         <div key={eqIdx} className="flex items-center gap-2 text-[#193247]">
-                          <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
                           <span>{eq}</span>
                         </div>
                       ))}

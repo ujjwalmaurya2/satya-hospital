@@ -99,8 +99,8 @@ export const Testimonials: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <MessageSquareQuote className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <MessageSquareQuote className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Patient Experiences &bull; Satya Hospital Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -113,15 +113,15 @@ export const Testimonials: React.FC = () => {
 
         {/* Featured Carousel */}
         <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-12 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#168C8C]/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#3DA9DF]/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-3xl mx-auto space-y-8 relative z-10">
             {/* Quote Icon & Badge */}
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center shadow-xs">
                 <Quote className="w-6 h-6" />
               </div>
-              <Badge variant="teal" size="sm" dot>
+              <Badge variant="medical-blue" size="sm" dot>
                 {activeTestimonial.verifiedStatus}
               </Badge>
             </div>
@@ -151,7 +151,7 @@ export const Testimonials: React.FC = () => {
                       </span>
                     </div>
 
-                    <span className="text-[11px] text-[#0F6B56] font-bold bg-[#E6F5EF] px-3 py-1 rounded-full w-fit">
+                    <span className="text-[11px] text-[#486812] font-bold bg-[#F3F8EC] border border-[#D5E8BA] px-3 py-1 rounded-full w-fit">
                       {activeTestimonial.serviceType}
                     </span>
                   </div>
@@ -168,7 +168,7 @@ export const Testimonials: React.FC = () => {
                     onClick={() => setCurrentIndex(dotIdx)}
                     className={`h-2 rounded-full transition-all cursor-pointer ${
                       currentIndex === dotIdx
-                        ? 'w-6 bg-[#168C8C]'
+                        ? 'w-6 bg-[#3DA9DF]'
                         : 'w-2 bg-[#CBD7DD] hover:bg-[#8E9CA8]'
                     }`}
                     aria-label={`Go to slide ${dotIdx + 1}`}
@@ -180,7 +180,7 @@ export const Testimonials: React.FC = () => {
                 <button
                   type="button"
                   onClick={prevSlide}
-                  className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#168C8C] transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#3DA9DF] transition-colors cursor-pointer"
                   aria-label="Previous testimonial"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -188,7 +188,7 @@ export const Testimonials: React.FC = () => {
                 <button
                   type="button"
                   onClick={nextSlide}
-                  className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#168C8C] transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#3DA9DF] transition-colors cursor-pointer"
                   aria-label="Next testimonial"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -206,11 +206,11 @@ export const Testimonials: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {patientTestimonials.map((item) => (
-              <Card key={item.id} className="p-6 border-[#CBD7DD] hover:border-[#168C8C]/50 transition-all flex flex-col justify-between bg-white hover:shadow-md">
+              <Card key={item.id} className="p-6 border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all flex flex-col justify-between bg-white hover:shadow-md">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold text-xs">
+                      <div className="w-8 h-8 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold text-xs">
                         {item.patientName.split(' ')[0][0]}
                       </div>
                       <div>
@@ -218,7 +218,7 @@ export const Testimonials: React.FC = () => {
                         <span className="text-[10px] text-[#647785] block">{item.locality}</span>
                       </div>
                     </div>
-                    <Badge variant="teal" size="sm">
+                    <Badge variant="medical-blue" size="sm">
                       Verified
                     </Badge>
                   </div>
@@ -229,7 +229,7 @@ export const Testimonials: React.FC = () => {
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between text-[11px]">
-                  <span className="text-[#168C8C] font-bold">{item.department}</span>
+                  <span className="text-[#3DA9DF] font-bold">{item.department}</span>
                   <span className="text-[#647785]">{item.date}</span>
                 </div>
               </Card>
@@ -239,7 +239,7 @@ export const Testimonials: React.FC = () => {
 
         {/* Medical Ethics & Compliance Disclaimer */}
         <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-8 flex items-start gap-3.5 text-xs text-[#647785] shadow-xs">
-          <ShieldCheck className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+          <ShieldCheck className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
           <div className="space-y-1">
             <strong className="text-sm font-bold text-[#193247] block">
               Ethical Healthcare Communication Policy

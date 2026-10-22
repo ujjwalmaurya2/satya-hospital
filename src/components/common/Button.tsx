@@ -27,11 +27,11 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-150 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer select-none';
 
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-[#168C8C] text-white hover:bg-[#127272] active:bg-[#0E5C5C] focus-visible:outline-[#168C8C] shadow-sm',
-    accent: 'bg-[#DFF3FA] text-[#168C8C] hover:bg-[#cbeaf5] active:bg-[#b8e2f0] focus-visible:outline-[#168C8C] font-semibold shadow-xs',
-    outline: 'border border-[#CBD7DD] bg-white text-[#193247] hover:bg-[#FCFDFB] hover:border-[#168C8C] hover:text-[#168C8C] focus-visible:outline-[#168C8C]',
+    primary: 'bg-[#3DA9DF] text-white hover:bg-[#2B92C4] active:bg-[#1E78A4] focus-visible:outline-[#3DA9DF] shadow-sm font-semibold',
+    accent: 'bg-[#91BB40] text-white hover:bg-[#7EA631] active:bg-[#6B8F27] focus-visible:outline-[#91BB40] font-semibold shadow-xs',
+    outline: 'border border-[#CBD7DD] bg-white text-[#193247] hover:bg-[#EBF6FC] hover:border-[#3DA9DF] hover:text-[#3DA9DF] focus-visible:outline-[#3DA9DF]',
     danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:outline-[#DC2626] shadow-sm',
-    ghost: 'text-[#193247] hover:bg-[#E6F5EF] hover:text-[#168C8C] active:bg-[#DFF3FA] focus-visible:outline-[#168C8C]',
+    ghost: 'text-[#193247] hover:bg-[#EBF6FC] hover:text-[#3DA9DF] active:bg-[#D4EDF9] focus-visible:outline-[#3DA9DF]',
   };
 
   const sizeStyles: Record<ButtonSize, string> = {

@@ -26,44 +26,44 @@ export const PediatricCare: React.FC = () => {
     {
       title: 'General Pediatric Outpatient Consultation',
       description: 'Diagnosis and clinical management of common childhood illnesses including seasonal fever, viral infections, cough, colds, and pediatric gastrointestinal complaints.',
-      icon: <Baby className="w-5 h-5 text-[#168C8C]" />,
+      icon: <Baby className="w-5 h-5 text-[#3DA9DF]" />,
       badge: 'Daily OPD',
-      accentBg: 'bg-[#E6F5EF]'
+      accentBg: 'bg-[#EBF6FC]'
     },
     {
       title: 'Growth & Developmental Monitoring',
       description: 'Systematic tracking of physical growth percentiles (height, weight, BMI) and developmental milestones to ensure age-appropriate progression.',
-      icon: <Activity className="w-5 h-5 text-[#0E6E8C]" />,
+      icon: <Activity className="w-5 h-5 text-[#3DA9DF]" />,
       badge: 'Preventive Care',
-      accentBg: 'bg-[#DFF3FA]'
+      accentBg: 'bg-[#EBF6FC]'
     },
     {
       title: 'Vaccination & Immunization Guidance',
       description: 'Guidance on national and standard pediatric vaccination schedules, vaccine record maintenance, and safe administration protocols.',
-      icon: <ShieldCheck className="w-5 h-5 text-[#9A3412]" />,
+      icon: <ShieldCheck className="w-5 h-5 text-[#91BB40]" />,
       badge: 'Immunization Roster',
-      accentBg: 'bg-[#FFF0E7]'
+      accentBg: 'bg-[#F3F8EC]'
     },
     {
       title: 'Childhood Nutrition & Dietary Advice',
       description: 'Evidence-based nutritional counseling for toddlers and growing children, tackling fussy eating, nutritional deficiencies, and healthy growth habits.',
-      icon: <Heart className="w-5 h-5 text-[#168C8C]" />,
+      icon: <Heart className="w-5 h-5 text-[#3DA9DF]" />,
       badge: 'Parent Counseling',
-      accentBg: 'bg-[#E6F5EF]'
+      accentBg: 'bg-[#EBF6FC]'
     },
     {
       title: 'Respiratory & Seasonal Allergy Care',
       description: 'Clinical evaluation and gentle outpatient management of pediatric asthma, childhood wheezing, and allergic rhinitis in a dust-free clinic setting.',
-      icon: <Sparkles className="w-5 h-5 text-[#0E6E8C]" />,
+      icon: <Sparkles className="w-5 h-5 text-[#91BB40]" />,
       badge: 'Clinical OPD',
-      accentBg: 'bg-[#DFF3FA]'
+      accentBg: 'bg-[#F3F8EC]'
     },
     {
       title: 'Laboratory Diagnostic Coordination',
       description: 'Seamless integration with in-house Satya Pathology Lab for pediatric blood counts, urine analysis, and rapid reports verified by MD Pathologist.',
-      icon: <FileText className="w-5 h-5 text-[#9A3412]" />,
+      icon: <FileText className="w-5 h-5 text-[#91BB40]" />,
       badge: 'In-House Lab',
-      accentBg: 'bg-[#FFF0E7]'
+      accentBg: 'bg-[#F3F8EC]'
     }
   ];
 
@@ -73,8 +73,8 @@ export const PediatricCare: React.FC = () => {
         
         {/* Header Breadcrumb / Pill */}
         <div className="space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-semibold">
-            <Baby className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold border border-[#BCE1F5]">
+            <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Pediatric &amp; Adolescent Healthcare &bull; Satya Hospital Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -86,9 +86,9 @@ export const PediatricCare: React.FC = () => {
         </div>
 
         {/* Operating Notice Strip */}
-        <div className="bg-[#DFF3FA]/60 border border-[#BCE1F5] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-[#EBF6FC]/60 border border-[#BCE1F5] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#168C8C] shadow-xs shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#3DA9DF] shadow-xs shrink-0">
               <Clock className="w-5 h-5" />
             </div>
             <div>
@@ -125,13 +125,13 @@ export const PediatricCare: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {clinicalServices.map((service, idx) => (
-              <Card key={idx} className="p-6 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md">
+              <Card key={idx} className="p-6 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className={`w-12 h-12 rounded-xl ${service.accentBg} flex items-center justify-center shadow-2xs`}>
                       {service.icon}
                     </div>
-                    <Badge variant="teal" size="sm">
+                    <Badge variant={idx % 2 === 0 ? 'medical-blue' : 'lime-green'} size="sm">
                       {service.badge}
                     </Badge>
                   </div>
@@ -144,10 +144,10 @@ export const PediatricCare: React.FC = () => {
                 </div>
 
                 <div className="pt-5 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-[#168C8C] flex items-center gap-1">
+                  <span className="text-[11px] font-semibold text-[#3DA9DF] flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Qualified Physician Care
                   </span>
-                  <Link to="/book-appointment" className="text-xs font-bold text-[#168C8C] hover:text-[#127272] flex items-center gap-1">
+                  <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1">
                     Book <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
@@ -159,7 +159,7 @@ export const PediatricCare: React.FC = () => {
         {/* Parent Guidance & Consultation Etiquette */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 sm:p-10 border border-[#E5ECEF] shadow-sm">
           <div className="space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#168C8C]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#3DA9DF]">
               Parent-Friendly Healthcare Guidance
             </span>
             <h3 className="text-2xl font-bold text-[#193247]">
@@ -170,27 +170,27 @@ export const PediatricCare: React.FC = () => {
             </p>
             <ul className="space-y-2.5 text-xs text-[#193247]">
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
                 <span><strong>Carry Previous Records:</strong> Bring past prescriptions, vaccination cards, and any recent lab reports.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
                 <span><strong>Note Down Symptoms:</strong> Record fever onset times, medication doses already given, and dietary changes.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
                 <span><strong>Bring a Comfort Toy:</strong> A small favorite blanket or toy helps young children feel secure in the examination room.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
                 <span><strong>Shared Queue Transparency:</strong> Online tokens and walk-in registrations are sequenced on the same live roster.</span>
               </li>
             </ul>
           </div>
 
-          <div className="bg-[#E6F5EF]/60 border border-[#C2EADE] rounded-2xl p-6 space-y-4">
+          <div className="bg-[#F3F8EC]/70 border border-[#D5E8BA] rounded-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white text-[#168C8C] flex items-center justify-center font-bold shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-white text-[#91BB40] flex items-center justify-center font-bold shadow-xs">
                 <Info className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-[#193247]">

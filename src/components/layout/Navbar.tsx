@@ -69,24 +69,24 @@ export const Navbar: React.FC = () => {
 
   // Primary navigation items requested in Childcare UI Spec
   const primaryNavItems: NavItem[] = [
-    { label: 'Home', path: '/', icon: <Heart className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'About Us', path: '/about', icon: <Building2 className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Pediatric Care', path: '/pediatric-care', icon: <Baby className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Newborn Care', path: '/newborn-care', icon: <Sparkles className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Pathology & Diagnostics', path: '/pathology-lab', icon: <Microscope className="w-4 h-4 text-[#0E6E8C]" /> },
-    { label: 'Appointments', path: '/book-appointment', icon: <Calendar className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Contact', path: '/contact', icon: <PhoneCall className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Home', path: '/', icon: <Heart className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'About Us', path: '/about', icon: <Building2 className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Pediatric Care', path: '/pediatric-care', icon: <Baby className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Newborn Care', path: '/newborn-care', icon: <Sparkles className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'Pathology & Diagnostics', path: '/pathology-lab', icon: <Microscope className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'Appointments', path: '/book-appointment', icon: <Calendar className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Contact', path: '/contact', icon: <PhoneCall className="w-4 h-4 text-[#3DA9DF]" /> },
   ];
 
   // Secondary hospital links preserved in "More"
   const moreNavItems: NavItem[] = [
-    { label: 'Doctors Directory', path: '/doctors', icon: <Stethoscope className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'All Clinical Services', path: '/services', icon: <Heart className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Facilities & Campus', path: '/facilities', icon: <Building className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Hospital Journey', path: '/journey', icon: <Milestone className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Photo Gallery', path: '/gallery', icon: <Images className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'Patient Feedback', path: '/testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#168C8C]" /> },
-    { label: 'News & Health Updates', path: '/news', icon: <Newspaper className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Doctors Directory', path: '/doctors', icon: <Stethoscope className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'All Clinical Services', path: '/services', icon: <Heart className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Facilities & Campus', path: '/facilities', icon: <Building className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Hospital Journey', path: '/journey', icon: <Milestone className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'Photo Gallery', path: '/gallery', icon: <Images className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Patient Feedback', path: '/testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'News & Health Updates', path: '/news', icon: <Newspaper className="w-4 h-4 text-[#3DA9DF]" /> },
   ];
 
   const isCurrentActive = (path: string) => {
@@ -107,8 +107,8 @@ export const Navbar: React.FC = () => {
       <div className="bg-[#193247] text-white text-[11px] py-1.5 px-4 hidden md:block border-b border-white/10 tracking-wide">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[#DFF3FA] font-medium">
-              <Clock className="w-3.5 h-3.5 text-[#168C8C]" />
+            <span className="flex items-center gap-1.5 text-[#EBF6FC] font-medium">
+              <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
               Pediatric &amp; General OPD: {settings.opdStartTime} AM Onwards &bull; Same-Day Cutoff: {settings.onlineCutoffTime} AM
             </span>
             <span className="text-white/20">|</span>
@@ -122,15 +122,15 @@ export const Navbar: React.FC = () => {
               href={`tel:${phoneRaw}`} 
               className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors"
             >
-              <Phone className="w-3.5 h-3.5 text-[#DFF3FA]" />
+              <Phone className="w-3.5 h-3.5 text-[#91BB40]" />
               <span>Hospital Desk: <strong>{phoneRaw}</strong></span>
             </a>
             <span className="text-white/20">|</span>
             <Link 
               to="/staff/login" 
-              className="text-white/70 hover:text-[#DFF3FA] transition-colors flex items-center gap-1 text-[11px]"
+              className="text-white/70 hover:text-[#3DA9DF] transition-colors flex items-center gap-1 text-[11px]"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-[#168C8C]" />
+              <ShieldAlert className="w-3.5 h-3.5 text-[#3DA9DF]" />
               <span>Staff Portal</span>
             </Link>
           </div>
@@ -148,22 +148,22 @@ export const Navbar: React.FC = () => {
             
             {/* Satya Hospital Logo */}
             <Link to="/" className="flex items-center gap-3 group focus:outline-hidden shrink-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#168C8C] to-[#0E5C5C] flex items-center justify-center text-white shadow-xs shadow-[#168C8C]/20 group-hover:scale-105 transition-transform duration-200">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#3DA9DF] to-[#2B92C4] flex items-center justify-center text-white shadow-xs shadow-[#3DA9DF]/20 group-hover:scale-105 transition-transform duration-200">
                 <Heart className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.3] text-white" />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-base sm:text-lg font-extrabold tracking-tight text-[#193247] leading-none group-hover:text-[#168C8C] transition-colors">
+                  <span className="text-base sm:text-lg font-extrabold tracking-tight text-[#193247] leading-none group-hover:text-[#3DA9DF] transition-colors">
                     Satya Hospital
                   </span>
-                  <span className="text-[10px] font-bold text-[#168C8C] px-1.5 py-0.5 rounded-full bg-[#E6F5EF] hidden sm:inline-block">
+                  <span className="text-[10px] font-bold text-[#486812] px-1.5 py-0.5 rounded-full bg-[#F3F8EC] border border-[#D5E8BA] hidden sm:inline-block">
                     &amp; Pathology
                   </span>
                 </div>
                 <span className="text-[11px] font-medium text-[#647785] tracking-tight mt-0.5 flex items-center gap-1">
                   <span>Pediatric &amp; Family Care</span>
                   <span className="w-1 h-1 rounded-full bg-[#CBD7DD] inline-block"></span>
-                  <span className="text-[#193247]">Prayagraj</span>
+                  <span className="text-[#3DA9DF] font-semibold">Prayagraj</span>
                 </span>
               </div>
             </Link>
@@ -178,15 +178,15 @@ export const Navbar: React.FC = () => {
                     to={item.path}
                     className={`relative px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-normal whitespace-nowrap transition-all ${
                       active
-                        ? 'text-[#168C8C] bg-[#E6F5EF]'
-                        : 'text-[#193247] hover:text-[#168C8C] hover:bg-[#FCFDFB]'
+                        ? 'text-[#3DA9DF] bg-[#EBF6FC]'
+                        : 'text-[#193247] hover:text-[#3DA9DF] hover:bg-[#F8FAFC]'
                     }`}
                   >
                     {item.label}
                     {active && (
                       <motion.span 
                         layoutId="activeNavIndicator"
-                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#168C8C] rounded-full"
+                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#3DA9DF] rounded-full"
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
@@ -201,8 +201,8 @@ export const Navbar: React.FC = () => {
                   onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                     moreDropdownOpen || isMoreGroupActive
-                      ? 'text-[#168C8C] bg-[#E6F5EF]'
-                      : 'text-[#193247] hover:text-[#168C8C] hover:bg-[#FCFDFB]'
+                      ? 'text-[#3DA9DF] bg-[#EBF6FC]'
+                      : 'text-[#193247] hover:text-[#3DA9DF] hover:bg-[#F8FAFC]'
                   }`}
                   aria-expanded={moreDropdownOpen}
                 >
@@ -231,8 +231,8 @@ export const Navbar: React.FC = () => {
                               to={item.path}
                               className={`flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium transition-colors ${
                                 active
-                                  ? 'bg-[#E6F5EF] text-[#168C8C] font-semibold'
-                                  : 'text-[#193247] hover:bg-[#FCFDFB]'
+                                  ? 'bg-[#EBF6FC] text-[#3DA9DF] font-semibold'
+                                  : 'text-[#193247] hover:bg-[#F8FAFC]'
                               }`}
                             >
                               {item.icon}
@@ -252,22 +252,22 @@ export const Navbar: React.FC = () => {
               {/* Call button for urgent enquiries */}
               <a 
                 href={`tel:${phoneRaw}`}
-                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#CBD7DD] bg-white text-[#193247] text-xs font-semibold hover:border-[#168C8C] hover:text-[#168C8C] transition-colors shadow-2xs"
+                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#CBD7DD] bg-white text-[#193247] text-xs font-semibold hover:border-[#3DA9DF] hover:text-[#3DA9DF] transition-colors shadow-2xs"
                 title="Call Hospital Reception for Urgent Enquiries"
               >
-                <PhoneCall className="w-3.5 h-3.5 text-[#168C8C]" />
+                <PhoneCall className="w-3.5 h-3.5 text-[#3DA9DF]" />
                 <span>Call Hospital</span>
               </a>
 
               {isAuthenticated && role === 'patient' ? (
                 <Link to="/patient/dashboard">
-                  <Button variant="outline" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#168C8C]" />}>
+                  <Button variant="outline" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#3DA9DF]" />}>
                     Patient Portal
                   </Button>
                 </Link>
               ) : isAuthenticated && role !== 'patient' ? (
                 <Link to={`/${role}`}>
-                  <Button variant="outline" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5 text-[#168C8C]" />}>
+                  <Button variant="outline" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5 text-[#3DA9DF]" />}>
                     {role.toUpperCase()}
                   </Button>
                 </Link>
@@ -296,7 +296,7 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-1.5 xl:hidden">
               <a 
                 href={`tel:${phoneRaw}`}
-                className="p-2 rounded-lg bg-[#E6F5EF] text-[#168C8C] hover:bg-[#DFF3FA] transition-colors"
+                className="p-2 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] hover:bg-[#D4EDF9] transition-colors"
                 aria-label="Call Hospital"
               >
                 <PhoneCall className="w-4 h-4" />
@@ -310,7 +310,7 @@ export const Navbar: React.FC = () => {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-[#193247] hover:bg-[#E6F5EF] rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-[#193247] hover:bg-[#EBF6FC] rounded-lg transition-colors cursor-pointer"
                 aria-label="Toggle navigation menu"
                 aria-expanded={mobileMenuOpen}
               >
@@ -333,9 +333,9 @@ export const Navbar: React.FC = () => {
             className="xl:hidden border-b border-[#E5ECEF] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg max-h-[85vh] overflow-y-auto"
           >
             {/* Timing Notice */}
-            <div className="py-2.5 px-3 bg-[#E6F5EF] border border-[#C2EADE] rounded-xl text-xs text-[#193247] flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-bold text-[#0F6B56]">
-                <Clock className="w-3.5 h-3.5 text-[#168C8C]" />
+            <div className="py-2.5 px-3 bg-[#EBF6FC] border border-[#BCE1F5] rounded-xl text-xs text-[#193247] flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-bold text-[#1E78A4]">
+                <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
                 OPD: {settings.opdStartTime} AM Onwards
               </span>
               <span className="text-[11px] font-medium text-[#647785]">Cutoff: {settings.onlineCutoffTime} AM</span>
@@ -354,8 +354,8 @@ export const Navbar: React.FC = () => {
                     to={item.path}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
                       active
-                        ? 'bg-[#E6F5EF] text-[#168C8C]'
-                        : 'text-[#193247] hover:bg-[#FCFDFB]'
+                        ? 'bg-[#EBF6FC] text-[#3DA9DF]'
+                        : 'text-[#193247] hover:bg-[#F8FAFC]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -377,7 +377,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="flex items-center gap-2 p-2 rounded-lg text-[11px] font-medium text-[#193247] hover:bg-[#E6F5EF] hover:text-[#168C8C] transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-lg text-[11px] font-medium text-[#193247] hover:bg-[#EBF6FC] hover:text-[#3DA9DF] transition-colors"
                   >
                     {item.icon}
                     <span className="truncate">{item.label}</span>
@@ -394,12 +394,12 @@ export const Navbar: React.FC = () => {
                 </Button>
               </Link>
               <a href={`tel:${phoneRaw}`} className="block w-full">
-                <Button variant="outline" size="md" className="w-full justify-center" leftIcon={<PhoneCall className="w-4 h-4 text-[#168C8C]" />}>
+                <Button variant="outline" size="md" className="w-full justify-center" leftIcon={<PhoneCall className="w-4 h-4 text-[#3DA9DF]" />}>
                   Call Reception ({phoneRaw})
                 </Button>
               </a>
               <div className="flex items-center justify-between pt-1 px-1">
-                <Link to="/patient/login" className="text-xs text-[#168C8C] font-semibold hover:underline">
+                <Link to="/patient/login" className="text-xs text-[#3DA9DF] font-semibold hover:underline">
                   Patient Portal Login &rarr;
                 </Link>
                 <Link to="/staff/login" className="text-xs text-[#647785] hover:underline">

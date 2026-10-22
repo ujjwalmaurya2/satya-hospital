@@ -26,37 +26,37 @@ export const NewbornCare: React.FC = () => {
     {
       title: 'Neonatal & Infant Physical Assessment',
       description: 'Systematic examination of newborn reflexes, muscle tone, heart sounds, respiratory rhythm, and neonatal abdominal palpation by our medical consultant.',
-      icon: <Baby className="w-5 h-5 text-[#168C8C]" />,
+      icon: <Baby className="w-5 h-5 text-[#3DA9DF]" />,
       badge: 'Infant Wellness'
     },
     {
       title: 'Weight Gain & Growth Velocity Tracking',
       description: 'Sensitive infant weighing and length tracking to monitor postnatal weight stabilization, expected growth velocity, and nutritional adequacy.',
-      icon: <Scale className="w-5 h-5 text-[#0E6E8C]" />,
+      icon: <Scale className="w-5 h-5 text-[#91BB40]" />,
       badge: 'Growth Velocity'
     },
     {
       title: 'Newborn Jaundice (Hyperbilirubinemia) Assessment',
       description: 'Clinical evaluation of infant sclera and skin coloration, paired with same-day serum bilirubin testing via Satya Pathology Lab if indicated.',
-      icon: <Thermometer className="w-5 h-5 text-[#9A3412]" />,
+      icon: <Thermometer className="w-5 h-5 text-[#3DA9DF]" />,
       badge: 'Diagnostic Review'
     },
     {
       title: 'Infant Feeding & Lactation Guidance',
       description: 'Supportive counseling on effective latching, feeding frequency, burping techniques, and addressing common newborn feeding challenges.',
-      icon: <Heart className="w-5 h-5 text-[#168C8C]" />,
+      icon: <Heart className="w-5 h-5 text-[#91BB40]" />,
       badge: 'Maternal Support'
     },
     {
       title: 'Umbilical Cord & Delicate Skin Care',
       description: 'Hygienic cord stump evaluation, safe cleansing routines, and gentle treatment for newborn diaper dermatitis and cradle cap.',
-      icon: <Sparkles className="w-5 h-5 text-[#0E6E8C]" />,
+      icon: <Sparkles className="w-5 h-5 text-[#3DA9DF]" />,
       badge: 'Hygienic Care'
     },
     {
       title: 'Primary Infant Immunization Protocol',
       description: 'Clear immunization tracking adhering to certified timelines (BCG, Hepatitis B, OPV, Pentavalent, Rotavirus, PCV) with record maintenance.',
-      icon: <ShieldCheck className="w-5 h-5 text-[#9A3412]" />,
+      icon: <ShieldCheck className="w-5 h-5 text-[#91BB40]" />,
       badge: 'National Schedule'
     }
   ];
@@ -67,8 +67,8 @@ export const NewbornCare: React.FC = () => {
         
         {/* Header Breadcrumb / Pill */}
         <div className="space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-semibold">
-            <Heart className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold border border-[#BCE1F5]">
+            <Heart className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Newborn &amp; Infant Healthcare Clinic &bull; Satya Hospital Prayagraj</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
@@ -83,7 +83,7 @@ export const NewbornCare: React.FC = () => {
         <div className="relative rounded-3xl overflow-hidden border border-[#E5ECEF] shadow-sm bg-white">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
             <div className="lg:col-span-7 p-6 sm:p-10 space-y-5">
-              <Badge variant="teal" size="sm">
+              <Badge variant="lime-green" size="sm">
                 Dedicated Infant Consultation Room
               </Badge>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] leading-tight">
@@ -95,19 +95,19 @@ export const NewbornCare: React.FC = () => {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
                   <span>Sanitized Infant Examination Mats</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
                   <span>Calibrated Digital Baby Weighing</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
                   <span>Verified Consultant Physician</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
                   <span>Same-Day Lab Reports Available</span>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export const NewbornCare: React.FC = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-5 h-72 sm:h-96 lg:h-full relative overflow-hidden bg-[#E6F5EF]/30">
+            <div className="lg:col-span-5 h-72 sm:h-96 lg:h-full relative overflow-hidden bg-[#EBF6FC]/50">
               <img 
                 src="/images/newborn-care.jpg" 
                 alt="Pediatrician conducting gentle newborn infant examination at Satya Hospital"
@@ -149,13 +149,13 @@ export const NewbornCare: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newbornServices.map((service, idx) => (
-              <Card key={idx} className="p-6 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md">
+              <Card key={idx} className="p-6 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-[#E6F5EF] flex items-center justify-center shadow-2xs">
+                    <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] flex items-center justify-center shadow-2xs">
                       {service.icon}
                     </div>
-                    <Badge variant="teal" size="sm">
+                    <Badge variant={idx % 2 === 0 ? 'medical-blue' : 'lime-green'} size="sm">
                       {service.badge}
                     </Badge>
                   </div>
@@ -168,10 +168,10 @@ export const NewbornCare: React.FC = () => {
                 </div>
 
                 <div className="pt-5 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-[#168C8C] flex items-center gap-1">
+                  <span className="text-[11px] font-semibold text-[#3DA9DF] flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Clinical Safety Checked
                   </span>
-                  <Link to="/book-appointment" className="text-xs font-bold text-[#168C8C] hover:text-[#127272]">
+                  <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4]">
                     Book Token
                   </Link>
                 </div>

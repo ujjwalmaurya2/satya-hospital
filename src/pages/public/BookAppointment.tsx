@@ -171,8 +171,8 @@ export const BookAppointment: React.FC = () => {
         
         {/* Breadcrumb / Headline */}
         <div className="space-y-2 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Baby className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-bold border border-[#BCE1F5]">
+            <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Pediatric &amp; Family Outpatient Scheduling</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#193247] tracking-tight">
@@ -185,14 +185,14 @@ export const BookAppointment: React.FC = () => {
 
         {/* Confirmation View */}
         {confirmedBooking ? (
-          <Card className="p-8 border-[#168C8C]/50 bg-white shadow-md animate-in fade-in duration-200">
+          <Card className="p-8 border-[#3DA9DF]/50 bg-white shadow-md animate-in fade-in duration-200">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
                 <CheckCircle2 className="w-10 h-10 stroke-[2.3]" />
               </div>
 
               <div className="space-y-1">
-                <Badge variant="teal" size="md">
+                <Badge variant="medical-blue" size="md">
                   Confirmed OPD Token #{confirmedBooking.tokenNumber}
                 </Badge>
                 <h2 className="text-2xl font-bold text-[#193247] pt-2">
@@ -223,13 +223,13 @@ export const BookAppointment: React.FC = () => {
                 </div>
                 <div className="flex justify-between py-1 pt-1.5">
                   <span className="text-[#647785]">Assigned Daily Token:</span>
-                  <span className="font-extrabold text-base text-[#168C8C]">Token #{confirmedBooking.tokenNumber}</span>
+                  <span className="font-extrabold text-base text-[#3DA9DF]">Token #{confirmedBooking.tokenNumber}</span>
                 </div>
               </div>
 
-              <div className="bg-[#E6F5EF] border border-[#C2EADE] p-4 rounded-xl text-xs text-[#0F6B56] text-left max-w-md w-full">
+              <div className="bg-[#EBF6FC] border border-[#BCE1F5] p-4 rounded-xl text-xs text-[#1E78A4] text-left max-w-md w-full">
                 <div className="font-bold mb-1 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-[#168C8C]" />
+                  <Clock className="w-4 h-4 text-[#3DA9DF]" />
                   <span>Next Steps for Consultation:</span>
                 </div>
                 <p className="leading-relaxed text-[11px]">
@@ -270,7 +270,7 @@ export const BookAppointment: React.FC = () => {
                     <h2 className="text-base font-bold text-[#193247]">
                       Appointment Scheduling &amp; Patient Details
                     </h2>
-                    <Badge variant="teal" size="sm">
+                    <Badge variant="medical-blue" size="sm">
                       Complimentary Online Token
                     </Badge>
                   </div>
@@ -300,7 +300,7 @@ export const BookAppointment: React.FC = () => {
                                 setSelectedDate(cutoffStatus.nextEligibleDate!);
                                 setErrorMsg(null);
                               }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#168C8C] text-white font-bold text-xs hover:bg-[#127272] transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3DA9DF] text-white font-bold text-xs hover:bg-[#2B92C4] transition-colors"
                             >
                               <span>Switch to Next Eligible Date ({cutoffStatus.nextEligibleDate})</span>
                               <ArrowRight className="w-3.5 h-3.5" />
@@ -321,7 +321,7 @@ export const BookAppointment: React.FC = () => {
                           onClick={() => setAppointmentType('pediatric')}
                           className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
                             appointmentType === 'pediatric'
-                              ? 'border-[#168C8C] bg-[#E6F5EF] text-[#168C8C]'
+                              ? 'border-[#3DA9DF] bg-[#EBF6FC] text-[#3DA9DF]'
                               : 'border-[#E5ECEF] text-[#647785] hover:bg-[#FCFDFB]'
                           }`}
                         >
@@ -333,7 +333,7 @@ export const BookAppointment: React.FC = () => {
                           onClick={() => setAppointmentType('newborn')}
                           className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
                             appointmentType === 'newborn'
-                              ? 'border-[#168C8C] bg-[#E6F5EF] text-[#168C8C]'
+                              ? 'border-[#91BB40] bg-[#F3F8EC] text-[#486812]'
                               : 'border-[#E5ECEF] text-[#647785] hover:bg-[#FCFDFB]'
                           }`}
                         >
@@ -345,7 +345,7 @@ export const BookAppointment: React.FC = () => {
                           onClick={() => setAppointmentType('general')}
                           className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
                             appointmentType === 'general'
-                              ? 'border-[#168C8C] bg-[#E6F5EF] text-[#168C8C]'
+                              ? 'border-[#3DA9DF] bg-[#EBF6FC] text-[#3DA9DF]'
                               : 'border-[#E5ECEF] text-[#647785] hover:bg-[#FCFDFB]'
                           }`}
                         >
@@ -369,7 +369,7 @@ export const BookAppointment: React.FC = () => {
                             setSelectedDate(e.target.value);
                             setErrorMsg(null);
                           }}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                           required
                         />
                         <span className="text-[11px] text-[#647785] mt-1 block">
@@ -384,7 +384,7 @@ export const BookAppointment: React.FC = () => {
                         <select
                           value={selectedDoctorId}
                           onChange={(e) => setSelectedDoctorId(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                         >
                           {doctors.map((doc) => (
                             <option key={doc.id} value={doc.id}>
@@ -411,7 +411,7 @@ export const BookAppointment: React.FC = () => {
                             placeholder="e.g. Aarav Sharma"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                             required
                           />
                         </div>
@@ -428,7 +428,7 @@ export const BookAppointment: React.FC = () => {
                             placeholder="e.g. Manoj Sharma (Father)"
                             value={guardianName}
                             onChange={(e) => setGuardianName(e.target.value)}
-                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                           />
                         </div>
                       </div>
@@ -448,7 +448,7 @@ export const BookAppointment: React.FC = () => {
                             placeholder="e.g. 9839123456"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                             required
                           />
                         </div>
@@ -461,7 +461,7 @@ export const BookAppointment: React.FC = () => {
                         <select
                           value={gender}
                           onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other')}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                         >
                           <option value="male">Male</option>
                           <option value="female">Female</option>
@@ -478,7 +478,7 @@ export const BookAppointment: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setAgeUnit('years')}
-                              className={`cursor-pointer ${ageUnit === 'years' ? 'text-[#168C8C] underline' : 'text-[#647785]'}`}
+                              className={`cursor-pointer ${ageUnit === 'years' ? 'text-[#3DA9DF] underline' : 'text-[#647785]'}`}
                             >
                               Years
                             </button>
@@ -486,7 +486,7 @@ export const BookAppointment: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setAgeUnit('months')}
-                              className={`cursor-pointer ${ageUnit === 'months' ? 'text-[#168C8C] underline' : 'text-[#647785]'}`}
+                              className={`cursor-pointer ${ageUnit === 'months' ? 'text-[#3DA9DF] underline' : 'text-[#647785]'}`}
                             >
                               Months
                             </button>
@@ -498,7 +498,7 @@ export const BookAppointment: React.FC = () => {
                           max={ageUnit === 'months' ? 24 : 120}
                           value={age}
                           onChange={(e) => setAge(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                           required
                         />
                       </div>
@@ -514,7 +514,7 @@ export const BookAppointment: React.FC = () => {
                         placeholder="e.g. Mild fever since yesterday, routine vaccination checkup..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                        className="w-full px-3.5 py-2 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                       />
                     </div>
 
@@ -525,13 +525,13 @@ export const BookAppointment: React.FC = () => {
                           type="checkbox"
                           checked={agreeTerms}
                           onChange={(e) => setAgreeTerms(e.target.checked)}
-                          className="mt-0.5 rounded border-[#CBD7DD] text-[#168C8C] focus:ring-[#168C8C]"
+                          className="mt-0.5 rounded border-[#CBD7DD] text-[#3DA9DF] focus:ring-[#3DA9DF]"
                         />
                         <span>
                           I confirm that the details provided are accurate and agree to Satya Hospital's{' '}
-                          <Link to="/terms-and-conditions" className="text-[#168C8C] underline font-medium">Terms &amp; Conditions</Link>{' '}
+                          <Link to="/terms-and-conditions" className="text-[#3DA9DF] underline font-medium">Terms &amp; Conditions</Link>{' '}
                           and{' '}
-                          <Link to="/privacy-policy" className="text-[#168C8C] underline font-medium">Privacy Policy</Link> (Digital Personal Data Protection Act compliant).
+                          <Link to="/privacy-policy" className="text-[#3DA9DF] underline font-medium">Privacy Policy</Link> (Digital Personal Data Protection Act compliant).
                         </span>
                       </label>
                     </div>
@@ -556,7 +556,7 @@ export const BookAppointment: React.FC = () => {
             <div className="lg:col-span-4 space-y-4">
               <Card className="p-5 border-[#CBD7DD] space-y-4 bg-white">
                 <h3 className="text-sm font-bold text-[#193247] flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#168C8C]" />
+                  <Clock className="w-4 h-4 text-[#3DA9DF]" />
                   <span>OPD Queue Guidelines</span>
                 </h3>
 
@@ -578,16 +578,16 @@ export const BookAppointment: React.FC = () => {
                 </div>
 
                 <div className="pt-2 border-t border-[#E5ECEF]">
-                  <div className="flex items-center gap-2 text-xs text-[#0F6B56]">
-                    <ShieldCheck className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <div className="flex items-center gap-2 text-xs text-[#486812]">
+                    <ShieldCheck className="w-4 h-4 text-[#91BB40] shrink-0" />
                     <span>No upfront online consultation fee is charged.</span>
                   </div>
                 </div>
               </Card>
 
-              <div className="bg-[#E6F5EF] p-4 rounded-2xl border border-[#C2EADE] text-xs text-[#0F6B56] space-y-2">
-                <div className="font-bold text-sm text-[#0F6B56] flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-[#168C8C]" />
+              <div className="bg-[#F3F8EC] p-4 rounded-2xl border border-[#D5E8BA] text-xs text-[#486812] space-y-2">
+                <div className="font-bold text-sm text-[#486812] flex items-center gap-1.5">
+                  <Info className="w-4 h-4 text-[#91BB40]" />
                   <span>Walk-In OPD Registrations</span>
                 </div>
                 <p className="leading-relaxed text-[11px] text-[#647785]">

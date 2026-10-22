@@ -30,8 +30,8 @@ export const Services: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Activity className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <Activity className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Clinical Disciplines &amp; Specialties</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
@@ -46,38 +46,38 @@ export const Services: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link 
             to="/pediatric-care"
-            className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#168C8C] shadow-xs hover:shadow-md transition-all flex items-center justify-between group"
+            className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex items-center justify-between group"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
+              <div className="w-11 h-11 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold">
                 <Baby className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#168C8C] transition-colors">
+                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
                   Dedicated Pediatric Care Wing
                 </h3>
                 <p className="text-xs text-[#647785]">Routine checkups, childhood illness, and growth tracking</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#168C8C] group-hover:translate-x-1 transition-transform shrink-0" />
+            <ArrowRight className="w-4 h-4 text-[#3DA9DF] group-hover:translate-x-1 transition-transform shrink-0" />
           </Link>
 
           <Link 
             to="/newborn-care"
-            className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#168C8C] shadow-xs hover:shadow-md transition-all flex items-center justify-between group"
+            className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex items-center justify-between group"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center font-bold">
+              <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#168C8C] transition-colors">
+                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
                   Newborn &amp; Infant Healthcare
                 </h3>
                 <p className="text-xs text-[#647785]">Postnatal assessments, lactation support, and baby wellness</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#168C8C] group-hover:translate-x-1 transition-transform shrink-0" />
+            <ArrowRight className="w-4 h-4 text-[#3DA9DF] group-hover:translate-x-1 transition-transform shrink-0" />
           </Link>
         </div>
 
@@ -87,7 +87,7 @@ export const Services: React.FC = () => {
             onClick={() => setSelectedDeptId('all')}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
               selectedDeptId === 'all'
-                ? 'bg-[#168C8C] text-white shadow-xs'
+                ? 'bg-[#3DA9DF] text-white shadow-xs'
                 : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
             }`}
           >
@@ -99,7 +99,7 @@ export const Services: React.FC = () => {
               onClick={() => setSelectedDeptId(dept.id)}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
                 selectedDeptId === dept.id
-                  ? 'bg-[#168C8C] text-white shadow-xs'
+                  ? 'bg-[#3DA9DF] text-white shadow-xs'
                   : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
               }`}
             >
@@ -111,21 +111,21 @@ export const Services: React.FC = () => {
         {/* Department Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filteredDepts.map((dept) => (
-            <Card key={dept.id} className="overflow-hidden border-[#CBD7DD] hover:border-[#168C8C]/50 transition-all duration-200 bg-white hover:shadow-md">
+            <Card key={dept.id} className="overflow-hidden border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all duration-200 bg-white hover:shadow-md">
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
+                    <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
                       <Stethoscope className="w-6 h-6" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-[#193247]">{dept.name}</h3>
-                      <span className="text-xs text-[#0F6B56] font-bold">
+                      <span className="text-xs text-[#486812] font-bold">
                         Outpatient Clinic Active
                       </span>
                     </div>
                   </div>
-                  <Badge variant="teal" size="sm" dot>
+                  <Badge variant="medical-blue" size="sm" dot>
                     Active
                   </Badge>
                 </div>

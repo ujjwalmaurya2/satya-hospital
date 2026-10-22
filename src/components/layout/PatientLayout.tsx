@@ -42,18 +42,18 @@ export const PatientLayout: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#168C8C] to-[#0E5C5C] flex items-center justify-center text-white shadow-2xs">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3DA9DF] to-[#2B92C4] flex items-center justify-center text-white shadow-2xs">
                 <Heart className="w-5 h-5" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-base font-extrabold text-[#193247] leading-none">Satya Hospital</h1>
-                <span className="text-[11px] font-bold text-[#168C8C] uppercase tracking-wide">Patient Portal</span>
+                <span className="text-[11px] font-bold text-[#3DA9DF] uppercase tracking-wide">Patient Portal</span>
               </div>
             </Link>
 
             {patientProfile && (
               <div className="ml-2 pl-3 border-l border-[#E5ECEF] flex items-center gap-2">
-                <Badge variant="teal" size="md">
+                <Badge variant="medical-blue" size="md">
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                   ID: {patientProfile.patientId}
                 </Badge>
@@ -70,7 +70,7 @@ export const PatientLayout: React.FC = () => {
 
             <button
               onClick={handleLogout}
-              className="p-2 text-[#647785] hover:text-red-600 hover:bg-[#E6F5EF] rounded-xl transition-colors cursor-pointer"
+              className="p-2 text-[#647785] hover:text-red-600 hover:bg-[#EBF6FC] rounded-xl transition-colors cursor-pointer"
               title="Sign Out"
               aria-label="Sign Out"
             >
@@ -90,7 +90,7 @@ export const PatientLayout: React.FC = () => {
                   to={tab.path}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-colors ${
                     active
-                      ? 'bg-[#E6F5EF] text-[#168C8C]'
+                      ? 'bg-[#EBF6FC] text-[#3DA9DF]'
                       : 'text-[#647785] hover:text-[#193247] hover:bg-[#FCFDFB]'
                   }`}
                 >
@@ -112,8 +112,8 @@ export const PatientLayout: React.FC = () => {
       <footer className="bg-white border-t border-[#E5ECEF] py-4 text-center text-xs text-[#647785]">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>&copy; {new Date().getFullYear()} Satya Hospital &amp; Pathology &bull; Civil Lines, Prayagraj</span>
-          <span className="flex items-center gap-1.5 text-[11px] text-[#0F6B56]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#168C8C]" />
+          <span className="flex items-center gap-1.5 text-[11px] text-[#486812]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#91BB40]" />
             DPDP Act Compliant Medical Record Protection
           </span>
         </div>

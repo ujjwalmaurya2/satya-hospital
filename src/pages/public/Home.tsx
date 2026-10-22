@@ -97,26 +97,26 @@ export const Home: React.FC = () => {
     {
       title: 'Child-Centred Care',
       desc: 'Gentle, low-stress examinations designed for young patients',
-      icon: <Baby className="w-5 h-5 text-[#168C8C]" />,
-      bg: 'bg-[#E6F5EF]'
+      icon: <Baby className="w-5 h-5 text-[#3DA9DF]" />,
+      bg: 'bg-[#EBF6FC]'
     },
     {
       title: 'Compassionate Medical Team',
       desc: 'Experienced consultants holding verified MD, MS & DNB degrees',
-      icon: <Stethoscope className="w-5 h-5 text-[#0E6E8C]" />,
-      bg: 'bg-[#DFF3FA]'
+      icon: <Stethoscope className="w-5 h-5 text-[#91BB40]" />,
+      bg: 'bg-[#F3F8EC]'
     },
     {
       title: 'Parent-Friendly Appointments',
       desc: 'Transparent sequential queue with convenient T-1 online booking',
-      icon: <Clock className="w-5 h-5 text-[#9A3412]" />,
-      bg: 'bg-[#FFF0E7]'
+      icon: <Clock className="w-5 h-5 text-[#3DA9DF]" />,
+      bg: 'bg-[#EBF6FC]'
     },
     {
       title: 'Diagnostic Services',
       desc: 'In-house certified laboratory with rapid MD pathologist verification',
-      icon: <Microscope className="w-5 h-5 text-[#168C8C]" />,
-      bg: 'bg-[#E6F5EF]'
+      icon: <Microscope className="w-5 h-5 text-[#91BB40]" />,
+      bg: 'bg-[#F3F8EC]'
     }
   ];
 
@@ -125,56 +125,56 @@ export const Home: React.FC = () => {
     {
       title: 'Pediatric Consultation',
       description: 'Comprehensive outpatient examinations for infant, toddler, and adolescent healthcare, addressing common illnesses, fever, and routine wellness.',
-      icon: <Baby className="w-6 h-6 text-[#168C8C]" />,
+      icon: <Baby className="w-6 h-6 text-[#3DA9DF]" />,
       badge: 'Daily OPD',
       link: '/pediatric-care',
-      accentBg: 'bg-[#E6F5EF]',
-      borderColor: 'hover:border-[#168C8C]/50'
+      accentBg: 'bg-[#EBF6FC]',
+      borderColor: 'hover:border-[#3DA9DF]/50'
     },
     {
       title: 'Newborn & Infant Care',
       description: 'Specialized checkups for babies up to 12 months, including reflex monitoring, weight velocity tracking, and gentle feeding guidance.',
-      icon: <Sparkles className="w-6 h-6 text-[#0E6E8C]" />,
+      icon: <Sparkles className="w-6 h-6 text-[#91BB40]" />,
       badge: 'Infant Wellness',
       link: '/newborn-care',
-      accentBg: 'bg-[#DFF3FA]',
-      borderColor: 'hover:border-[#0E6E8C]/50'
+      accentBg: 'bg-[#F3F8EC]',
+      borderColor: 'hover:border-[#91BB40]/50'
     },
     {
       title: 'Child Growth & Development',
       description: 'Regular developmental screenings tracking physical percentiles, cognitive milestones, and pediatric nutritional assessment.',
-      icon: <Activity className="w-6 h-6 text-[#9A3412]" />,
+      icon: <Activity className="w-6 h-6 text-[#3DA9DF]" />,
       badge: 'Developmental Roster',
       link: '/pediatric-care',
-      accentBg: 'bg-[#FFF0E7]',
-      borderColor: 'hover:border-[#9A3412]/50'
+      accentBg: 'bg-[#EBF6FC]',
+      borderColor: 'hover:border-[#3DA9DF]/50'
     },
     {
       title: 'Vaccination & Immunization',
       description: 'Adherence to certified national and standard immunization protocols with digital record-keeping and clear schedules for parents.',
-      icon: <ShieldCheck className="w-6 h-6 text-[#168C8C]" />,
+      icon: <ShieldCheck className="w-6 h-6 text-[#91BB40]" />,
       badge: 'Vaccine Roster',
       link: '/pediatric-care',
-      accentBg: 'bg-[#E6F5EF]',
-      borderColor: 'hover:border-[#168C8C]/50'
+      accentBg: 'bg-[#F3F8EC]',
+      borderColor: 'hover:border-[#91BB40]/50'
     },
     {
       title: 'Childhood Illness Consultation',
       description: 'Diagnosis and medical care for seasonal respiratory infections, childhood allergies, gastrointestinal colic, and childhood skin conditions.',
-      icon: <Heart className="w-6 h-6 text-[#0E6E8C]" />,
+      icon: <Heart className="w-6 h-6 text-[#3DA9DF]" />,
       badge: 'Clinical OPD',
       link: '/pediatric-care',
-      accentBg: 'bg-[#DFF3FA]',
-      borderColor: 'hover:border-[#0E6E8C]/50'
+      accentBg: 'bg-[#EBF6FC]',
+      borderColor: 'hover:border-[#3DA9DF]/50'
     },
     {
       title: 'Pathology & Diagnostic Tests',
       description: 'Child-friendly blood and urine diagnostic panels conducted in our in-house certified laboratory with two-step pathologist sign-off.',
-      icon: <Microscope className="w-6 h-6 text-[#9A3412]" />,
+      icon: <Microscope className="w-6 h-6 text-[#91BB40]" />,
       badge: 'In-House Lab',
       link: '/pathology-lab',
-      accentBg: 'bg-[#FFF0E7]',
-      borderColor: 'hover:border-[#9A3412]/50'
+      accentBg: 'bg-[#F3F8EC]',
+      borderColor: 'hover:border-[#91BB40]/50'
     }
   ];
 
@@ -208,10 +208,10 @@ export const Home: React.FC = () => {
       {/* =========================================================================
           1. PREMIUM CHILDCARE HERO SECTION
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#DFF3FA]/50 via-[#FCFDFB] to-[#FCFDFB] pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-[#E5ECEF]">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF6FC]/60 via-[#FCFDFB] to-[#FCFDFB] pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-[#E5ECEF]">
         {/* Subtle decorative background shapes */}
-        <div className="absolute top-0 right-1/4 w-[480px] h-[480px] bg-[#168C8C]/5 rounded-full blur-3xl pointer-events-none -z-10" />
-        <div className="absolute bottom-6 left-10 w-80 h-80 bg-[#E6F5EF] rounded-full blur-2xl pointer-events-none -z-10" />
+        <div className="absolute top-0 right-1/4 w-[480px] h-[480px] bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-6 left-10 w-80 h-80 bg-[#F3F8EC] rounded-full blur-2xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -224,15 +224,15 @@ export const Home: React.FC = () => {
               className="lg:col-span-6 space-y-5 text-center lg:text-left z-10"
             >
               {/* Trust Label */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#C2EADE] text-xs font-bold text-[#0F6B56] shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-[#168C8C] animate-pulse"></span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#D5E8BA] text-xs font-bold text-[#486812] shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-[#91BB40] animate-pulse"></span>
                 <span>Caring for Little Lives &bull; Satya Hospital Prayagraj</span>
               </div>
 
               {/* Main Headline */}
               <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-tight text-[#193247] leading-[1.18]">
                 Expert Care for Your Child. <br className="hidden sm:inline" />
-                <span className="text-[#168C8C]">Comfort for Your Family.</span>
+                <span className="text-[#3DA9DF]">Comfort for Your Family.</span>
               </h1>
 
               {/* Supporting Text */}
@@ -243,8 +243,8 @@ export const Home: React.FC = () => {
               {/* Operational Status Card */}
               <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#CBD7DD] shadow-xs max-w-lg mx-auto lg:mx-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#E6F5EF] flex items-center justify-center text-[#168C8C] shrink-0 border border-[#C2EADE]">
-                    <Clock className="w-4 h-4 text-[#168C8C]" />
+                  <div className="w-9 h-9 rounded-xl bg-[#EBF6FC] flex items-center justify-center text-[#3DA9DF] shrink-0 border border-[#BCE1F5]">
+                    <Clock className="w-4 h-4 text-[#3DA9DF]" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-[#193247]">Outpatient Consultation Hours</div>
@@ -277,7 +277,7 @@ export const Home: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="lg" 
-                    leftIcon={<PhoneCall className="w-5 h-5 text-[#168C8C]" />}
+                    leftIcon={<PhoneCall className="w-5 h-5 text-[#3DA9DF]" />}
                     className="w-full sm:w-auto font-semibold"
                   >
                     Call the Hospital
@@ -288,15 +288,15 @@ export const Home: React.FC = () => {
               {/* Small Tasteful Trust Element */}
               <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-medium text-[#647785]">
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
                   <span>Child-Friendly Consultation Space</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
                   <span>Sequential Fair Queue</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
                   <span>Civil Lines Campus</span>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export const Home: React.FC = () => {
 
                 {/* Top Badge: Verified Clinical Team */}
                 <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/70 text-[11px] font-bold text-[#193247] flex items-center gap-2 shadow-xs">
-                  <Heart className="w-3.5 h-3.5 text-[#168C8C]" />
+                  <Heart className="w-3.5 h-3.5 text-[#3DA9DF]" />
                   <span>Compassionate Care</span>
                 </div>
 
@@ -330,10 +330,10 @@ export const Home: React.FC = () => {
                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-white/60 text-[#193247] shadow-md space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-[#193247]">
-                      <span className="w-2 h-2 rounded-full bg-[#168C8C]"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#3DA9DF]"></span>
                       <span>Satya Hospital &amp; Pathology</span>
                     </span>
-                    <span className="text-[10px] text-[#0F6B56] font-bold bg-[#E6F5EF] px-2 py-0.5 rounded-full border border-[#C2EADE]">
+                    <span className="text-[10px] text-[#486812] font-bold bg-[#F3F8EC] px-2 py-0.5 rounded-full border border-[#D5E8BA]">
                       Pediatric Wing
                     </span>
                   </div>
@@ -352,7 +352,7 @@ export const Home: React.FC = () => {
           <div className="mt-8 sm:mt-12 bg-white rounded-2xl sm:rounded-3xl border border-[#CBD7DD] p-5 sm:p-6 shadow-xs relative z-20">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3.5 border-b border-[#E5ECEF] gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
                   <HeartPulse className="w-4 h-4" />
                 </div>
                 <div>
@@ -389,7 +389,7 @@ export const Home: React.FC = () => {
                           });
                       if (filtered.length > 0) setHeroDoctorId(filtered[0].id);
                     }}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                   >
                     <option value="all">All Departments ({departments.length})</option>
                     {departments.map((dept) => (
@@ -410,7 +410,7 @@ export const Home: React.FC = () => {
                   <select
                     value={heroDoctorId}
                     onChange={(e) => setHeroDoctorId(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                   >
                     {availableDoctorsForHero.map((doc) => (
                       <option key={doc.id} value={doc.id}>
@@ -432,7 +432,7 @@ export const Home: React.FC = () => {
                     min={getHospitalTodayDate()}
                     value={heroDate}
                     onChange={(e) => setHeroDate(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
                     required
                   />
                 </div>
@@ -462,7 +462,7 @@ export const Home: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setHeroDate(heroCutoffStatus.nextEligibleDate!)}
-                    className="text-[#168C8C] font-bold underline cursor-pointer"
+                    className="text-[#3DA9DF] font-bold underline cursor-pointer"
                   >
                     Switch to next eligible date ({heroCutoffStatus.nextEligibleDate}) &rarr;
                   </button>
@@ -482,7 +482,7 @@ export const Home: React.FC = () => {
           {trustStripItems.map((item, idx) => (
             <div 
               key={idx} 
-              className="bg-white p-5 rounded-2xl border border-[#E5ECEF] shadow-xs flex items-start gap-3.5 hover:border-[#168C8C]/40 transition-colors"
+              className="bg-white p-5 rounded-2xl border border-[#E5ECEF] shadow-xs flex items-start gap-3.5 hover:border-[#3DA9DF]/40 transition-colors"
             >
               <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
                 {item.icon}
@@ -504,8 +504,8 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold mb-2">
-              <Baby className="w-3.5 h-3.5 text-[#168C8C]" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-bold mb-2 border border-[#BCE1F5]">
+              <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
               <span>Pediatric &amp; Family Disciplines</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] tracking-tight">
@@ -516,7 +516,7 @@ export const Home: React.FC = () => {
             </p>
           </div>
           <Link to="/pediatric-care" className="shrink-0">
-            <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#168C8C]" />}>
+            <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
               Explore Pediatric Care Page
             </Button>
           </Link>
@@ -535,12 +535,12 @@ export const Home: React.FC = () => {
                   <div className={`w-12 h-12 rounded-xl ${service.accentBg} flex items-center justify-center shadow-2xs`}>
                     {service.icon}
                   </div>
-                  <Badge variant="teal" size="sm">
+                  <Badge variant={idx % 2 === 0 ? 'medical-blue' : 'lime-green'} size="sm">
                     {service.badge}
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#193247] group-hover:text-[#168C8C] transition-colors">
+                  <h3 className="text-base font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
                     {service.title}
                   </h3>
                   <p className="text-xs text-[#647785] mt-2 leading-relaxed">
@@ -550,7 +550,7 @@ export const Home: React.FC = () => {
               </div>
 
               <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
-                <Link to={service.link} className="text-xs font-bold text-[#168C8C] hover:text-[#127272] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                <Link to={service.link} className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   <span>Learn More</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -582,7 +582,7 @@ export const Home: React.FC = () => {
               />
               <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-white/60 text-xs text-[#193247] shadow-xs flex items-center justify-between">
                 <span className="font-bold flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#168C8C]" />
+                  <ShieldCheck className="w-4 h-4 text-[#91BB40]" />
                   <span>Civil Lines Campus</span>
                 </span>
                 <span className="text-[11px] text-[#647785]">Prayagraj, UP</span>
@@ -591,8 +591,8 @@ export const Home: React.FC = () => {
 
             {/* Content Column */}
             <div className="lg:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-                <Building2 className="w-3.5 h-3.5 text-[#168C8C]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] border border-[#D5E8BA] text-[#486812] text-xs font-bold">
+                <Building2 className="w-3.5 h-3.5 text-[#91BB40]" />
                 <span>About Satya Hospital &amp; Pathology</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] tracking-tight">
@@ -605,14 +605,14 @@ export const Home: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
                 <div className="p-3.5 rounded-xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-1">
                   <span className="font-bold text-[#193247] flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#168C8C]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
                     Hygienic Clinical Environment
                   </span>
                   <p className="text-[#647785] text-[11px]">Clean consultation rooms, sanitized infant examination areas, and low-stress waiting spaces.</p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-1">
                   <span className="font-bold text-[#193247] flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#168C8C]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40]" />
                     Fair Single Queue
                   </span>
                   <p className="text-[#647785] text-[11px]">Online appointments and walk-in patients are called strictly sequentially without skipping.</p>
@@ -626,7 +626,7 @@ export const Home: React.FC = () => {
                   </Button>
                 </Link>
                 <Link to="/facilities">
-                  <Button variant="ghost" size="sm" className="text-xs text-[#168C8C]">
+                  <Button variant="ghost" size="sm" className="text-xs text-[#3DA9DF]">
                     View Campus Facilities &rarr;
                   </Button>
                 </Link>
@@ -643,7 +643,7 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-[#168C8C] tracking-wider uppercase">
+            <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
               Medical Practitioners Directory
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] mt-1">
@@ -654,7 +654,7 @@ export const Home: React.FC = () => {
             </p>
           </div>
           <Link to="/doctors">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#168C8C]" />}>
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
               Full Doctor Roster ({doctors.length})
             </Button>
           </Link>
@@ -662,21 +662,21 @@ export const Home: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {doctors.map((doc) => (
-            <Card key={doc.id} className="p-6 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-all flex flex-col justify-between hover:shadow-md">
+            <Card key={doc.id} className="p-6 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-all flex flex-col justify-between hover:shadow-md">
               <div className="space-y-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#168C8C]/15 to-[#DFF3FA] flex items-center justify-center text-[#168C8C] font-bold text-base border border-[#C2EADE] shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#3DA9DF]/15 to-[#EBF6FC] flex items-center justify-center text-[#3DA9DF] font-bold text-base border border-[#BCE1F5] shrink-0">
                     {doc.fullName.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
-                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0F6B56] bg-[#E6F5EF] px-2 py-0.5 rounded-full mb-1">
-                      <BadgeCheck className="w-3 h-3 text-[#168C8C]" />
+                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#486812] bg-[#F3F8EC] border border-[#D5E8BA] px-2 py-0.5 rounded-full mb-1">
+                      <BadgeCheck className="w-3 h-3 text-[#91BB40]" />
                       <span>OPD Available</span>
                     </div>
                     <h3 className="text-sm font-bold text-[#193247] leading-snug">
                       {doc.fullName}
                     </h3>
-                    <p className="text-[11px] font-medium text-[#168C8C]">
+                    <p className="text-[11px] font-medium text-[#3DA9DF]">
                       {doc.designation}
                     </p>
                   </div>
@@ -716,21 +716,21 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          6. PATHOLOGY & DIAGNOSTIC LAB SECTION (SOFT BLUE & WHITE MEDICAL AESTHETIC)
+          6. PATHOLOGY & DIAGNOSTIC LAB SECTION (TITANITE GREEN & MEDICAL BLUE ACCENTS)
          ========================================================================= */}
-      <section className="bg-[#DFF3FA]/30 py-14 sm:py-18 border-y border-[#E5ECEF]">
+      <section className="bg-[#EBF6FC]/40 py-14 sm:py-18 border-y border-[#BCE1F5]/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
             <div className="lg:col-span-5 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#BCE1F5] text-[#0E6E8C] text-xs font-bold">
-                <Microscope className="w-3.5 h-3.5 text-[#168C8C]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D5E8BA] text-[#486812] text-xs font-bold shadow-2xs">
+                <Microscope className="w-3.5 h-3.5 text-[#91BB40]" />
                 <span>In-House Diagnostic Laboratory</span>
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] leading-tight">
                 Certified Clinical Pathology <br />
-                <span className="text-[#168C8C]">For Children &amp; Adults</span>
+                <span className="text-[#91BB40]">For Children &amp; Adults</span>
               </h2>
 
               <p className="text-xs sm:text-sm text-[#647785] leading-relaxed">
@@ -739,7 +739,7 @@ export const Home: React.FC = () => {
 
               <div className="space-y-3 pt-1 text-xs text-[#193247]">
                 <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
                   <div>
                     <strong className="block text-[#193247]">Gentle Pediatric Blood Draw:</strong>
                     <span className="text-[#647785]">Trained phlebotomists using fine micro-needles and supportive techniques to minimize child distress.</span>
@@ -747,10 +747,10 @@ export const Home: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
                   <div>
                     <strong className="block text-[#193247]">Two-Step Pathologist Sign-Off:</strong>
-                    <span className="text-[#667085]">Every report undergoes mandatory verification before publication to the secure Patient Portal.</span>
+                    <span className="text-[#647785]">Every report undergoes mandatory verification before publication to the secure Patient Portal.</span>
                   </div>
                 </div>
               </div>
@@ -762,7 +762,7 @@ export const Home: React.FC = () => {
                   </Button>
                 </Link>
                 <Link to="/patient/reports">
-                  <Button variant="outline" size="md" leftIcon={<FileText className="w-4 h-4 text-[#168C8C]" />}>
+                  <Button variant="outline" size="md" leftIcon={<FileText className="w-4 h-4 text-[#3DA9DF]" />}>
                     Access My Reports
                   </Button>
                 </Link>
@@ -773,7 +773,7 @@ export const Home: React.FC = () => {
               <div className="bg-white rounded-2xl border border-[#CBD7DD] shadow-sm divide-y divide-[#E5ECEF] overflow-hidden">
                 <div className="p-4 bg-[#FCFDFB] flex items-center justify-between border-b border-[#E5ECEF]">
                   <span className="text-xs font-bold text-[#193247] uppercase tracking-wider flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#168C8C]" />
+                    <Activity className="w-4 h-4 text-[#3DA9DF]" />
                     <span>Frequently Prescribed Diagnostic Panels</span>
                   </span>
                   <span className="text-[11px] text-[#647785]">Hospital In-House Rates</span>
@@ -784,7 +784,7 @@ export const Home: React.FC = () => {
                     <div className="space-y-0.5">
                       <div className="text-sm font-bold text-[#193247]">{test.name}</div>
                       <div className="text-xs text-[#647785] flex flex-wrap items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-[#E6F5EF] text-[10px] font-bold text-[#0F6B56]">
+                        <span className="px-2 py-0.5 rounded-md bg-[#F3F8EC] text-[10px] font-bold text-[#486812] border border-[#D5E8BA]">
                           {test.category}
                         </span>
                         <span>Specimen: {test.specimenType}</span>
@@ -793,7 +793,7 @@ export const Home: React.FC = () => {
 
                     <div className="text-right shrink-0 ml-4">
                       <div className="text-base font-extrabold text-[#193247]">₹{test.price}</div>
-                      <span className="text-[10px] text-[#0F6B56] font-bold bg-[#E6F5EF] px-2 py-0.5 rounded-full inline-block mt-0.5">
+                      <span className="text-[10px] text-[#486812] font-bold bg-[#F3F8EC] border border-[#D5E8BA] px-2 py-0.5 rounded-full inline-block mt-0.5">
                         Available Daily
                       </span>
                     </div>
@@ -802,7 +802,7 @@ export const Home: React.FC = () => {
 
                 <div className="p-3.5 bg-[#FCFDFB] text-center text-xs text-[#647785] flex items-center justify-center gap-2">
                   <span>Sample collection open daily from <strong>08:00 AM to 02:00 PM</strong>.</span>
-                  <Link to="/pathology-lab" className="text-[#168C8C] font-bold hover:underline">
+                  <Link to="/pathology-lab" className="text-[#3DA9DF] font-bold hover:underline">
                     View All ({pathologyTests.length}) Tests &rarr;
                   </Link>
                 </div>
@@ -818,8 +818,8 @@ export const Home: React.FC = () => {
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF0E7] text-[#9A3412] text-xs font-bold mb-2">
-            <Heart className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-bold mb-2 border border-[#BCE1F5]">
+            <Heart className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Parent Guidance</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] tracking-tight">
@@ -832,7 +832,7 @@ export const Home: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl border border-[#E5ECEF] shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
               1
             </div>
             <h3 className="text-base font-bold text-[#193247]">Preparing for Consultation</h3>
@@ -842,7 +842,7 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-[#E5ECEF] shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold">
               2
             </div>
             <h3 className="text-base font-bold text-[#193247]">Keeping Vaccine Records</h3>
@@ -852,7 +852,7 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-[#E5ECEF] shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FFF0E7] text-[#9A3412] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
               3
             </div>
             <h3 className="text-base font-bold text-[#193247]">Online Report Access</h3>
@@ -868,7 +868,7 @@ export const Home: React.FC = () => {
          ========================================================================= */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-10">
-          <span className="text-xs font-bold text-[#168C8C] tracking-wider uppercase">
+          <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
             Parent Support
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] mt-1">
@@ -894,10 +894,10 @@ export const Home: React.FC = () => {
                   aria-expanded={isOpen}
                 >
                   <span className="text-xs sm:text-sm font-bold text-[#193247] flex items-center gap-2.5">
-                    <HelpCircle className="w-4 h-4 text-[#168C8C] shrink-0" />
+                    <HelpCircle className="w-4 h-4 text-[#3DA9DF] shrink-0" />
                     <span>{item.q}</span>
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-[#647785] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-[#168C8C]' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-[#647785] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-[#3DA9DF]' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -929,7 +929,7 @@ export const Home: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
                 <Clock className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-[#193247]">OPD Consultation Hours</h3>
@@ -942,20 +942,20 @@ export const Home: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
                 <MapPin className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-[#193247]">Hospital Address</h3>
               <p className="text-xs text-[#647785] leading-relaxed">
                 {settings.address}
               </p>
-              <div className="text-xs text-[#168C8C] font-semibold">
+              <div className="text-xs text-[#3DA9DF] font-semibold">
                 Civil Lines campus with ramp and stroller accessibility.
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#FFF0E7] text-[#9A3412] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
                 <PhoneCall className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-[#193247]">Hospital Contacts</h3>
@@ -971,12 +971,12 @@ export const Home: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[#647785]">Emergency Hotline: </span>
-                  <a href={`tel:${settings.emergencyPhone.split(' ')[0]}`} className="text-[#9A3412] font-bold hover:underline">
+                  <a href={`tel:${settings.emergencyPhone.split(' ')[0]}`} className="text-amber-700 font-bold hover:underline">
                     {settings.emergencyPhone}
                   </a>
                 </div>
                 <div className="pt-2">
-                  <Link to="/contact" className="text-xs font-bold text-[#168C8C] hover:underline">
+                  <Link to="/contact" className="text-xs font-bold text-[#3DA9DF] hover:underline">
                     View Full Directions &amp; Inquiry Form &rarr;
                   </Link>
                 </div>

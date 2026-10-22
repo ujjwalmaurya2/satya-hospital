@@ -39,8 +39,8 @@ export const Pathology: React.FC = () => {
         
         {/* Header */}
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
-            <Microscope className="w-3.5 h-3.5 text-[#168C8C]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+            <Microscope className="w-3.5 h-3.5 text-[#3DA9DF]" />
             <span>Certified Diagnostic Laboratory &amp; Pathology &bull; Satya Hospital</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
@@ -62,7 +62,7 @@ export const Pathology: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center sm:text-left">
             <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-              <span className="w-7 h-7 rounded-full bg-[#168C8C] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
+              <span className="w-7 h-7 rounded-full bg-[#3DA9DF] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
                 1
               </span>
               <h3 className="text-sm font-bold text-[#193247]">Barcoded Phlebotomy</h3>
@@ -72,7 +72,7 @@ export const Pathology: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-              <span className="w-7 h-7 rounded-full bg-[#0E6E8C] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
+              <span className="w-7 h-7 rounded-full bg-[#91BB40] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
                 2
               </span>
               <h3 className="text-sm font-bold text-[#193247]">Automated Analysis</h3>
@@ -82,7 +82,7 @@ export const Pathology: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-              <span className="w-7 h-7 rounded-full bg-[#168C8C] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
+              <span className="w-7 h-7 rounded-full bg-[#3DA9DF] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
                 3
               </span>
               <h3 className="text-sm font-bold text-[#193247]">Pathologist Sign-Off</h3>
@@ -92,7 +92,7 @@ export const Pathology: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-              <span className="w-7 h-7 rounded-full bg-[#0E6E8C] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
+              <span className="w-7 h-7 rounded-full bg-[#91BB40] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
                 4
               </span>
               <h3 className="text-sm font-bold text-[#193247]">Secure PDF Access</h3>
@@ -119,7 +119,7 @@ export const Pathology: React.FC = () => {
                 placeholder="Search tests (e.g. CBC, TSH)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
+                className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
               />
             </div>
           </div>
@@ -132,7 +132,7 @@ export const Pathology: React.FC = () => {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-[#168C8C] text-white shadow-xs'
+                    ? 'bg-[#3DA9DF] text-white shadow-xs'
                     : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
                 }`}
               >
@@ -144,10 +144,10 @@ export const Pathology: React.FC = () => {
           {/* Test Cards List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTests.map((test) => (
-              <Card key={test.id} className="p-5 flex flex-col justify-between border-[#CBD7DD] hover:border-[#168C8C]/50 transition-colors bg-white hover:shadow-md">
+              <Card key={test.id} className="p-5 flex flex-col justify-between border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-colors bg-white hover:shadow-md">
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
-                    <Badge variant="teal" size="sm">
+                    <Badge variant="medical-blue" size="sm">
                       {test.category}
                     </Badge>
                     <span className="text-base font-extrabold text-[#193247]">
@@ -157,7 +157,7 @@ export const Pathology: React.FC = () => {
 
                   <div>
                     <h4 className="text-sm font-bold text-[#193247]">{test.name}</h4>
-                    <span className="text-[11px] font-bold text-[#168C8C] block mt-0.5">
+                    <span className="text-[11px] font-bold text-[#3DA9DF] block mt-0.5">
                       Code: {test.testCode}
                     </span>
                   </div>
@@ -181,8 +181,8 @@ export const Pathology: React.FC = () => {
                 </div>
 
                 <div className="pt-4 border-t border-[#E5ECEF] mt-4 flex items-center justify-between">
-                  <span className="text-[11px] text-[#0F6B56] font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#168C8C]" />
+                  <span className="text-[11px] text-[#486812] font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40]" />
                     Available Daily
                   </span>
                   <Link to="/book-appointment">
@@ -197,9 +197,9 @@ export const Pathology: React.FC = () => {
         </div>
 
         {/* Pathology Contact Strip */}
-        <div className="bg-[#DFF3FA]/50 border border-[#BCE1F5] p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-[#EBF6FC] border border-[#BCE1F5] p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#168C8C] text-white flex items-center justify-center shrink-0 font-bold">
+            <div className="w-11 h-11 rounded-2xl bg-[#3DA9DF] text-white flex items-center justify-center shrink-0 font-bold">
               <PhoneCall className="w-5 h-5" />
             </div>
             <div>
