@@ -115,22 +115,22 @@ export const Home: React.FC = () => {
     <div className="space-y-16 sm:space-y-24 pb-20 overflow-x-hidden">
 
       {/* =========================================================================
-          1. HERO SECTION WITH EMBEDDED APPOINTMENT BOOKING MODULE
+          1. HERO SECTION WITH SEAMLESSLY INTEGRATED HOSPITAL PHOTOGRAPH
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF6FC]/90 via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[#E1E8ED]">
-        {/* Subtle decorative background shapes */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
-        <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#91BB40]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF6FC] via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-14 sm:pt-12 sm:pb-20 border-b border-[#E1E8ED]">
+        {/* Subtle decorative background shapes matching brand colors */}
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#91BB40]/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* Left Content Column (7 cols on desktop) */}
+            {/* Left Content Column (6 cols on desktop) */}
             <motion.div 
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="lg:col-span-7 space-y-6 text-center lg:text-left"
+              className="lg:col-span-6 space-y-6 text-center lg:text-left z-10"
             >
               {/* Trust Badge Pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#BCE1F5] text-xs font-semibold text-[#1E78A4] shadow-xs">
@@ -151,7 +151,7 @@ export const Home: React.FC = () => {
               </p>
 
               {/* Operational Status Card */}
-              <div className="bg-white/90 backdrop-blur-sm p-4 rounded-xl border border-[#E1E8ED] shadow-xs max-w-lg mx-auto lg:mx-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+              <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-[#CBD5E1] shadow-xs max-w-lg mx-auto lg:mx-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-[#F3F8EC] flex items-center justify-center text-[#91BB40] shrink-0 border border-[#91BB40]/20">
                     <Clock className="w-5 h-5 text-[#688D23]" />
@@ -212,154 +212,190 @@ export const Home: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Right Column: Integrated Quick Appointment Module (5 cols on desktop) */}
+            {/* Right Column: Seamlessly Integrated Hospital Building Visual (6 cols on desktop) */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="lg:col-span-5"
+              initial={{ opacity: 0, scale: 0.98, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
+              className="lg:col-span-6 relative"
             >
-              <div className="bg-white rounded-2xl border border-[#CBD5E1] shadow-lg p-6 sm:p-7 relative overflow-hidden">
-                {/* Header of Quick Card */}
-                <div className="flex items-center justify-between pb-4 border-b border-[#E1E8ED]">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-[#3DA9DF]/10 text-[#3DA9DF] flex items-center justify-center">
-                      <HeartPulse className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-[#243447]">Quick OPD Reservation</h3>
-                      <p className="text-[11px] text-[#667085]">Reserve your token number in seconds</p>
-                    </div>
-                  </div>
-                  <Badge variant="medical-blue" size="sm">
-                    No Upfront Fee
-                  </Badge>
+              {/* Art-directed image container blending with background */}
+              <div className="relative rounded-3xl overflow-hidden shadow-xl shadow-[#243447]/10 border border-[#CBD5E1] bg-white group">
+                {/* Real Hospital Photograph */}
+                <img 
+                  src="/images/satya-hospital-building.jpg" 
+                  alt="Satya Hospital and Pathology Campus in Prayagraj" 
+                  className="w-full h-[320px] sm:h-[400px] lg:h-[440px] object-cover object-[55%_35%] transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  loading="eager"
+                />
+
+                {/* Ambient Tone Overlays & Edge Feathering */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#243447]/85 via-[#243447]/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#F4F8FA]/30 to-transparent pointer-events-none hidden lg:block" />
+
+                {/* Top-Right Campus Location Badge */}
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 text-[11px] font-bold text-[#243447] flex items-center gap-1.5 shadow-sm">
+                  <Building2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
+                  <span>Civil Lines Campus</span>
                 </div>
 
-                {/* Quick Booking Form */}
-                <form onSubmit={handleHeroBookingSubmit} className="pt-4 space-y-3.5 text-left text-xs">
-                  {/* Department Select */}
-                  <div>
-                    <label className="block font-semibold text-[#243447] mb-1">
-                      Select Department / Specialty
-                    </label>
-                    <div className="relative">
-                      <Building2 className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
-                      <select
-                        value={heroDeptId}
-                        onChange={(e) => {
-                          setHeroDeptId(e.target.value);
-                          const filtered = e.target.value === 'all' 
-                            ? doctors 
-                            : doctors.filter(d => {
-                                const dept = departments.find(dep => dep.id === e.target.value);
-                                return dept ? d.department.toLowerCase().includes(dept.name.toLowerCase().split(' ')[0]) : true;
-                              });
-                          if (filtered.length > 0) setHeroDoctorId(filtered[0].id);
-                        }}
-                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white"
-                      >
-                        <option value="all">All Departments (Show All Doctors)</option>
-                        {departments.map((dept) => (
-                          <option key={dept.id} value={dept.id}>
-                            {dept.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Doctor Select */}
-                  <div>
-                    <label className="block font-semibold text-[#243447] mb-1">
-                      Consulting Specialist
-                    </label>
-                    <div className="relative">
-                      <Stethoscope className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
-                      <select
-                        value={heroDoctorId}
-                        onChange={(e) => setHeroDoctorId(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white"
-                      >
-                        {availableDoctorsForHero.map((doc) => (
-                          <option key={doc.id} value={doc.id}>
-                            {doc.fullName} &bull; {doc.department}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Date Input */}
-                  <div>
-                    <label className="block font-semibold text-[#243447] mb-1">
-                      Intended Appointment Date
-                    </label>
-                    <div className="relative">
-                      <Calendar className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
-                      <input
-                        type="date"
-                        min={getHospitalTodayDate()}
-                        value={heroDate}
-                        onChange={(e) => setHeroDate(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white"
-                        required
-                      />
-                    </div>
-                    <span className="text-[10px] text-[#667085] mt-1 block">
-                      Booking opens 1 day prior &bull; Cutoff: 09:00 AM on appointment date
+                {/* Bottom Integrated Campus Info Strip */}
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 bg-[#243447]/90 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-white/15 text-white shadow-lg space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-white">
+                      <span className="w-2 h-2 rounded-full bg-[#91BB40] animate-pulse"></span>
+                      <span>Satya Hospital &amp; Pathology</span>
+                    </span>
+                    <span className="text-[10px] text-[#91BB40] font-semibold bg-[#91BB40]/20 px-2 py-0.5 rounded-full border border-[#91BB40]/30">
+                      Active Facility
                     </span>
                   </div>
-
-                  {/* Cutoff / Availability Status */}
-                  {!heroCutoffStatus.allowed && (
-                    <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] leading-snug">
-                      <div className="font-semibold flex items-center gap-1 mb-0.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                        <span>Online Slot Closed For Selected Date</span>
-                      </div>
-                      <p className="text-[10px] text-amber-700">{heroCutoffStatus.reason}</p>
-                      {heroCutoffStatus.nextEligibleDate && (
-                        <button
-                          type="button"
-                          onClick={() => setHeroDate(heroCutoffStatus.nextEligibleDate!)}
-                          className="mt-1 text-[11px] text-[#1E78A4] font-semibold underline block cursor-pointer"
-                        >
-                          Switch to next eligible date: {heroCutoffStatus.nextEligibleDate} &rarr;
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Submit Button */}
-                  <div className="pt-2">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="md"
-                      className="w-full font-semibold shadow-xs"
-                      disabled={!heroCutoffStatus.allowed}
-                      rightIcon={<ArrowRight className="w-4 h-4" />}
-                    >
-                      Continue with OPD Token Booking
-                    </Button>
-                  </div>
-                </form>
-
-                {/* Bottom Trust Signal */}
-                <div className="pt-3.5 mt-3 border-t border-[#E1E8ED] flex items-center justify-between text-[11px] text-[#667085]">
-                  <span className="flex items-center gap-1 text-[#243447] font-medium">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                    <span>Instant confirmation</span>
-                  </span>
-                  <Link to="/cancellation-policy" className="text-[#3DA9DF] hover:underline">
-                    OPD Queue Policy &rarr;
-                  </Link>
+                  <p className="text-[11px] text-white/80 leading-snug">
+                    Ground &amp; 1st Floor Specialist OPD &bull; NABL-Aligned Pathology Lab &bull; Civil Lines Road, Prayagraj
+                  </p>
                 </div>
               </div>
             </motion.div>
 
           </div>
+
+          {/* =========================================================================
+              HORIZONTAL QUICK OPD TOKEN RESERVATION MODULE
+             ========================================================================= */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mt-8 sm:mt-12 bg-white rounded-2xl sm:rounded-3xl border border-[#CBD5E1] p-5 sm:p-6 shadow-md shadow-[#243447]/5 relative z-20"
+          >
+            {/* Header of Quick Reservation Bar */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3.5 border-b border-[#E1E8ED] gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#3DA9DF]/10 text-[#3DA9DF] flex items-center justify-center">
+                  <HeartPulse className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#243447]">Quick OPD Token Reservation</h3>
+                  <p className="text-[11px] text-[#667085]">Reserve your sequential consultation token number online &bull; Zero upfront fee</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="lime-green" size="sm" dot>
+                  Intake Open
+                </Badge>
+                <Badge variant="medical-blue" size="sm">
+                  Complimentary Reservation
+                </Badge>
+              </div>
+            </div>
+
+            {/* Quick Booking Form */}
+            <form onSubmit={handleHeroBookingSubmit} className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs items-end">
+              {/* Department Select */}
+              <div>
+                <label className="block font-semibold text-[#243447] mb-1">
+                  1. Clinical Department
+                </label>
+                <div className="relative">
+                  <Building2 className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+                  <select
+                    value={heroDeptId}
+                    onChange={(e) => {
+                      setHeroDeptId(e.target.value);
+                      const filtered = e.target.value === 'all' 
+                        ? doctors 
+                        : doctors.filter(d => {
+                            const dept = departments.find(dep => dep.id === e.target.value);
+                            return dept ? d.department.toLowerCase().includes(dept.name.toLowerCase().split(' ')[0]) : true;
+                          });
+                      if (filtered.length > 0) setHeroDoctorId(filtered[0].id);
+                    }}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+                  >
+                    <option value="all">All Departments ({departments.length})</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Doctor Select */}
+              <div>
+                <label className="block font-semibold text-[#243447] mb-1">
+                  2. Consulting Doctor
+                </label>
+                <div className="relative">
+                  <Stethoscope className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+                  <select
+                    value={heroDoctorId}
+                    onChange={(e) => setHeroDoctorId(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+                  >
+                    {availableDoctorsForHero.map((doc) => (
+                      <option key={doc.id} value={doc.id}>
+                        {doc.fullName} ({doc.department.split(' ')[0]})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Date Input */}
+              <div>
+                <label className="block font-semibold text-[#243447] mb-1">
+                  3. Appointment Date
+                </label>
+                <div className="relative">
+                  <Calendar className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+                  <input
+                    type="date"
+                    min={getHospitalTodayDate()}
+                    value={heroDate}
+                    onChange={(e) => setHeroDate(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  className="w-full font-semibold shadow-xs justify-center py-2"
+                  disabled={!heroCutoffStatus.allowed}
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Continue Booking &rarr;
+                </Button>
+              </div>
+            </form>
+
+            {/* Cutoff / Availability Status Alert if applicable */}
+            {!heroCutoffStatus.allowed && (
+              <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span><strong>Online Booking Closed for Selected Date:</strong> {heroCutoffStatus.reason}</span>
+                </div>
+                {heroCutoffStatus.nextEligibleDate && (
+                  <button
+                    type="button"
+                    onClick={() => setHeroDate(heroCutoffStatus.nextEligibleDate!)}
+                    className="text-[#1E78A4] font-bold underline cursor-pointer"
+                  >
+                    Switch to next eligible date ({heroCutoffStatus.nextEligibleDate}) &rarr;
+                  </button>
+                )}
+              </div>
+            )}
+          </motion.div>
+
         </div>
       </section>
 

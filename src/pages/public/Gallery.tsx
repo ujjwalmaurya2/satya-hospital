@@ -29,9 +29,23 @@ export interface GalleryItem {
   gradient: string;
   accentColor: string;
   icon: React.ReactNode;
+  imageSrc?: string;
 }
 
 export const hospitalGalleryItems: GalleryItem[] = [
+  {
+    id: 'gal-campus',
+    title: 'Satya Hospital & Pathology Main Campus',
+    category: 'reception',
+    categoryLabel: 'Hospital Campus',
+    roomInfo: 'Civil Lines Road, Prayagraj',
+    description: 'Exterior view of Satya Hospital & Pathology showing the multi-storey clinical facility, ground-floor reception, step-free patient ramp, and outpatient consultation suites.',
+    equipment: ['Step-free Ramp Access', 'Ground Floor Emergency Intake', 'Ambulance & Patient Drop-off'],
+    gradient: 'from-[#3DA9DF]/20 to-[#1E78A4]/15',
+    accentColor: '#3DA9DF',
+    icon: <Building className="w-10 h-10 text-[#3DA9DF]" />,
+    imageSrc: '/images/satya-hospital-building.jpg',
+  },
   {
     id: 'gal-1',
     title: 'Consultation Suite - General Medicine',
@@ -212,25 +226,47 @@ export const Gallery: React.FC = () => {
             className="group cursor-pointer bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
             onClick={() => setActiveLightboxIndex(index)}
           >
-            {/* Visual Header / Graphic Card */}
-            <div className={`h-44 bg-gradient-to-br ${item.gradient} p-5 flex flex-col justify-between relative overflow-hidden`}>
-              <div className="flex justify-between items-start z-10">
-                <Badge variant="medical-blue" size="sm" className="bg-white/90 backdrop-blur-xs">
-                  {item.categoryLabel}
-                </Badge>
-                <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#243447] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
-                  <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+            {/* Visual Header / Graphic Card or Real Photo */}
+            {item.imageSrc ? (
+              <div className="h-44 relative overflow-hidden bg-slate-100">
+                <img 
+                  src={item.imageSrc} 
+                  alt={item.title} 
+                  className="w-full h-full object-cover object-[55%_35%] group-hover:scale-105 transition-transform duration-500" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#243447]/80 via-transparent to-black/20" />
+                <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+                  <Badge variant="medical-blue" size="sm" className="bg-white/95 backdrop-blur-xs">
+                    {item.categoryLabel}
+                  </Badge>
+                  <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#243447] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
+                    <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+                  </div>
+                </div>
+                <div className="absolute bottom-3 left-3 text-[11px] font-semibold text-white bg-[#243447]/80 backdrop-blur-xs px-2.5 py-1 rounded-md">
+                  {item.roomInfo}
                 </div>
               </div>
+            ) : (
+              <div className={`h-44 bg-gradient-to-br ${item.gradient} p-5 flex flex-col justify-between relative overflow-hidden`}>
+                <div className="flex justify-between items-start z-10">
+                  <Badge variant="medical-blue" size="sm" className="bg-white/90 backdrop-blur-xs">
+                    {item.categoryLabel}
+                  </Badge>
+                  <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#243447] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
+                    <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+                  </div>
+                </div>
 
-              <div className="flex items-center justify-center py-2 z-10 group-hover:scale-110 transition-transform duration-300">
-                {item.icon}
-              </div>
+                <div className="flex items-center justify-center py-2 z-10 group-hover:scale-110 transition-transform duration-300">
+                  {item.icon}
+                </div>
 
-              <div className="text-[11px] font-semibold text-[#243447] z-10 bg-white/70 backdrop-blur-xs px-2.5 py-1 rounded-md inline-block w-fit">
-                {item.roomInfo}
+                <div className="text-[11px] font-semibold text-[#243447] z-10 bg-white/70 backdrop-blur-xs px-2.5 py-1 rounded-md inline-block w-fit">
+                  {item.roomInfo}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Info Body */}
             <div className="p-5 space-y-3">
@@ -278,22 +314,41 @@ export const Gallery: React.FC = () => {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Graphic Banner */}
-              <div className={`h-56 sm:h-64 bg-gradient-to-br ${activeItem.gradient} p-8 flex flex-col justify-between relative`}>
-                <Badge variant="medical-blue" size="sm" className="w-fit bg-white shadow-xs">
-                  {activeItem.categoryLabel}
-                </Badge>
-
-                <div className="flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-2xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                    {activeItem.icon}
+              {/* Graphic Banner or Photo */}
+              {activeItem.imageSrc ? (
+                <div className="h-64 sm:h-80 relative overflow-hidden bg-slate-900">
+                  <img 
+                    src={activeItem.imageSrc} 
+                    alt={activeItem.title} 
+                    className="w-full h-full object-cover object-[55%_35%]" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#243447]/85 via-transparent to-black/20" />
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge variant="medical-blue" size="sm" className="bg-white/95">
+                      {activeItem.categoryLabel}
+                    </Badge>
+                  </div>
+                  <div className="absolute bottom-4 left-4 text-xs font-bold text-white bg-[#243447]/80 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-white/10">
+                    {activeItem.roomInfo}
                   </div>
                 </div>
+              ) : (
+                <div className={`h-56 sm:h-64 bg-gradient-to-br ${activeItem.gradient} p-8 flex flex-col justify-between relative`}>
+                  <Badge variant="medical-blue" size="sm" className="w-fit bg-white shadow-xs">
+                    {activeItem.categoryLabel}
+                  </Badge>
 
-                <div className="text-xs font-bold text-[#243447] bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-lg w-fit shadow-xs">
-                  {activeItem.roomInfo}
+                  <div className="flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                      {activeItem.icon}
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-bold text-[#243447] bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-lg w-fit shadow-xs">
+                    {activeItem.roomInfo}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Modal Content */}
               <div className="p-6 sm:p-8 space-y-5">

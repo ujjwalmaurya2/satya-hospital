@@ -33,6 +33,34 @@ export const About: React.FC = () => {
         </p>
       </div>
 
+      {/* Hospital Campus Visual Banner */}
+      <div className="relative rounded-3xl overflow-hidden border border-[#CBD5E1] shadow-lg">
+        <img 
+          src="/images/satya-hospital-building.jpg" 
+          alt="Satya Hospital Campus in Prayagraj" 
+          className="w-full h-64 sm:h-80 lg:h-96 object-cover object-[55%_35%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#243447]/85 via-transparent to-black/20" />
+        <div className="absolute bottom-6 left-6 right-6 text-white flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <span className="text-[11px] font-bold tracking-wider uppercase text-[#91BB40] block mb-1">
+              Civil Lines Campus &bull; Prayagraj
+            </span>
+            <h2 className="text-xl sm:text-2xl font-bold">
+              Satya Hospital &amp; Pathology Facility
+            </h2>
+            <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
+              Equipped with modern outpatient chambers, calibrated auto-analyzers, and patient ramp access.
+            </p>
+          </div>
+          <Link to="/facilities">
+            <Button variant="accent" size="sm" className="font-semibold shrink-0">
+              Explore Facilities &rarr;
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* Hospital Identity & Founding Principles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6 space-y-3 border-[#CBD5E1]">
