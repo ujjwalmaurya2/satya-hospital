@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { 
   Calendar, 
   Clock, 
@@ -31,6 +31,10 @@ export const BookAppointment: React.FC = () => {
   const { settings, doctors, registerPatient, bookOnlineAppointment, searchPatients } = useHospital();
   const { user, patientProfile } = useAuth();
 
+  const [searchParams] = useSearchParams();
+  const qDoctor = searchParams.get('doctor');
+  const qDate = searchParams.get('date');
+
   const todayStr = getHospitalTodayDate();
   const nextEligibleDate = getNextEligibleOpdDate({
     cutoffTimeStr: settings.onlineCutoffTime,
@@ -38,9 +42,12 @@ export const BookAppointment: React.FC = () => {
     holidays: settings.holidays,
   });
 
-  // Form State - default to next eligible date so patients after 9 AM don't hit a closed form
-  const [selectedDate, setSelectedDate] = useState<string>(nextEligibleDate);
-  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(doctors[0]?.id || '');
+  const initialDocId = qDoctor && doctors.some(d => d.id === qDoctor) ? qDoctor : (doctors[0]?.id || '');
+  const initialDate = qDate || nextEligibleDate;
+
+  // Form State - default to next eligible date or URL preselected query
+  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(initialDocId);
   const [fullName, setFullName] = useState<string>(patientProfile?.fullName || user?.fullName || '');
   const [phone, setPhone] = useState<string>(patientProfile?.phone || user?.phone || '');
   const [gender, setGender] = useState<'male' | 'female' | 'other'>(patientProfile?.gender || 'male');

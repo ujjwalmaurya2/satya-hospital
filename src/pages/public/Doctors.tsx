@@ -95,9 +95,9 @@ export const Doctors: React.FC = () => {
             </div>
 
             <div className="p-4 bg-[#F8FAFC] border-t border-[#E1E8ED] flex items-center justify-between">
-              <Link to="/book-appointment" className="w-full">
+              <Link to={`/book-appointment?doctor=${doc.id}`} className="w-full">
                 <Button variant="primary" size="sm" className="w-full" leftIcon={<Calendar className="w-4 h-4" />}>
-                  Book with {doc.fullName.split(' ')[1] || 'Doctor'}
+                  Book Consultation with {doc.fullName.split(' ')[1] || 'Doctor'}
                 </Button>
               </Link>
             </div>
