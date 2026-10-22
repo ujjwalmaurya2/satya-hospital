@@ -41,40 +41,40 @@ export const PatientReports: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#243447]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#193247]">
             Diagnostic Pathology Reports
           </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
+          <p className="text-xs text-[#647785] mt-0.5">
             Certified laboratory reports verified by Satya Hospital pathologists.
           </p>
         </div>
 
         {/* Search */}
         <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#647785] absolute left-3 top-2.5 pointer-events-none" />
           <input
             type="text"
             placeholder="Search test or accession..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#CBD5E1] text-xs bg-white shadow-2xs"
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-teal-100 text-xs bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#168C8C]"
           />
         </div>
       </div>
 
       {/* Clinical Disclaimer */}
-      <div className="bg-[#EBF6FC] border border-[#BCE1F5] p-4 rounded-xl text-xs text-[#1E78A4] flex items-start gap-2.5">
-        <AlertCircle className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
+      <div className="bg-[#DFF3FA]/50 border border-teal-200/60 p-4 rounded-2xl text-xs text-[#193247] flex items-start gap-2.5 shadow-xs">
+        <AlertCircle className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
         <div>
-          <strong className="block mb-0.5">Clinical Review Notice:</strong>
+          <strong className="block mb-0.5 text-[#193247]">Clinical Review Notice:</strong>
           Diagnostic laboratory values should always be interpreted by your consulting physician in conjunction with clinical symptoms. Self-interpreting reference values without clinical context is not advised.
         </div>
       </div>
 
-      <Card>
-        <CardBody className="p-0 divide-y divide-[#E1E8ED]">
+      <Card className="rounded-2xl border-teal-100 shadow-xs">
+        <CardBody className="p-0 divide-y divide-slate-100">
           {filteredReports.length === 0 ? (
-            <div className="p-8 text-center text-xs text-[#667085]">
+            <div className="p-8 text-center text-xs text-[#647785]">
               No matching diagnostic reports found for your account.
             </div>
           ) : (
@@ -83,13 +83,13 @@ export const PatientReports: React.FC = () => {
               const isSuperseded = report.status === 'superseded';
 
               return (
-                <div key={report.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-[#F8FAFC]">
+                <div key={report.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-[#FCFDFB] transition-colors">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <Badge variant={isPublished ? 'lime-green' : isSuperseded ? 'warning' : 'neutral'} size="sm" dot>
+                      <Badge variant={isPublished ? 'teal' : isSuperseded ? 'warning' : 'neutral'} size="sm" dot>
                         {report.status.replace('_', ' ').toUpperCase()}
                       </Badge>
-                      <span className="text-sm font-bold text-[#243447]">
+                      <span className="text-sm font-bold text-[#193247]">
                         {report.testName}
                       </span>
                       {report.versionNumber > 1 && (
@@ -99,11 +99,11 @@ export const PatientReports: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="text-xs text-[#667085] flex flex-wrap items-center gap-2">
-                      <span>Lab Accession: <strong className="text-[#243447]">{report.labAccessionNumber}</strong></span>
+                    <div className="text-xs text-[#647785] flex flex-wrap items-center gap-2">
+                      <span>Lab Accession: <strong className="text-[#193247]">{report.labAccessionNumber}</strong></span>
                       <span>&bull; Date: {report.reportDate}</span>
                       {report.verifierName && (
-                        <span>&bull; Certified By: <strong className="text-[#243447]">{report.verifierName}</strong></span>
+                        <span>&bull; Certified By: <strong className="text-[#193247]">{report.verifierName}</strong></span>
                       )}
                     </div>
 
@@ -125,7 +125,7 @@ export const PatientReports: React.FC = () => {
                         Download PDF
                       </Button>
                     ) : (
-                      <span className="text-xs text-[#667085] italic">
+                      <span className="text-xs text-[#647785] italic">
                         Under Laboratory Verification
                       </span>
                     )}

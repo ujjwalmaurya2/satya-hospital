@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  /* Satya Hospital Core Brand Colors */
-  --sh-medical-blue: #3DA9DF;
-  --sh-medical-blue-hover: #2b98ce;
-  --sh-medical-blue-light: #EBF6FC;
-  --sh-lime-green: #91BB40;
-  --sh-lime-green-hover: #7fa435;
-  --sh-lime-green-light: #F3F8EC;
-  
-  /* Neutral & Canvas */
+  /* Satya Hospital Pediatric & Family Healthcare Brand Colors */
+  --sh-primary-teal: #168C8C;
+  --sh-primary-teal-hover: #127272;
+  --sh-primary-teal-active: #0E5C5C;
+  --sh-primary-teal-light: #E6F5EF;
+  --sh-primary-teal-subtle: #F0FAF6;
+
+  /* Secondary & Accents */
+  --sh-sky-blue: #DFF3FA;
+  --sh-sky-blue-hover: #cbeaf5;
+  --sh-sky-blue-text: #0E6E8C;
+  --sh-soft-mint: #E6F5EF;
+  --sh-soft-mint-border: #C2EADE;
+  --sh-gentle-peach: #FFF0E7;
+  --sh-gentle-peach-border: #FCD5C1;
+  --sh-gentle-peach-text: #9A3412;
+
+  /* Canvas & Backgrounds */
   --sh-white: #FFFFFF;
-  --sh-canvas: #F4F8FA;
-  --sh-canvas-subtle: #EEF4F7;
-  --sh-border: #E1E8ED;
-  --sh-border-strong: #CBD5E1;
-  
+  --sh-canvas: #FCFDFB; /* Warm White */
+  --sh-canvas-subtle: #F4F8FA;
+  --sh-border: #E5ECEF;
+  --sh-border-strong: #CBD7DD;
+
+  /* Legacy aliases for backward compatibility */
+  --sh-medical-blue: #168C8C;
+  --sh-medical-blue-hover: #127272;
+  --sh-medical-blue-light: #E6F5EF;
+  --sh-lime-green: #168C8C;
+  --sh-lime-green-hover: #127272;
+  --sh-lime-green-light: #DFF3FA;
+
   /* Typography Colors */
-  --sh-navy-text: #243447;
-  --sh-navy-headings: #192635;
-  --sh-muted-text: #667085;
-  --sh-subtle-text: #8E9BAE;
+  --sh-navy-text: #193247;
+  --sh-navy-headings: #112332;
+  --sh-muted-text: #647785;
+  --sh-subtle-text: #8E9CA8;
 
   /* Status Tokens */
   --sh-status-success: #15803D;
@@ -29,13 +46,13 @@
   --sh-status-warning-bg: #FEF3C7;
   --sh-status-danger: #B91C1C;
   --sh-status-danger-bg: #FEE2E2;
-  --sh-status-info: #0284C7;
-  --sh-status-info-bg: #E0F2FE;
+  --sh-status-info: #168C8C;
+  --sh-status-info-bg: #DFF3FA;
 
-  /* Shadows */
-  --sh-shadow-sm: 0 1px 2px 0 rgba(36, 52, 71, 0.05);
-  --sh-shadow-md: 0 4px 6px -1px rgba(36, 52, 71, 0.07), 0 2px 4px -2px rgba(36, 52, 71, 0.05);
-  --sh-shadow-lg: 0 10px 15px -3px rgba(36, 52, 71, 0.08), 0 4px 6px -4px rgba(36, 52, 71, 0.04);
+  /* Shadows - Soft, Warm & Diffused */
+  --sh-shadow-sm: 0 1px 2px 0 rgba(25, 50, 71, 0.04);
+  --sh-shadow-md: 0 4px 6px -1px rgba(25, 50, 71, 0.06), 0 2px 4px -2px rgba(25, 50, 71, 0.03);
+  --sh-shadow-lg: 0 10px 20px -3px rgba(25, 50, 71, 0.07), 0 4px 6px -4px rgba(25, 50, 71, 0.03);
 }
 
 body {
@@ -48,7 +65,7 @@ body {
 
 /* Accessible focus ring */
 :focus-visible {
-  outline: 2px solid var(--sh-medical-blue);
+  outline: 2px solid var(--sh-primary-teal);
   outline-offset: 2px;
 }
 

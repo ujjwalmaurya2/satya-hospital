@@ -4,11 +4,12 @@ import {
   User, 
   ShieldCheck, 
   ArrowRight, 
-  Activity, 
+  Heart, 
   Lock, 
   Calendar,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Baby
 } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -61,22 +62,22 @@ export const PatientLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#FCFDFB]">
       <div className="max-w-md w-full space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-[#3DA9DF] text-white flex items-center justify-center mx-auto shadow-sm">
-            <Activity className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#168C8C] to-[#0E5C5C] text-white flex items-center justify-center mx-auto shadow-sm">
+            <Heart className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold text-[#243447]">
-            Satya Hospital Patient Portal
+          <h1 className="text-2xl font-extrabold text-[#193247] tracking-tight">
+            Patient &amp; Family Portal
           </h1>
-          <p className="text-xs text-[#667085]">
-            Access your verified OPD appointments, diagnostic pathology reports, and doctor prescriptions.
+          <p className="text-xs text-[#647785] max-w-sm mx-auto">
+            Access your child's OPD appointments, vaccination records, and certified pathology reports.
           </p>
         </div>
 
-        <Card>
+        <Card className="border-[#CBD7DD] bg-white shadow-xs">
           <CardBody className="space-y-6 p-6 sm:p-8">
             {errorMsg && (
               <Alert type="error" title="Sign In Notice">
@@ -89,7 +90,7 @@ export const PatientLogin: React.FC = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full border-[#CBD5E1] hover:bg-[#F8FAFC] flex items-center justify-center gap-3 font-semibold text-sm"
+                className="w-full border-[#CBD7DD] hover:bg-[#FCFDFB] flex items-center justify-center gap-3 font-bold text-sm"
                 onClick={handleGoogleLogin}
                 isLoading={isLoading}
               >
@@ -113,34 +114,34 @@ export const PatientLogin: React.FC = () => {
                 </svg>
                 <span>Continue with Google</span>
               </Button>
-              <p className="text-[11px] text-[#667085] text-center">
+              <p className="text-[11px] text-[#647785] text-center">
                 Secure patient login powered by Supabase Auth (No password required).
               </p>
             </div>
 
             <div className="relative flex py-2 items-center">
-              <div className="grow border-t border-[#E1E8ED]"></div>
-              <span className="shrink mx-3 text-xs text-[#667085] uppercase tracking-wider font-medium">Or</span>
-              <div className="grow border-t border-[#E1E8ED]"></div>
+              <div className="grow border-t border-[#E5ECEF]"></div>
+              <span className="shrink mx-3 text-xs text-[#647785] uppercase tracking-wider font-semibold">Or</span>
+              <div className="grow border-t border-[#E5ECEF]"></div>
             </div>
 
             {/* Direct Patient ID Access */}
             <form onSubmit={handlePatientIdLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#243447] mb-1.5">
+                <label className="block text-xs font-bold text-[#193247] mb-1.5">
                   Sign In with Hospital Patient ID
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-[#667085] absolute left-3 top-3 pointer-events-none" />
+                  <User className="w-4 h-4 text-[#647785] absolute left-3 top-3 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="e.g. SH-2026-00001"
                     value={patientIdInput}
                     onChange={(e) => setPatientIdInput(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-[#CBD5E1] text-xs text-[#243447] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs uppercase"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs uppercase font-medium"
                   />
                 </div>
-                <span className="text-[11px] text-[#667085] mt-1 block">
+                <span className="text-[11px] text-[#647785] mt-1 block">
                   Found on your printed OPD slip, laboratory receipt, or prescription header.
                 </span>
               </div>
@@ -149,16 +150,16 @@ export const PatientLogin: React.FC = () => {
                 type="submit"
                 variant="primary"
                 size="md"
-                className="w-full font-semibold"
+                className="w-full font-bold shadow-xs hover:shadow-md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
                 Access Patient Records
               </Button>
             </form>
 
-            {/* Quick Demo Patients for seamless tester / client review */}
-            <div className="pt-4 border-t border-[#E1E8ED] space-y-2">
-              <span className="text-[11px] font-semibold text-[#667085] block">
+            {/* Quick Demo Patients for seamless review */}
+            <div className="pt-4 border-t border-[#E5ECEF] space-y-2">
+              <span className="text-[11px] font-bold text-[#647785] block">
                 Quick Demo Accounts (Pre-registered Patients):
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -170,7 +171,7 @@ export const PatientLogin: React.FC = () => {
                       loginAsPatient(p.patientId);
                       navigate('/patient/dashboard');
                     }}
-                    className="px-2 py-1 rounded bg-[#F8FAFC] border border-[#CBD5E1] hover:border-[#3DA9DF] hover:bg-[#EBF6FC] text-[11px] text-[#243447] font-medium transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-[#FCFDFB] border border-[#CBD7DD] hover:border-[#168C8C] hover:bg-[#E6F5EF] text-[11px] text-[#193247] font-semibold transition-colors cursor-pointer"
                   >
                     {p.fullName.split(' ')[0]} ({p.patientId})
                   </button>
@@ -178,9 +179,9 @@ export const PatientLogin: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 text-center text-xs text-[#667085]">
+            <div className="pt-2 text-center text-xs text-[#647785]">
               New to Satya Hospital?{' '}
-              <Link to="/book-appointment" className="text-[#3DA9DF] font-semibold hover:underline">
+              <Link to="/book-appointment" className="text-[#168C8C] font-bold hover:underline">
                 Book an OPD Appointment
               </Link>{' '}
               to automatically receive your Hospital Patient ID.
@@ -189,9 +190,9 @@ export const PatientLogin: React.FC = () => {
         </Card>
 
         {/* Security Assurance */}
-        <div className="flex items-center justify-center gap-2 text-xs text-[#667085]">
-          <ShieldCheck className="w-4 h-4 text-[#91BB40]" />
-          <span>DPDP Act 2023 Compliant &bull; End-to-end encrypted storage</span>
+        <div className="flex items-center justify-center gap-2 text-xs text-[#0F6B56]">
+          <ShieldCheck className="w-4 h-4 text-[#168C8C]" />
+          <span>DPDP Act 2023 Compliant &bull; End-to-end encrypted medical record storage</span>
         </div>
       </div>
     </div>

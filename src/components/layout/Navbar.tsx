@@ -8,10 +8,9 @@ import {
   ShieldAlert, 
   Clock, 
   PhoneCall, 
-  ChevronRight,
   ChevronDown,
-  Activity,
-  HeartPulse,
+  Heart,
+  Baby,
   Microscope,
   Stethoscope,
   Building2,
@@ -19,7 +18,9 @@ import {
   Milestone,
   Images,
   MessageSquareQuote,
-  Newspaper
+  Newspaper,
+  Phone,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../common/Button';
@@ -28,7 +29,6 @@ import { useHospital } from '../../context/HospitalContext';
 
 export interface NavItem {
   label: string;
-  shortLabel?: string;
   path: string;
   icon: React.ReactNode;
 }
@@ -44,7 +44,7 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 15);
+      setScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -67,25 +67,27 @@ export const Navbar: React.FC = () => {
     setMoreDropdownOpen(false);
   }, [location.pathname]);
 
-  // All 11 dedicated multi-page sections requested
-  const allNavLinks: NavItem[] = [
-    { label: 'Home', path: '/', icon: <HeartPulse className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'About', path: '/about', icon: <Building2 className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Doctors', path: '/doctors', icon: <Stethoscope className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Services', path: '/services', icon: <Activity className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Doctor, Pathology & Lab', shortLabel: 'Pathology & Lab', path: '/pathology-lab', icon: <Microscope className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Journey', path: '/journey', icon: <Milestone className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Facilities', path: '/facilities', icon: <Building className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Gallery', path: '/gallery', icon: <Images className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Testimonials', path: '/testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'News & Updates', shortLabel: 'News', path: '/news', icon: <Newspaper className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Contact', path: '/contact', icon: <PhoneCall className="w-4 h-4 text-[#3DA9DF]" /> },
+  // Primary navigation items requested in Childcare UI Spec
+  const primaryNavItems: NavItem[] = [
+    { label: 'Home', path: '/', icon: <Heart className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'About Us', path: '/about', icon: <Building2 className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Pediatric Care', path: '/pediatric-care', icon: <Baby className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Newborn Care', path: '/newborn-care', icon: <Sparkles className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Pathology & Diagnostics', path: '/pathology-lab', icon: <Microscope className="w-4 h-4 text-[#0E6E8C]" /> },
+    { label: 'Appointments', path: '/book-appointment', icon: <Calendar className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Contact', path: '/contact', icon: <PhoneCall className="w-4 h-4 text-[#168C8C]" /> },
   ];
 
-  // Primary desktop links (displayed inline on standard desktop)
-  const primaryDesktopLinks = allNavLinks.slice(0, 5); // Home, About, Doctors, Services, Pathology & Lab
-  // Overflow links accessed via "More" dropdown on standard desktop
-  const moreDesktopLinks = allNavLinks.slice(5); // Journey, Facilities, Gallery, Testimonials, News, Contact
+  // Secondary hospital links preserved in "More"
+  const moreNavItems: NavItem[] = [
+    { label: 'Doctors Directory', path: '/doctors', icon: <Stethoscope className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'All Clinical Services', path: '/services', icon: <Heart className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Facilities & Campus', path: '/facilities', icon: <Building className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Hospital Journey', path: '/journey', icon: <Milestone className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Photo Gallery', path: '/gallery', icon: <Images className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'Patient Feedback', path: '/testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#168C8C]" /> },
+    { label: 'News & Health Updates', path: '/news', icon: <Newspaper className="w-4 h-4 text-[#168C8C]" /> },
+  ];
 
   const isCurrentActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -95,117 +97,96 @@ export const Navbar: React.FC = () => {
     return location.pathname.startsWith(path);
   };
 
-  const isMoreGroupActive = moreDesktopLinks.some(link => isCurrentActive(link.path));
+  const isMoreGroupActive = moreNavItems.some(item => isCurrentActive(item.path));
+
+  const phoneRaw = settings.phone.split(' ')[0] || '+915322900000';
 
   return (
-    <header className="sticky top-0 z-50 transition-all duration-200">
-      {/* Top Utility / OPD Hours Strip */}
-      <div className="bg-[#243447] text-white text-[11px] py-1.5 px-4 hidden md:block border-b border-white/10 tracking-wide">
+    <header className="sticky top-0 z-50 bg-white transition-all duration-200">
+      {/* Top Utility & Operational Hours Bar */}
+      <div className="bg-[#193247] text-white text-[11px] py-1.5 px-4 hidden md:block border-b border-white/10 tracking-wide">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[#91BB40] font-semibold">
-              <Clock className="w-3.5 h-3.5" />
-              OPD Timings: {settings.opdStartTime} AM Onwards &bull; Same-Day Online Cutoff: {settings.onlineCutoffTime} AM IST
+            <span className="flex items-center gap-1.5 text-[#DFF3FA] font-medium">
+              <Clock className="w-3.5 h-3.5 text-[#168C8C]" />
+              Pediatric &amp; General OPD: {settings.opdStartTime} AM Onwards &bull; Same-Day Cutoff: {settings.onlineCutoffTime} AM
             </span>
-            <span className="text-white/30">|</span>
-            <span className="text-white/80 font-medium">
-              Civil Lines Road, Prayagraj, UP
+            <span className="text-white/20">|</span>
+            <span className="text-white/70">
+              Civil Lines, Prayagraj &bull; Dedicated Child-Friendly Campus
             </span>
           </div>
+
           <div className="flex items-center gap-4">
             <a 
-              href={`tel:${settings.emergencyPhone.split(' ')[0]}`} 
-              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors group"
+              href={`tel:${phoneRaw}`} 
+              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors"
             >
-              <PhoneCall className="w-3.5 h-3.5 text-[#3DA9DF] group-hover:scale-110 transition-transform" />
-              <span>Emergency Hotline: <strong className="text-white">{settings.emergencyPhone.split(' ')[0]}</strong></span>
+              <Phone className="w-3.5 h-3.5 text-[#DFF3FA]" />
+              <span>Hospital Desk: <strong>{phoneRaw}</strong></span>
             </a>
-            <span className="text-white/30">|</span>
+            <span className="text-white/20">|</span>
             <Link 
               to="/staff/login" 
-              className="text-white/80 hover:text-[#91BB40] transition-colors flex items-center gap-1 font-medium"
+              className="text-white/70 hover:text-[#DFF3FA] transition-colors flex items-center gap-1 text-[11px]"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-[#91BB40]" />
-              <span>Staff Login</span>
+              <ShieldAlert className="w-3.5 h-3.5 text-[#168C8C]" />
+              <span>Staff Portal</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Nav Bar with Scroll-aware glass backdrop */}
+      {/* Main Clean White Header */}
       <div 
-        className={`w-full transition-all duration-200 border-b ${
-          scrolled 
-            ? 'bg-white/95 backdrop-blur-md border-[#E1E8ED] shadow-sm py-2' 
-            : 'bg-white/90 backdrop-blur-sm border-[#E1E8ED]/70 py-3'
+        className={`w-full bg-white transition-all duration-200 border-b border-[#E5ECEF] ${
+          scrolled ? 'shadow-sm py-2.5' : 'py-3.5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center gap-3">
             
-            {/* Logo / Brand */}
-            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group focus:outline-hidden shrink-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#3DA9DF] to-[#1E78A4] flex items-center justify-center text-white shadow-sm shadow-[#3DA9DF]/20 group-hover:scale-105 transition-transform duration-200">
-                <HeartPulse className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]" />
+            {/* Satya Hospital Logo */}
+            <Link to="/" className="flex items-center gap-3 group focus:outline-hidden shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#168C8C] to-[#0E5C5C] flex items-center justify-center text-white shadow-xs shadow-[#168C8C]/20 group-hover:scale-105 transition-transform duration-200">
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.3] text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold tracking-tight text-[#243447] leading-none group-hover:text-[#3DA9DF] transition-colors">
-                  Satya Hospital
-                </span>
-                <span className="text-[10px] font-semibold text-[#91BB40] tracking-wider mt-0.5 uppercase flex items-center gap-1">
-                  <span>&amp; Pathology Lab</span>
-                  <span className="w-1 h-1 rounded-full bg-[#91BB40]/70 inline-block"></span>
-                  <span className="text-[9px] text-[#667085] normal-case">Prayagraj</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base sm:text-lg font-extrabold tracking-tight text-[#193247] leading-none group-hover:text-[#168C8C] transition-colors">
+                    Satya Hospital
+                  </span>
+                  <span className="text-[10px] font-bold text-[#168C8C] px-1.5 py-0.5 rounded-full bg-[#E6F5EF] hidden sm:inline-block">
+                    &amp; Pathology
+                  </span>
+                </div>
+                <span className="text-[11px] font-medium text-[#647785] tracking-tight mt-0.5 flex items-center gap-1">
+                  <span>Pediatric &amp; Family Care</span>
+                  <span className="w-1 h-1 rounded-full bg-[#CBD7DD] inline-block"></span>
+                  <span className="text-[#193247]">Prayagraj</span>
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Navigation Links (2xl+ displays all 11 inline) */}
-            <nav className="hidden 2xl:flex items-center gap-1" aria-label="Main Navigation">
-              {allNavLinks.map((link) => {
-                const active = isCurrentActive(link.path);
+            {/* Desktop Navigation Links */}
+            <nav className="hidden xl:flex items-center gap-1" aria-label="Main Navigation">
+              {primaryNavItems.map((item) => {
+                const active = isCurrentActive(item.path);
                 return (
                   <Link
-                    key={link.path}
-                    to={link.path}
+                    key={item.path}
+                    to={item.path}
                     className={`relative px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-normal whitespace-nowrap transition-all ${
                       active
-                        ? 'text-[#1E78A4] bg-[#EBF6FC]'
-                        : 'text-[#243447] hover:text-[#3DA9DF] hover:bg-[#F4F8FA]'
+                        ? 'text-[#168C8C] bg-[#E6F5EF]'
+                        : 'text-[#193247] hover:text-[#168C8C] hover:bg-[#FCFDFB]'
                     }`}
                   >
-                    {link.shortLabel || link.label}
+                    {item.label}
                     {active && (
                       <motion.span 
                         layoutId="activeNavIndicator"
-                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#3DA9DF] rounded-full"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Responsive Desktop Navigation for lg & xl screens (1024px to 1535px) */}
-            <nav className="hidden lg:flex 2xl:hidden items-center gap-1" aria-label="Main Navigation Condensed">
-              {primaryDesktopLinks.map((link) => {
-                const active = isCurrentActive(link.path);
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`relative px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                      active
-                        ? 'text-[#1E78A4] bg-[#EBF6FC]'
-                        : 'text-[#243447] hover:text-[#3DA9DF] hover:bg-[#F4F8FA]'
-                    }`}
-                  >
-                    {link.shortLabel || link.label}
-                    {active && (
-                      <motion.span 
-                        layoutId="activeNavIndicatorCompact"
-                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#3DA9DF] rounded-full"
+                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#168C8C] rounded-full"
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
@@ -213,36 +194,36 @@ export const Navbar: React.FC = () => {
                 );
               })}
 
-              {/* "More" dropdown for secondary pages on desktop */}
+              {/* More Pages Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
                   onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                     moreDropdownOpen || isMoreGroupActive
-                      ? 'text-[#1E78A4] bg-[#EBF6FC]'
-                      : 'text-[#243447] hover:text-[#3DA9DF] hover:bg-[#F4F8FA]'
+                      ? 'text-[#168C8C] bg-[#E6F5EF]'
+                      : 'text-[#193247] hover:text-[#168C8C] hover:bg-[#FCFDFB]'
                   }`}
                   aria-expanded={moreDropdownOpen}
                 >
-                  <span>More Pages</span>
+                  <span>More</span>
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
                   {moreDropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-[#CBD5E1] shadow-xl py-2 z-50 divide-y divide-[#E1E8ED]"
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-[#CBD7DD] shadow-lg py-2 z-50 divide-y divide-[#E5ECEF]"
                     >
-                      <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#667085]">
-                        Hospital Sections &amp; Bulletins
+                      <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#647785]">
+                        Hospital Information
                       </div>
                       <div className="py-1">
-                        {moreDesktopLinks.map((item) => {
+                        {moreNavItems.map((item) => {
                           const active = isCurrentActive(item.path);
                           return (
                             <Link
@@ -250,8 +231,8 @@ export const Navbar: React.FC = () => {
                               to={item.path}
                               className={`flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium transition-colors ${
                                 active
-                                  ? 'bg-[#EBF6FC] text-[#1E78A4] font-semibold'
-                                  : 'text-[#243447] hover:bg-[#F8FAFC]'
+                                  ? 'bg-[#E6F5EF] text-[#168C8C] font-semibold'
+                                  : 'text-[#193247] hover:bg-[#FCFDFB]'
                               }`}
                             >
                               {item.icon}
@@ -266,61 +247,82 @@ export const Navbar: React.FC = () => {
               </div>
             </nav>
 
-            {/* Right Action CTAs */}
-            <div className="hidden md:flex items-center gap-2.5 shrink-0">
+            {/* Right Action CTAs: Urgent Enquiry Call + Appointment CTA */}
+            <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+              {/* Call button for urgent enquiries */}
+              <a 
+                href={`tel:${phoneRaw}`}
+                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#CBD7DD] bg-white text-[#193247] text-xs font-semibold hover:border-[#168C8C] hover:text-[#168C8C] transition-colors shadow-2xs"
+                title="Call Hospital Reception for Urgent Enquiries"
+              >
+                <PhoneCall className="w-3.5 h-3.5 text-[#168C8C]" />
+                <span>Call Hospital</span>
+              </a>
+
               {isAuthenticated && role === 'patient' ? (
                 <Link to="/patient/dashboard">
-                  <Button variant="outline" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#3DA9DF]" />}>
+                  <Button variant="outline" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#168C8C]" />}>
                     Patient Portal
                   </Button>
                 </Link>
               ) : isAuthenticated && role !== 'patient' ? (
                 <Link to={`/${role}`}>
-                  <Button variant="outline" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5 text-[#91BB40]" />}>
-                    {role.toUpperCase()} Desk
+                  <Button variant="outline" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5 text-[#168C8C]" />}>
+                    {role.toUpperCase()}
                   </Button>
                 </Link>
               ) : (
-                <Link to="/patient/login">
-                  <Button variant="ghost" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#667085]" />} className="text-xs">
-                    Patient Sign In
+                <Link to="/patient/login" className="hidden lg:block">
+                  <Button variant="ghost" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#647785]" />} className="text-xs">
+                    Patient Login
                   </Button>
                 </Link>
               )}
 
+              {/* Prominent "Book an Appointment" CTA */}
               <Link to="/book-appointment">
                 <Button 
                   variant="primary" 
                   size="sm" 
                   leftIcon={<Calendar className="w-3.5 h-3.5" />}
-                  className="font-semibold shadow-xs hover:shadow-md transition-shadow text-xs"
+                  className="font-bold text-xs shadow-xs hover:shadow-md"
                 >
-                  Book OPD Token
+                  Book an Appointment
                 </Button>
               </Link>
             </div>
 
-            {/* Mobile Menu Toggle Button */}
-            <div className="flex items-center gap-2 lg:hidden">
-              <Link to="/book-appointment">
-                <Button variant="primary" size="sm" className="text-xs px-2.5 py-1.5">
-                  Book OPD
+            {/* Mobile Header Icons: Call + Book + Hamburger */}
+            <div className="flex items-center gap-1.5 xl:hidden">
+              <a 
+                href={`tel:${phoneRaw}`}
+                className="p-2 rounded-lg bg-[#E6F5EF] text-[#168C8C] hover:bg-[#DFF3FA] transition-colors"
+                aria-label="Call Hospital"
+              >
+                <PhoneCall className="w-4 h-4" />
+              </a>
+
+              <Link to="/book-appointment" className="sm:hidden">
+                <Button variant="primary" size="sm" className="text-xs px-2.5 py-1.5 font-bold">
+                  Book
                 </Button>
               </Link>
+
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-[#243447] hover:bg-[#F4F8FA] rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-[#193247] hover:bg-[#E6F5EF] rounded-lg transition-colors cursor-pointer"
                 aria-label="Toggle navigation menu"
                 aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
+
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu Animated Slide-over (All 11 Dedicated Pages Accessible) */}
+      {/* Mobile Animated Navigation Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -328,71 +330,82 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="lg:hidden border-b border-[#E1E8ED] bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl overflow-hidden max-h-[85vh] overflow-y-auto"
+            className="xl:hidden border-b border-[#E5ECEF] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg max-h-[85vh] overflow-y-auto"
           >
-            <div className="py-2.5 px-3 bg-[#F4F8FA] border border-[#E1E8ED] rounded-xl text-xs text-[#243447] flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-semibold text-[#1E78A4]">
-                <Clock className="w-3.5 h-3.5 text-[#91BB40]" />
-                OPD: 09:30 AM Onwards
+            {/* Timing Notice */}
+            <div className="py-2.5 px-3 bg-[#E6F5EF] border border-[#C2EADE] rounded-xl text-xs text-[#193247] flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-bold text-[#0F6B56]">
+                <Clock className="w-3.5 h-3.5 text-[#168C8C]" />
+                OPD: {settings.opdStartTime} AM Onwards
               </span>
-              <span className="text-[11px] font-medium text-[#667085]">Cutoff: {settings.onlineCutoffTime} AM</span>
+              <span className="text-[11px] font-medium text-[#647785]">Cutoff: {settings.onlineCutoffTime} AM</span>
             </div>
 
-            {/* 11 Direct Navigation Page Links on Mobile */}
+            {/* Primary Navigation Links on Mobile */}
             <div className="space-y-1">
-              {allNavLinks.map((link) => {
-                const active = isCurrentActive(link.path);
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#647785] px-2 py-1">
+                Main Services &amp; Care
+              </div>
+              {primaryNavItems.map((item) => {
+                const active = isCurrentActive(item.path);
                 return (
                   <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
                       active
-                        ? 'text-[#1E78A4] bg-[#EBF6FC] font-bold'
-                        : 'text-[#243447] hover:bg-[#F4F8FA]'
+                        ? 'bg-[#E6F5EF] text-[#168C8C]'
+                        : 'text-[#193247] hover:bg-[#FCFDFB]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      {link.icon}
-                      <span>{link.label}</span>
+                      {item.icon}
+                      <span>{item.label}</span>
                     </div>
-                    <ChevronRight className={`w-4 h-4 ${active ? 'text-[#3DA9DF]' : 'opacity-30'}`} />
                   </Link>
                 );
               })}
             </div>
 
-            <div className="pt-3 border-t border-[#E1E8ED] space-y-2">
-              <a 
-                href={`tel:${settings.emergencyPhone.split(' ')[0]}`}
-                className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-red-50 text-red-700 font-semibold text-xs border border-red-200"
-              >
-                <PhoneCall className="w-3.5 h-3.5 text-red-600" />
-                <span>Emergency Call: {settings.emergencyPhone.split(' ')[0]}</span>
-              </a>
+            {/* Additional Hospital Sections */}
+            <div className="pt-2 border-t border-[#E5ECEF] space-y-1">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#647785] px-2 py-1">
+                Hospital Information
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {moreNavItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="flex items-center gap-2 p-2 rounded-lg text-[11px] font-medium text-[#193247] hover:bg-[#E6F5EF] hover:text-[#168C8C] transition-colors"
+                  >
+                    {item.icon}
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
-              {isAuthenticated ? (
-                <Link
-                  to={role === 'patient' ? '/patient/dashboard' : `/${role}`}
-                  className="block"
-                >
-                  <Button variant="outline" size="md" className="w-full">
-                    Go to {role.toUpperCase()} Portal
-                  </Button>
-                </Link>
-              ) : (
-                <Link to="/patient/login" className="block">
-                  <Button variant="outline" size="md" className="w-full" leftIcon={<User className="w-4 h-4" />}>
-                    Patient Sign In
-                  </Button>
-                </Link>
-              )}
-
-              <Link to="/staff/login" className="block">
-                <Button variant="ghost" size="sm" className="w-full text-xs text-[#667085]">
-                  Hospital Staff Portal Login &rarr;
+            {/* Mobile Actions: Call & Book */}
+            <div className="pt-3 border-t border-[#E5ECEF] space-y-2">
+              <Link to="/book-appointment" className="block w-full">
+                <Button variant="primary" size="md" className="w-full font-bold justify-center" leftIcon={<Calendar className="w-4 h-4" />}>
+                  Book an Appointment
                 </Button>
               </Link>
+              <a href={`tel:${phoneRaw}`} className="block w-full">
+                <Button variant="outline" size="md" className="w-full justify-center" leftIcon={<PhoneCall className="w-4 h-4 text-[#168C8C]" />}>
+                  Call Reception ({phoneRaw})
+                </Button>
+              </a>
+              <div className="flex items-center justify-between pt-1 px-1">
+                <Link to="/patient/login" className="text-xs text-[#168C8C] font-semibold hover:underline">
+                  Patient Portal Login &rarr;
+                </Link>
+                <Link to="/staff/login" className="text-xs text-[#647785] hover:underline">
+                  Staff Login
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

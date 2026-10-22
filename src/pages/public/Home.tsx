@@ -13,8 +13,8 @@ import {
   MapPin, 
   FileCheck,
   AlertTriangle,
-  HeartPulse,
-  Award,
+  Heart,
+  Baby,
   Sparkles,
   Users,
   Search,
@@ -29,7 +29,11 @@ import {
   Images,
   MessageSquareQuote,
   Newspaper,
-  Quote
+  HeartPulse,
+  Scale,
+  Thermometer,
+  Shield,
+  Phone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/common/Button';
@@ -46,8 +50,7 @@ import { patientTestimonials } from './Testimonials';
 import { hospitalNewsArticles } from './News';
 
 export const Home: React.FC = () => {
-  const { settings, departments, doctors, pathologyTests, getTodayQueueStats } = useHospital();
-  const queueStats = getTodayQueueStats();
+  const { settings, departments, doctors, pathologyTests } = useHospital();
   const navigate = useNavigate();
 
   // Next eligible date respecting T-1 booking window and 09:00 AM cutoff
@@ -87,6 +90,94 @@ export const Home: React.FC = () => {
     navigate(`/book-appointment?${docParam}${dateParam}`.replace('?&', '?'));
   };
 
+  const phoneRaw = settings.phone.split(' ')[0] || '+915322900000';
+
+  // Child-friendly trust strip items
+  const trustStripItems = [
+    {
+      title: 'Child-Centred Care',
+      desc: 'Gentle, low-stress examinations designed for young patients',
+      icon: <Baby className="w-5 h-5 text-[#168C8C]" />,
+      bg: 'bg-[#E6F5EF]'
+    },
+    {
+      title: 'Compassionate Medical Team',
+      desc: 'Experienced consultants holding verified MD, MS & DNB degrees',
+      icon: <Stethoscope className="w-5 h-5 text-[#0E6E8C]" />,
+      bg: 'bg-[#DFF3FA]'
+    },
+    {
+      title: 'Parent-Friendly Appointments',
+      desc: 'Transparent sequential queue with convenient T-1 online booking',
+      icon: <Clock className="w-5 h-5 text-[#9A3412]" />,
+      bg: 'bg-[#FFF0E7]'
+    },
+    {
+      title: 'Diagnostic Services',
+      desc: 'In-house certified laboratory with rapid MD pathologist verification',
+      icon: <Microscope className="w-5 h-5 text-[#168C8C]" />,
+      bg: 'bg-[#E6F5EF]'
+    }
+  ];
+
+  // 6 Pediatric Services Cards
+  const pediatricServices = [
+    {
+      title: 'Pediatric Consultation',
+      description: 'Comprehensive outpatient examinations for infant, toddler, and adolescent healthcare, addressing common illnesses, fever, and routine wellness.',
+      icon: <Baby className="w-6 h-6 text-[#168C8C]" />,
+      badge: 'Daily OPD',
+      link: '/pediatric-care',
+      accentBg: 'bg-[#E6F5EF]',
+      borderColor: 'hover:border-[#168C8C]/50'
+    },
+    {
+      title: 'Newborn & Infant Care',
+      description: 'Specialized checkups for babies up to 12 months, including reflex monitoring, weight velocity tracking, and gentle feeding guidance.',
+      icon: <Sparkles className="w-6 h-6 text-[#0E6E8C]" />,
+      badge: 'Infant Wellness',
+      link: '/newborn-care',
+      accentBg: 'bg-[#DFF3FA]',
+      borderColor: 'hover:border-[#0E6E8C]/50'
+    },
+    {
+      title: 'Child Growth & Development',
+      description: 'Regular developmental screenings tracking physical percentiles, cognitive milestones, and pediatric nutritional assessment.',
+      icon: <Activity className="w-6 h-6 text-[#9A3412]" />,
+      badge: 'Developmental Roster',
+      link: '/pediatric-care',
+      accentBg: 'bg-[#FFF0E7]',
+      borderColor: 'hover:border-[#9A3412]/50'
+    },
+    {
+      title: 'Vaccination & Immunization',
+      description: 'Adherence to certified national and standard immunization protocols with digital record-keeping and clear schedules for parents.',
+      icon: <ShieldCheck className="w-6 h-6 text-[#168C8C]" />,
+      badge: 'Vaccine Roster',
+      link: '/pediatric-care',
+      accentBg: 'bg-[#E6F5EF]',
+      borderColor: 'hover:border-[#168C8C]/50'
+    },
+    {
+      title: 'Childhood Illness Consultation',
+      description: 'Diagnosis and medical care for seasonal respiratory infections, childhood allergies, gastrointestinal colic, and childhood skin conditions.',
+      icon: <Heart className="w-6 h-6 text-[#0E6E8C]" />,
+      badge: 'Clinical OPD',
+      link: '/pediatric-care',
+      accentBg: 'bg-[#DFF3FA]',
+      borderColor: 'hover:border-[#0E6E8C]/50'
+    },
+    {
+      title: 'Pathology & Diagnostic Tests',
+      description: 'Child-friendly blood and urine diagnostic panels conducted in our in-house certified laboratory with two-step pathologist sign-off.',
+      icon: <Microscope className="w-6 h-6 text-[#9A3412]" />,
+      badge: 'In-House Lab',
+      link: '/pathology-lab',
+      accentBg: 'bg-[#FFF0E7]',
+      borderColor: 'hover:border-[#9A3412]/50'
+    }
+  ];
+
   // Frequently Asked Questions Content
   const faqItems = [
     {
@@ -98,74 +189,73 @@ export const Home: React.FC = () => {
       a: 'Both online bookings and offline walk-ins share the single, sequential daily queue. No patient receives a duplicate token, and appointments are called strictly in sequential order. This guarantees transparency and prevents oversubscription.',
     },
     {
-      q: 'How and when can I access my diagnostic pathology reports?',
-      a: 'Once your specimen is analyzed by calibrated automated analyzers, the report undergoes a mandatory two-step verification by our Senior Pathologist. Upon sign-off, your digital PDF report is immediately published to your secure Patient Portal and can be downloaded via an authenticated, short-lived signed URL.',
+      q: 'How should parents prepare for their child\'s first consultation?',
+      a: 'Please bring past medical records, birth summary, and current vaccination book. If the child has a favorite small toy, bringing it along can help them feel safe during the physical examination.',
     },
     {
-      q: 'Is there any upfront consultation fee for booking an online token?',
-      a: 'No upfront online payment is currently required. Registration and token reservation are complimentary online; consultation fees (if applicable) are settled directly at the hospital reception desk upon morning arrival.',
+      q: 'How and when can I access my child\'s diagnostic pathology reports?',
+      a: 'Once samples are processed by automated analyzers, reports undergo mandatory verification by our Senior Pathologist. Upon sign-off, your digital PDF report is immediately published to your secure Patient Portal and can be downloaded securely.',
     },
     {
-      q: 'Can I reschedule my appointment if I miss the 9:00 AM cutoff?',
-      a: 'If the same-day cutoff has passed, you can book an online token for the next eligible OPD date or visit the ground-floor hospital reception desk in person to receive a same-day walk-in token.',
+      q: 'Is there an upfront consultation fee for booking an online token?',
+      a: 'No upfront online payment is currently required. Registration and token reservation are complimentary online; consultation fees are settled directly at the hospital reception desk upon morning arrival.',
     },
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-20 overflow-x-hidden">
+    <div className="bg-[#FCFDFB] space-y-16 sm:space-y-24 pb-20 overflow-x-hidden">
 
       {/* =========================================================================
-          1. HERO SECTION WITH SEAMLESSLY INTEGRATED HOSPITAL PHOTOGRAPH
+          1. PREMIUM CHILDCARE HERO SECTION
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF6FC] via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-14 sm:pt-12 sm:pb-20 border-b border-[#E1E8ED]">
-        {/* Subtle decorative background shapes matching brand colors */}
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#91BB40]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#DFF3FA]/50 via-[#FCFDFB] to-[#FCFDFB] pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-[#E5ECEF]">
+        {/* Subtle decorative background shapes */}
+        <div className="absolute top-0 right-1/4 w-[480px] h-[480px] bg-[#168C8C]/5 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-6 left-10 w-80 h-80 bg-[#E6F5EF] rounded-full blur-2xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* Left Content Column (6 cols on desktop) */}
+            {/* Left Content Column */}
             <motion.div 
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="lg:col-span-6 space-y-6 text-center lg:text-left z-10"
+              transition={{ duration: 0.4 }}
+              className="lg:col-span-6 space-y-5 text-center lg:text-left z-10"
             >
-              {/* Trust Badge Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#BCE1F5] text-xs font-semibold text-[#1E78A4] shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-[#91BB40] animate-pulse"></span>
-                <span>Multispeciality Hospital &bull; NABL-Aligned Pathology &bull; Prayagraj</span>
+              {/* Trust Label */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#C2EADE] text-xs font-bold text-[#0F6B56] shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-[#168C8C] animate-pulse"></span>
+                <span>Caring for Little Lives &bull; Satya Hospital Prayagraj</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#243447] leading-[1.15]">
-                Specialist Healthcare, <br />
-                <span className="text-[#3DA9DF]">Accurate Diagnostics</span>, <br />
-                <span className="text-[#91BB40]">Fair Token Queue.</span>
+              <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-tight text-[#193247] leading-[1.18]">
+                Expert Care for Your Child. <br className="hidden sm:inline" />
+                <span className="text-[#168C8C]">Comfort for Your Family.</span>
               </h1>
 
-              {/* Supporting Subtext */}
-              <p className="text-sm sm:text-base text-[#667085] max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Satya Hospital &amp; Pathology provides structured clinical consultations, certified diagnostic laboratory testing, and transparent queue allocation for patients across Prayagraj.
+              {/* Supporting Text */}
+              <p className="text-sm sm:text-base text-[#647785] max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Satya Hospital provides structured pediatric consultations, gentle newborn wellness care, and certified in-house diagnostic pathology. Designed to make doctor visits reassuring for children and straightforward for parents.
               </p>
 
               {/* Operational Status Card */}
-              <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-[#CBD5E1] shadow-xs max-w-lg mx-auto lg:mx-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+              <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#CBD7DD] shadow-xs max-w-lg mx-auto lg:mx-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#F3F8EC] flex items-center justify-center text-[#91BB40] shrink-0 border border-[#91BB40]/20">
-                    <Clock className="w-5 h-5 text-[#688D23]" />
+                  <div className="w-9 h-9 rounded-xl bg-[#E6F5EF] flex items-center justify-center text-[#168C8C] shrink-0 border border-[#C2EADE]">
+                    <Clock className="w-4 h-4 text-[#168C8C]" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#243447]">Daily OPD Consultations</div>
-                    <div className="text-[11px] text-[#667085]">
-                      Starts at 09:30 AM &bull; Same-day online cutoff: <strong>{settings.onlineCutoffTime} AM IST</strong>
+                    <div className="text-xs font-bold text-[#193247]">Outpatient Consultation Hours</div>
+                    <div className="text-[11px] text-[#647785]">
+                      Starts at 09:30 AM &bull; Same-day cutoff: <strong className="text-[#193247]">{settings.onlineCutoffTime} AM IST</strong>
                     </div>
                   </div>
                 </div>
                 <div className="shrink-0">
-                  <Badge variant="lime-green" size="sm" dot>
-                    Unlimited Queue Intake
+                  <Badge variant="teal" size="sm" dot>
+                    Intake Open
                   </Badge>
                 </div>
               </div>
@@ -177,81 +267,78 @@ export const Home: React.FC = () => {
                     variant="primary" 
                     size="lg" 
                     leftIcon={<Calendar className="w-5 h-5" />}
-                    className="w-full sm:w-auto font-semibold shadow-sm hover:shadow-md transition-shadow"
+                    className="w-full sm:w-auto font-bold shadow-xs hover:shadow-md transition-shadow"
                   >
-                    Book OPD Appointment
+                    Book an Appointment
                   </Button>
                 </Link>
 
-                <Link to="/doctors" className="w-full sm:w-auto">
+                <a href={`tel:${phoneRaw}`} className="w-full sm:w-auto">
                   <Button 
                     variant="outline" 
                     size="lg" 
-                    leftIcon={<Stethoscope className="w-5 h-5 text-[#3DA9DF]" />}
-                    className="w-full sm:w-auto font-medium"
+                    leftIcon={<PhoneCall className="w-5 h-5 text-[#168C8C]" />}
+                    className="w-full sm:w-auto font-semibold"
                   >
-                    View Doctors ({doctors.length})
+                    Call the Hospital
                   </Button>
-                </Link>
+                </a>
               </div>
 
-              {/* Verified Trust Signals */}
-              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-medium text-[#667085]">
+              {/* Small Tasteful Trust Element */}
+              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-medium text-[#647785]">
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
-                  <span>Sequential Token Allocation</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <span>Child-Friendly Consultation Space</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
-                  <span>Verified Senior Consultants</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <span>Sequential Fair Queue</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
-                  <span>DPDP-Compliant Records</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0" />
+                  <span>Civil Lines Campus</span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Right Column: Seamlessly Integrated Hospital Building Visual (6 cols on desktop) */}
+            {/* Right Column: High-Res Photorealistic Pediatric Hero Visual */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.98, y: 20 }}
+              initial={{ opacity: 0, scale: 0.98, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
+              transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
               className="lg:col-span-6 relative"
             >
-              {/* Art-directed image container blending with background */}
-              <div className="relative rounded-3xl overflow-hidden shadow-xl shadow-[#243447]/10 border border-[#CBD5E1] bg-white group">
-                {/* Real Hospital Photograph */}
+              <div className="relative rounded-3xl overflow-hidden shadow-lg shadow-[#193247]/5 border border-[#CBD7DD] bg-white group">
                 <img 
-                  src="/images/satya-hospital-building.jpg" 
-                  alt="Satya Hospital and Pathology Campus in Prayagraj" 
-                  className="w-full h-[320px] sm:h-[400px] lg:h-[440px] object-cover object-[55%_35%] transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  src="/images/pediatric-hero.jpg" 
+                  alt="Friendly Indian pediatrician gently examining young child with mother in clean modern consultation clinic" 
+                  className="w-full h-[320px] sm:h-[400px] lg:h-[430px] object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                   loading="eager"
                 />
 
-                {/* Ambient Tone Overlays & Edge Feathering */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#243447]/85 via-[#243447]/20 to-transparent pointer-events-none" />
-                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#F4F8FA]/30 to-transparent pointer-events-none hidden lg:block" />
+                {/* Subtle natural lighting vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#193247]/80 via-[#193247]/15 to-transparent pointer-events-none" />
 
-                {/* Top-Right Campus Location Badge */}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 text-[11px] font-bold text-[#243447] flex items-center gap-1.5 shadow-sm">
-                  <Building2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                  <span>Civil Lines Campus</span>
+                {/* Top Badge: Verified Clinical Team */}
+                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/70 text-[11px] font-bold text-[#193247] flex items-center gap-2 shadow-xs">
+                  <Heart className="w-3.5 h-3.5 text-[#168C8C]" />
+                  <span>Compassionate Care</span>
                 </div>
 
-                {/* Bottom Integrated Campus Info Strip */}
-                <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 bg-[#243447]/90 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-white/15 text-white shadow-lg space-y-1">
+                {/* Bottom Identifier Card */}
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-white/60 text-[#193247] shadow-md space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-white">
-                      <span className="w-2 h-2 rounded-full bg-[#91BB40] animate-pulse"></span>
+                    <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-[#193247]">
+                      <span className="w-2 h-2 rounded-full bg-[#168C8C]"></span>
                       <span>Satya Hospital &amp; Pathology</span>
                     </span>
-                    <span className="text-[10px] text-[#91BB40] font-semibold bg-[#91BB40]/20 px-2 py-0.5 rounded-full border border-[#91BB40]/30">
-                      Active Facility
+                    <span className="text-[10px] text-[#0F6B56] font-bold bg-[#E6F5EF] px-2 py-0.5 rounded-full border border-[#C2EADE]">
+                      Pediatric Wing
                     </span>
                   </div>
-                  <p className="text-[11px] text-white/80 leading-snug">
-                    Ground &amp; 1st Floor Specialist OPD &bull; NABL-Aligned Pathology Lab &bull; Civil Lines Road, Prayagraj
+                  <p className="text-[11px] text-[#647785] leading-snug">
+                    Child Outpatient Clinics &bull; Newborn Assessment &bull; In-House Lab &bull; Civil Lines, Prayagraj
                   </p>
                 </div>
               </div>
@@ -260,44 +347,36 @@ export const Home: React.FC = () => {
           </div>
 
           {/* =========================================================================
-              HORIZONTAL QUICK OPD TOKEN RESERVATION MODULE
+              QUICK OPD TOKEN RESERVATION MODULE
              ========================================================================= */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-            className="mt-8 sm:mt-12 bg-white rounded-2xl sm:rounded-3xl border border-[#CBD5E1] p-5 sm:p-6 shadow-md shadow-[#243447]/5 relative z-20"
-          >
-            {/* Header of Quick Reservation Bar */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3.5 border-b border-[#E1E8ED] gap-2">
+          <div className="mt-8 sm:mt-12 bg-white rounded-2xl sm:rounded-3xl border border-[#CBD7DD] p-5 sm:p-6 shadow-xs relative z-20">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3.5 border-b border-[#E5ECEF] gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#3DA9DF]/10 text-[#3DA9DF] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
                   <HeartPulse className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#243447]">Quick OPD Token Reservation</h3>
-                  <p className="text-[11px] text-[#667085]">Reserve your sequential consultation token number online &bull; Zero upfront fee</p>
+                  <h3 className="text-sm font-bold text-[#193247]">Quick OPD Token Reservation</h3>
+                  <p className="text-[11px] text-[#647785]">Reserve your sequential consultation token online &bull; Complimentary reservation</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="lime-green" size="sm" dot>
-                  Intake Open
+                <Badge variant="teal" size="sm" dot>
+                  Queue Open
                 </Badge>
-                <Badge variant="medical-blue" size="sm">
-                  Complimentary Reservation
+                <Badge variant="sky-blue" size="sm">
+                  Same-Day Cutoff: {settings.onlineCutoffTime} AM
                 </Badge>
               </div>
             </div>
 
-            {/* Quick Booking Form */}
             <form onSubmit={handleHeroBookingSubmit} className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs items-end">
-              {/* Department Select */}
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
+                <label className="block font-bold text-[#193247] mb-1">
                   1. Clinical Department
                 </label>
                 <div className="relative">
-                  <Building2 className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+                  <Building2 className="w-4 h-4 text-[#647785] absolute left-3 top-2.5 pointer-events-none" />
                   <select
                     value={heroDeptId}
                     onChange={(e) => {
@@ -310,7 +389,7 @@ export const Home: React.FC = () => {
                           });
                       if (filtered.length > 0) setHeroDoctorId(filtered[0].id);
                     }}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
                   >
                     <option value="all">All Departments ({departments.length})</option>
                     {departments.map((dept) => (
@@ -322,17 +401,16 @@ export const Home: React.FC = () => {
                 </div>
               </div>
 
-              {/* Doctor Select */}
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
+                <label className="block font-bold text-[#193247] mb-1">
                   2. Consulting Doctor
                 </label>
                 <div className="relative">
-                  <Stethoscope className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+                  <Stethoscope className="w-4 h-4 text-[#647785] absolute left-3 top-2.5 pointer-events-none" />
                   <select
                     value={heroDoctorId}
                     onChange={(e) => setHeroDoctorId(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
                   >
                     {availableDoctorsForHero.map((doc) => (
                       <option key={doc.id} value={doc.id}>
@@ -343,31 +421,29 @@ export const Home: React.FC = () => {
                 </div>
               </div>
 
-              {/* Date Input */}
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
+                <label className="block font-bold text-[#193247] mb-1">
                   3. Appointment Date
                 </label>
                 <div className="relative">
-                  <Calendar className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+                  <Calendar className="w-4 h-4 text-[#647785] absolute left-3 top-2.5 pointer-events-none" />
                   <input
                     type="date"
                     min={getHospitalTodayDate()}
                     value={heroDate}
                     onChange={(e) => setHeroDate(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD5E1] text-[#243447] text-xs font-medium focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CBD7DD] text-[#193247] text-xs font-medium focus:ring-2 focus:ring-[#168C8C] focus:border-transparent bg-white shadow-2xs"
                     required
                   />
                 </div>
               </div>
 
-              {/* Submit Button */}
               <div>
                 <Button
                   type="submit"
                   variant="primary"
                   size="md"
-                  className="w-full font-semibold shadow-xs justify-center py-2"
+                  className="w-full font-bold shadow-xs justify-center py-2"
                   disabled={!heroCutoffStatus.allowed}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
@@ -376,7 +452,6 @@ export const Home: React.FC = () => {
               </div>
             </form>
 
-            {/* Cutoff / Availability Status Alert if applicable */}
             {!heroCutoffStatus.allowed && (
               <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-1.5">
@@ -387,218 +462,102 @@ export const Home: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setHeroDate(heroCutoffStatus.nextEligibleDate!)}
-                    className="text-[#1E78A4] font-bold underline cursor-pointer"
+                    className="text-[#168C8C] font-bold underline cursor-pointer"
                   >
                     Switch to next eligible date ({heroCutoffStatus.nextEligibleDate}) &rarr;
                   </button>
                 )}
               </div>
             )}
-          </motion.div>
+          </div>
 
         </div>
       </section>
 
       {/* =========================================================================
-          2. HOSPITAL METRICS & TRUST INDICATORS (STATIC LITERAL NUMBERS)
-         ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl border border-[#E1E8ED] shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center shrink-0">
-                <Building2 className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-extrabold text-[#243447]">4+</div>
-                <div className="text-xs font-semibold text-[#667085]">Clinical Specialties</div>
-              </div>
-            </div>
-            <p className="text-[11px] text-[#667085] mt-2 leading-tight">
-              Medicine, Surgery, Gynaecology, Paediatrics
-            </p>
-          </div>
-
-          <div className="bg-white p-5 rounded-xl border border-[#E1E8ED] shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center shrink-0">
-                <Microscope className="w-5 h-5 text-[#688D23]" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-extrabold text-[#243447]">{pathologyTests.length}+</div>
-                <div className="text-xs font-semibold text-[#667085]">Diagnostic Lab Tests</div>
-              </div>
-            </div>
-            <p className="text-[11px] text-[#667085] mt-2 leading-tight">
-              Routine &amp; specialized blood and urine panels
-            </p>
-          </div>
-
-          <div className="bg-white p-5 rounded-xl border border-[#E1E8ED] shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-extrabold text-[#243447]">09:30 AM</div>
-                <div className="text-xs font-semibold text-[#667085]">Daily Clinic Start</div>
-              </div>
-            </div>
-            <p className="text-[11px] text-[#667085] mt-2 leading-tight">
-              Prompt morning doctor consultation hours
-            </p>
-          </div>
-
-          <div className="bg-white p-5 rounded-xl border border-[#E1E8ED] shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center shrink-0">
-                <Users className="w-5 h-5 text-[#688D23]" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-extrabold text-[#243447]">Single Queue</div>
-                <div className="text-xs font-semibold text-[#667085]">Sequential Tokens</div>
-              </div>
-            </div>
-            <p className="text-[11px] text-[#667085] mt-2 leading-tight">
-              Fair token allocation for online &amp; walk-in patients
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          3. HOSPITAL INTRODUCTION & CORE COMMITMENTS (PREVIEW WITH LINK TO /about)
+          2. CHILD-FRIENDLY TRUST STRIP
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-6 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold">
-              <Building2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>About Satya Hospital &amp; Pathology</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] tracking-tight">
-              Compassionate Healthcare Rooted in Clinical Precision &amp; Transparency
-            </h2>
-            <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
-              Satya Hospital was established in Prayagraj to provide structured, ethical outpatient healthcare and high-precision diagnostic pathology. We combine experienced medical practitioners with modern digital queue management and secure health record access.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
-              <div className="p-4 rounded-xl bg-white border border-[#E1E8ED] space-y-1">
-                <span className="font-bold text-[#243447] block">Zero Fabricated Claims</span>
-                <p className="text-[#667085] text-[11px]">Strict adherence to factual reporting and certified pathologist verifications.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {trustStripItems.map((item, idx) => (
+            <div 
+              key={idx} 
+              className="bg-white p-5 rounded-2xl border border-[#E5ECEF] shadow-xs flex items-start gap-3.5 hover:border-[#168C8C]/40 transition-colors"
+            >
+              <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
+                {item.icon}
               </div>
-              <div className="p-4 rounded-xl bg-white border border-[#E1E8ED] space-y-1">
-                <span className="font-bold text-[#243447] block">Queue Transparency</span>
-                <p className="text-[#667085] text-[11px]">Online and walk-in patients share a single predictable sequential token queue.</p>
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold text-[#193247]">{item.title}</h4>
+                <p className="text-[11px] text-[#647785] leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             </div>
-            <div className="pt-2 flex items-center gap-3">
-              <Link to="/about">
-                <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                  Learn More About Satya Hospital
-                </Button>
-              </Link>
-              <Link to="/journey">
-                <Button variant="ghost" size="sm" className="text-xs text-[#3DA9DF]">
-                  Our Journey Timeline &rarr;
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6">
-            <div className="bg-white rounded-3xl border border-[#CBD5E1] p-6 sm:p-8 shadow-sm space-y-5">
-              <div className="flex items-center gap-3 pb-4 border-b border-[#E1E8ED]">
-                <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold">
-                  <ShieldCheck className="w-5 h-5 text-[#688D23]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-[#243447]">Core Clinical Commitments</h3>
-                  <p className="text-[11px] text-[#667085]">Standards followed across all OPD chambers &amp; diagnostics</p>
-                </div>
-              </div>
-
-              <div className="space-y-3 text-xs">
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-[#243447] block">Credentialed Medical Faculty:</strong>
-                    <span className="text-[#667085]">All consultants hold verified postgraduate medical degrees (MD, MS, DNB).</span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-[#243447] block">DPDP-Compliant Health Data:</strong>
-                    <span className="text-[#667085]">Prescriptions and lab reports stored under strict digital access control.</span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-[#243447] block">In-House Quality Control:</strong>
-                    <span className="text-[#667085]">Automated analyzers calibrated daily with multi-level internal standards.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* =========================================================================
-          4. CORE MEDICAL SPECIALTIES PREVIEW (LINK TO /services)
+          3. PEDIATRIC SERVICES SECTION: "Healthcare Designed Around Your Child"
          ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
-              Clinical Specialities
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
-              Medical Departments
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold mb-2">
+              <Baby className="w-3.5 h-3.5 text-[#168C8C]" />
+              <span>Pediatric &amp; Family Disciplines</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] tracking-tight">
+              Healthcare Designed Around Your Child
             </h2>
-            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
-              Our multidisciplinary healthcare team delivers outpatient diagnostics, preventive medicine, and specialized procedures.
+            <p className="text-xs sm:text-sm text-[#647785] mt-1.5 max-w-xl leading-relaxed">
+              From newborn wellness and routine immunization to pediatric illness diagnosis and clinical diagnostics in Prayagraj.
             </p>
           </div>
-          <Link to="/services" className="mt-4 md:mt-0">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              View All Services Page
+          <Link to="/pediatric-care" className="shrink-0">
+            <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#168C8C]" />}>
+              Explore Pediatric Care Page
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {departments.slice(0, 4).map((dept) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pediatricServices.map((service, idx) => (
             <motion.div
-              key={dept.id}
-              whileHover={{ y: -4 }}
+              key={idx}
+              whileHover={{ y: -3 }}
               transition={{ duration: 0.2 }}
-              className="bg-white p-6 rounded-2xl border border-[#E1E8ED] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+              className={`bg-white rounded-2xl border border-[#E5ECEF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${service.borderColor} group`}
             >
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center mb-4 group-hover:bg-[#3DA9DF] group-hover:text-white transition-colors">
-                  <Stethoscope className="w-6 h-6 stroke-[2]" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className={`w-12 h-12 rounded-xl ${service.accentBg} flex items-center justify-center shadow-2xs`}>
+                    {service.icon}
+                  </div>
+                  <Badge variant="teal" size="sm">
+                    {service.badge}
+                  </Badge>
                 </div>
-                <h3 className="text-base font-bold text-[#243447] mb-2 group-hover:text-[#3DA9DF] transition-colors">
-                  {dept.name}
-                </h3>
-                <p className="text-xs text-[#667085] leading-relaxed line-clamp-3 mb-4">
-                  {dept.description}
-                </p>
+                <div>
+                  <h3 className="text-base font-bold text-[#193247] group-hover:text-[#168C8C] transition-colors">
+                    {service.title}
+                  </h3>
+                  <p className="text-xs text-[#647785] mt-2 leading-relaxed">
+                    {service.description}
+                  </p>
+                </div>
               </div>
 
-              <div className="pt-4 border-t border-[#E1E8ED] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-[#667085] font-medium truncate max-w-[140px]">
-                  {dept.headOfDepartment ? dept.headOfDepartment.split('(')[0].trim() : 'Senior Consultant'}
-                </span>
-                <Link
-                  to="/services"
-                  className="text-xs font-semibold text-[#1E78A4] hover:text-[#3DA9DF] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
-                >
-                  <span>Details</span>
+              <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
+                <Link to={service.link} className="text-xs font-bold text-[#168C8C] hover:text-[#127272] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                  <span>Learn More</span>
                   <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link to="/book-appointment">
+                  <span className="text-[11px] font-semibold text-[#647785] hover:text-[#193247]">
+                    Book Token &rarr;
+                  </span>
                 </Link>
               </div>
             </motion.div>
@@ -607,416 +566,316 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          5. SENIOR SPECIALISTS SPOTLIGHT (LINK TO /doctors)
+          4. ABOUT SATYA HOSPITAL (EDITORIAL 2-COLUMN WITH AUTHENTIC PHOTOGRAPHY)
          ========================================================================= */}
-      <section className="bg-white py-14 sm:py-18 border-y border-[#E1E8ED]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
-            <div>
-              <span className="text-xs font-bold text-[#91BB40] tracking-wider uppercase">
-                Verified Medical Faculty
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
-                Consult Our Senior Specialists
-              </h2>
-              <p className="text-xs sm:text-sm text-[#667085] mt-1.5 leading-relaxed">
-                Meet our credentialed doctors holding recognized postgraduate degrees (MD, MS, DNB) in Prayagraj.
-              </p>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-10 shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Visual Column */}
+            <div className="lg:col-span-5 relative rounded-2xl overflow-hidden border border-[#E5ECEF] bg-[#FCFDFB]">
+              <img 
+                src="/images/newborn-care.jpg" 
+                alt="Infant routine checkup at Satya Hospital"
+                className="w-full h-72 sm:h-80 object-cover object-center"
+                loading="lazy"
+              />
+              <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-white/60 text-xs text-[#193247] shadow-xs flex items-center justify-between">
+                <span className="font-bold flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#168C8C]" />
+                  <span>Civil Lines Campus</span>
+                </span>
+                <span className="text-[11px] text-[#647785]">Prayagraj, UP</span>
+              </div>
             </div>
-            <Link to="/doctors" className="mt-4 md:mt-0">
-              <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-                View Complete Doctor Directory ({doctors.length})
-              </Button>
-            </Link>
+
+            {/* Content Column */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
+                <Building2 className="w-3.5 h-3.5 text-[#168C8C]" />
+                <span>About Satya Hospital &amp; Pathology</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] tracking-tight">
+                Compassionate Pediatric &amp; Family Care Rooted in Clinical Ethics
+              </h2>
+              <p className="text-xs sm:text-sm text-[#647785] leading-relaxed">
+                Satya Hospital is an established healthcare facility in Civil Lines, Prayagraj, committed to compassionate outpatient care and diagnostic accuracy. Our pediatric consultations focus on gentle medical assessments where doctors take the time to answer parents' questions thoroughly.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
+                <div className="p-3.5 rounded-xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-1">
+                  <span className="font-bold text-[#193247] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#168C8C]" />
+                    Hygienic Clinical Environment
+                  </span>
+                  <p className="text-[#647785] text-[11px]">Clean consultation rooms, sanitized infant examination areas, and low-stress waiting spaces.</p>
+                </div>
+                <div className="p-3.5 rounded-xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-1">
+                  <span className="font-bold text-[#193247] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#168C8C]" />
+                    Fair Single Queue
+                  </span>
+                  <p className="text-[#647785] text-[11px]">Online appointments and walk-in patients are called strictly sequentially without skipping.</p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Link to="/about">
+                  <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                    Read Hospital Mission &amp; Overview
+                  </Button>
+                </Link>
+                <Link to="/facilities">
+                  <Button variant="ghost" size="sm" className="text-xs text-[#168C8C]">
+                    View Campus Facilities &rarr;
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {doctors.map((doc) => (
-              <motion.div
-                key={doc.id}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="bg-[#F8FAFC] rounded-2xl border border-[#E1E8ED] hover:border-[#3DA9DF] hover:bg-white p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-3.5 mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#3DA9DF]/20 to-[#91BB40]/20 flex items-center justify-center text-[#1E78A4] font-bold text-base border border-[#3DA9DF]/30 shrink-0">
-                      {doc.fullName.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-full mb-1">
-                        <BadgeCheck className="w-3 h-3 text-[#15803D]" />
-                        <span>Available for OPD</span>
-                      </div>
-                      <h3 className="text-sm font-bold text-[#243447] leading-snug">
-                        {doc.fullName}
-                      </h3>
-                      <p className="text-[11px] font-medium text-[#3DA9DF]">
-                        {doc.designation}
-                      </p>
-                    </div>
+      {/* =========================================================================
+          5. MEET THE DOCTOR / MEDICAL TEAM (VERIFIED PROFILES)
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold text-[#168C8C] tracking-wider uppercase">
+              Medical Practitioners Directory
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] mt-1">
+              Consulting Medical Faculty
+            </h2>
+            <p className="text-xs sm:text-sm text-[#647785] mt-1.5 max-w-xl leading-relaxed">
+              Consult with verified medical specialists holding certified postgraduate degrees (MD, MS, DNB) in Prayagraj.
+            </p>
+          </div>
+          <Link to="/doctors">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#168C8C]" />}>
+              Full Doctor Roster ({doctors.length})
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {doctors.map((doc) => (
+            <Card key={doc.id} className="p-6 border-[#E5ECEF] hover:border-[#168C8C]/50 transition-all flex flex-col justify-between hover:shadow-md">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#168C8C]/15 to-[#DFF3FA] flex items-center justify-center text-[#168C8C] font-bold text-base border border-[#C2EADE] shrink-0">
+                    {doc.fullName.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
                   </div>
-
-                  <div className="space-y-2 text-xs py-3 border-y border-[#E1E8ED]/70 mb-4">
-                    <div className="flex items-center justify-between text-[#667085]">
-                      <span>Qualifications:</span>
-                      <strong className="text-[#243447] font-semibold">{doc.qualifications}</strong>
+                  <div>
+                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0F6B56] bg-[#E6F5EF] px-2 py-0.5 rounded-full mb-1">
+                      <BadgeCheck className="w-3 h-3 text-[#168C8C]" />
+                      <span>OPD Available</span>
                     </div>
-                    <div className="flex items-center justify-between text-[#667085]">
-                      <span>Department:</span>
-                      <strong className="text-[#243447] font-semibold truncate max-w-[140px]">{doc.department}</strong>
-                    </div>
-                    <div className="flex items-center justify-between text-[#667085]">
-                      <span>Room:</span>
-                      <span className="text-[#243447] font-medium">{doc.consultationRoom}</span>
-                    </div>
+                    <h3 className="text-sm font-bold text-[#193247] leading-snug">
+                      {doc.fullName}
+                    </h3>
+                    <p className="text-[11px] font-medium text-[#168C8C]">
+                      {doc.designation}
+                    </p>
                   </div>
                 </div>
 
-                <Link to={`/book-appointment?doctor=${doc.id}`}>
+                <div className="space-y-1.5 text-xs py-3 border-y border-[#E5ECEF] text-[#647785]">
+                  <div className="flex items-center justify-between">
+                    <span>Qualifications:</span>
+                    <strong className="text-[#193247] font-semibold">{doc.qualifications}</strong>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Department:</span>
+                    <strong className="text-[#193247] font-semibold">{doc.department}</strong>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Chamber:</span>
+                    <span className="text-[#193247] font-medium">{doc.consultationRoom}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-2">
+                <Link to={`/book-appointment?doctor=${doc.id}`} className="block w-full">
                   <Button 
                     variant="primary" 
                     size="sm" 
-                    className="w-full text-xs font-semibold"
+                    className="w-full text-xs font-bold"
                     leftIcon={<Calendar className="w-3.5 h-3.5" />}
                   >
                     Book with {doc.fullName.split(' ')[1] || doc.fullName}
                   </Button>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          6. PATHOLOGY & DIAGNOSTIC LAB HIGHLIGHT (LINK TO /pathology-lab)
-         ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          
-          <div className="lg:col-span-5 space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#688D23] text-xs font-semibold">
-              <Microscope className="w-3.5 h-3.5" />
-              <span>In-House Automated Diagnostics</span>
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] leading-tight">
-              Certified Pathology Lab <br />
-              <span className="text-[#3DA9DF]">On Hospital Premises</span>
-            </h2>
-
-            <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
-              Satya Hospital maintains an in-house clinical pathology laboratory equipped with calibrated automated analyzers. Blood, serum, and urine samples are processed with strict quality control.
-            </p>
-
-            <div className="space-y-3 pt-1 text-xs text-[#243447]">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-[#243447]">Rapid 2–4 Hour Turnaround:</strong>
-                  <span className="text-[#667085]">Routine panels including CBC, blood sugar, and electrolytes processed promptly for OPD patients.</span>
-                </div>
               </div>
-
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-[#243447]">Two-Step Pathologist Sign-Off:</strong>
-                  <span className="text-[#667085]">Reports remain in verification state until certified by the pathologist, preventing unreviewed clinical releases.</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex flex-wrap gap-3">
-              <Link to="/pathology-lab">
-                <Button variant="primary" size="md" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                  Explore Full Lab Catalogue &rarr;
-                </Button>
-              </Link>
-              <Link to="/patient/reports">
-                <Button variant="outline" size="md" leftIcon={<FileText className="w-4 h-4 text-[#3DA9DF]" />}>
-                  Access My Reports
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-2xl border border-[#CBD5E1] shadow-sm divide-y divide-[#E1E8ED] overflow-hidden">
-              <div className="p-4 bg-[#F8FAFC] flex items-center justify-between border-b border-[#E1E8ED]">
-                <span className="text-xs font-bold text-[#243447] uppercase tracking-wider flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#3DA9DF]" />
-                  <span>Key Diagnostic Laboratory Panels</span>
-                </span>
-                <span className="text-[11px] text-[#667085]">Hospital In-House Rates</span>
-              </div>
-
-              {pathologyTests.slice(0, 4).map((test) => (
-                <div key={test.id} className="p-4 flex items-center justify-between hover:bg-[#F8FAFC] transition-colors">
-                  <div className="space-y-0.5">
-                    <div className="text-sm font-bold text-[#243447]">{test.name}</div>
-                    <div className="text-xs text-[#667085] flex flex-wrap items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-md bg-[#F4F8FA] border border-[#E1E8ED] text-[10px] font-medium text-[#243447]">
-                        {test.category}
-                      </span>
-                      <span>Specimen: {test.specimenType}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0 ml-4">
-                    <div className="text-base font-extrabold text-[#243447]">₹{test.price}</div>
-                    <span className="text-[10px] text-[#15803D] font-semibold bg-[#DCFCE7] px-2 py-0.5 rounded-full inline-block mt-0.5">
-                      Available Daily
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              <div className="p-3.5 bg-[#F8FAFC] text-center text-xs text-[#667085] flex items-center justify-center gap-2">
-                <span>Sample collection open daily from <strong>08:00 AM to 02:00 PM</strong>.</span>
-                <Link to="/pathology-lab" className="text-[#3DA9DF] font-semibold hover:underline">
-                  View All ({pathologyTests.length}) Tests &rarr;
-                </Link>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================================
-          7. FACILITIES & INFRASTRUCTURE PREVIEW (LINK TO /facilities)
-         ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
-          <div>
-            <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
-              Clinical Infrastructure
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
-              Hospital Facilities &amp; Amenities
-            </h2>
-            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
-              Equipped for prompt outpatient consultations, day-care observations, and acute triage.
-            </p>
-          </div>
-          <Link to="/facilities" className="mt-4 md:mt-0">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              Explore All Facilities Page
-            </Button>
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-[#CBD5E1] shadow-xs space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Activity className="w-5 h-5 stroke-[2]" />
-            </div>
-            <h3 className="text-base font-bold text-[#243447]">Emergency &amp; Acute Care</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              Equipped emergency desk for immediate patient stabilization, vital monitoring, and rapid triage coordination.
-            </p>
-            <Link to="/facilities" className="text-xs text-[#3DA9DF] font-semibold hover:underline inline-block pt-1">
-              Learn more &rarr;
-            </Link>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-[#CBD5E1] shadow-xs space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
-              <Syringe className="w-5 h-5 text-[#688D23]" />
-            </div>
-            <h3 className="text-base font-bold text-[#243447]">Minor Procedures &amp; Day Care</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              Sterile minor operation theatre for wound management, suturing, minor surgical interventions, and short observation.
-            </p>
-            <Link to="/facilities" className="text-xs text-[#3DA9DF] font-semibold hover:underline inline-block pt-1">
-              Learn more &rarr;
-            </Link>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-[#CBD5E1] shadow-xs space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Award className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-[#243447]">Diagnostics &amp; ECG Facilities</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              12-lead digital ECG and point-of-care vital evaluations supporting cardiology screening and clinical assessments.
-            </p>
-            <Link to="/facilities" className="text-xs text-[#3DA9DF] font-semibold hover:underline inline-block pt-1">
-              Learn more &rarr;
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          8. TRANSPARENT OPD QUEUE PROTOCOL (3-STEP WALKTHROUGH)
-         ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#243447] text-white rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#3DA9DF]/15 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="max-w-2xl mb-10 relative z-10">
-            <span className="text-xs font-bold text-[#91BB40] tracking-wider uppercase">
-              Transparent Queue Protocol
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              How OPD Booking Works at Satya Hospital
-            </h2>
-            <p className="text-xs sm:text-sm text-white/70 mt-2 leading-relaxed">
-              Our unified queue synchronizes online token bookings with in-person reception arrivals, ensuring fair access for every patient.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-            <div className="bg-[#1C2937] p-6 rounded-2xl border border-[#34465B] space-y-3">
-              <div className="w-9 h-9 rounded-xl bg-[#3DA9DF] text-white flex items-center justify-center text-sm font-bold shadow-xs">
-                1
-              </div>
-              <h3 className="text-base font-bold text-white">Online Reservation (T-1 to 9:00 AM)</h3>
-              <p className="text-xs text-white/75 leading-relaxed">
-                Online booking opens 1 calendar day before the appointment date and closes strictly at <strong>09:00 AM IST</strong> on the OPD date to lock clinic dispensary rosters.
-              </p>
-            </div>
-
-            <div className="bg-[#1C2937] p-6 rounded-2xl border border-[#34465B] space-y-3">
-              <div className="w-9 h-9 rounded-xl bg-[#91BB40] text-[#243447] flex items-center justify-center text-sm font-bold shadow-xs">
-                2
-              </div>
-              <h3 className="text-base font-bold text-white">Reception Check-In &amp; Token Number</h3>
-              <p className="text-xs text-white/75 leading-relaxed">
-                Arrive by 09:30 AM at the ground-floor reception. Present your token reference code or mobile number. Walk-in patients registering after 09:00 AM receive subsequent daily tokens.
-              </p>
-            </div>
-
-            <div className="bg-[#1C2937] p-6 rounded-2xl border border-[#34465B] space-y-3">
-              <div className="w-9 h-9 rounded-xl bg-[#3DA9DF] text-white flex items-center justify-center text-sm font-bold shadow-xs">
-                3
-              </div>
-              <h3 className="text-base font-bold text-white">Specialist Consultation at 9:30 AM</h3>
-              <p className="text-xs text-white/75 leading-relaxed">
-                Consultations commence at 09:30 AM in assigned OPD rooms. Tokens are called sequentially. Prescriptions and medical advice are linked directly to your Hospital Patient ID.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-[#34465B] flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10 text-xs">
-            <span className="text-white/70 max-w-xl">
-              Missed the 09:00 AM online cutoff? Physical walk-in registration at the hospital reception continues without disruption throughout clinic hours.
-            </span>
-            <Link to="/book-appointment">
-              <Button variant="accent" size="md" className="font-semibold shrink-0">
-                Proceed to Book OPD Slot &rarr;
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          9. LATEST NEWS & CLINICAL BULLETINS PREVIEW (LINK TO /news)
-         ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold mb-2">
-              <Newspaper className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Hospital Bulletins</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
-              News &amp; Clinical Advisories
-            </h2>
-            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
-              Stay informed with official medical advisories, technology updates, and operational guidelines from our medical staff.
-            </p>
-          </div>
-          <Link to="/news" className="mt-4 md:mt-0">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              View All News Bulletins
-            </Button>
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {hospitalNewsArticles.slice(0, 3).map((article) => (
-            <Link 
-              key={article.id} 
-              to="/news"
-              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Badge variant={article.badgeVariant} size="sm">
-                    {article.categoryLabel}
-                  </Badge>
-                  <span className="text-[11px] text-[#667085]">{article.publishDate}</span>
-                </div>
-                <h3 className="text-base font-bold text-[#243447] group-hover:text-[#3DA9DF] transition-colors leading-snug">
-                  {article.title}
-                </h3>
-                <p className="text-xs text-[#667085] line-clamp-3 leading-relaxed">
-                  {article.summary}
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-[#E1E8ED] flex items-center justify-between text-xs">
-                <span className="text-[#1E78A4] font-medium text-[11px]">{article.department}</span>
-                <span className="text-[#3DA9DF] font-semibold group-hover:translate-x-1 transition-transform">
-                  Read &rarr;
-                </span>
-              </div>
-            </Link>
+            </Card>
           ))}
         </div>
       </section>
 
       {/* =========================================================================
-          10. PATIENT TESTIMONIAL SPOTLIGHT (LINK TO /testimonials)
+          6. PATHOLOGY & DIAGNOSTIC LAB SECTION (SOFT BLUE & WHITE MEDICAL AESTHETIC)
          ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-3 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#688D23] text-xs font-semibold">
-              <MessageSquareQuote className="w-3.5 h-3.5" />
-              <span>Verified Patient Feedback</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#243447]">
-              "The 09:00 AM online token system and single queue saved us more than two hours of waiting."
-            </h2>
-            <p className="text-xs text-[#667085]">
-              — Ramesh K. Verma (Tagore Town, Prayagraj) &bull; General Medicine Consultation
-            </p>
-          </div>
+      <section className="bg-[#DFF3FA]/30 py-14 sm:py-18 border-y border-[#E5ECEF]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            <div className="lg:col-span-5 space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#BCE1F5] text-[#0E6E8C] text-xs font-bold">
+                <Microscope className="w-3.5 h-3.5 text-[#168C8C]" />
+                <span>In-House Diagnostic Laboratory</span>
+              </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-            <Link to="/testimonials">
-              <Button variant="outline" size="md" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-                Read All Testimonials Page
-              </Button>
-            </Link>
-            <Link to="/gallery">
-              <Button variant="ghost" size="md" className="text-xs text-[#3DA9DF]">
-                Explore Campus Gallery &rarr;
-              </Button>
-            </Link>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] leading-tight">
+                Certified Clinical Pathology <br />
+                <span className="text-[#168C8C]">For Children &amp; Adults</span>
+              </h2>
+
+              <p className="text-xs sm:text-sm text-[#647785] leading-relaxed">
+                Satya Hospital operates an on-premises automated clinical laboratory. Blood, serum, and urine diagnostics are handled with dedicated micro-sampling techniques for pediatric patients and verified by a qualified Pathologist.
+              </p>
+
+              <div className="space-y-3 pt-1 text-xs text-[#193247]">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-[#193247]">Gentle Pediatric Blood Draw:</strong>
+                    <span className="text-[#647785]">Trained phlebotomists using fine micro-needles and supportive techniques to minimize child distress.</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#168C8C] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-[#193247]">Two-Step Pathologist Sign-Off:</strong>
+                    <span className="text-[#667085]">Every report undergoes mandatory verification before publication to the secure Patient Portal.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-wrap gap-3">
+                <Link to="/pathology-lab">
+                  <Button variant="primary" size="md" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                    Explore Pathology Tests &rarr;
+                  </Button>
+                </Link>
+                <Link to="/patient/reports">
+                  <Button variant="outline" size="md" leftIcon={<FileText className="w-4 h-4 text-[#168C8C]" />}>
+                    Access My Reports
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="bg-white rounded-2xl border border-[#CBD7DD] shadow-sm divide-y divide-[#E5ECEF] overflow-hidden">
+                <div className="p-4 bg-[#FCFDFB] flex items-center justify-between border-b border-[#E5ECEF]">
+                  <span className="text-xs font-bold text-[#193247] uppercase tracking-wider flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-[#168C8C]" />
+                    <span>Frequently Prescribed Diagnostic Panels</span>
+                  </span>
+                  <span className="text-[11px] text-[#647785]">Hospital In-House Rates</span>
+                </div>
+
+                {pathologyTests.slice(0, 4).map((test) => (
+                  <div key={test.id} className="p-4 flex items-center justify-between hover:bg-[#FCFDFB] transition-colors">
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-bold text-[#193247]">{test.name}</div>
+                      <div className="text-xs text-[#647785] flex flex-wrap items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-md bg-[#E6F5EF] text-[10px] font-bold text-[#0F6B56]">
+                          {test.category}
+                        </span>
+                        <span>Specimen: {test.specimenType}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0 ml-4">
+                      <div className="text-base font-extrabold text-[#193247]">₹{test.price}</div>
+                      <span className="text-[10px] text-[#0F6B56] font-bold bg-[#E6F5EF] px-2 py-0.5 rounded-full inline-block mt-0.5">
+                        Available Daily
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="p-3.5 bg-[#FCFDFB] text-center text-xs text-[#647785] flex items-center justify-center gap-2">
+                  <span>Sample collection open daily from <strong>08:00 AM to 02:00 PM</strong>.</span>
+                  <Link to="/pathology-lab" className="text-[#168C8C] font-bold hover:underline">
+                    View All ({pathologyTests.length}) Tests &rarr;
+                  </Link>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          11. PATIENT RESOURCES & FREQUENTLY ASKED QUESTIONS (FAQ)
+          7. PARENT-FOCUSED INFORMATION SECTION
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF0E7] text-[#9A3412] text-xs font-bold mb-2">
+            <Heart className="w-3.5 h-3.5" />
+            <span>Parent Guidance</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] tracking-tight">
+            Helpful Information for Parents
+          </h2>
+          <p className="text-xs sm:text-sm text-[#647785] mt-1.5 leading-relaxed">
+            Essential steps to make your child's medical appointments, vaccination records, and test results organized and stress-free.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-2xl border border-[#E5ECEF] shadow-xs space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold">
+              1
+            </div>
+            <h3 className="text-base font-bold text-[#193247]">Preparing for Consultation</h3>
+            <p className="text-xs text-[#647785] leading-relaxed">
+              Note down fever timelines, current medications, appetite changes, and bring the child's immunization booklet to facilitate an accurate clinical evaluation.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-[#E5ECEF] shadow-xs space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center font-bold">
+              2
+            </div>
+            <h3 className="text-base font-bold text-[#193247]">Keeping Vaccine Records</h3>
+            <p className="text-xs text-[#647785] leading-relaxed">
+              Timely childhood vaccines protect against serious illnesses. Our clinic verifies your child’s immunization record at every wellness visit and guides on overdue doses.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-[#E5ECEF] shadow-xs space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FFF0E7] text-[#9A3412] flex items-center justify-center font-bold">
+              3
+            </div>
+            <h3 className="text-base font-bold text-[#193247]">Online Report Access</h3>
+            <p className="text-xs text-[#647785] leading-relaxed">
+              No need to wait at the lab for printed sheets. All verified pathology reports can be downloaded in PDF format directly through your registered patient phone number.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          8. FREQUENTLY ASKED QUESTIONS (FAQ)
          ========================================================================= */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-10">
-          <span className="text-xs font-bold text-[#91BB40] tracking-wider uppercase">
-            Patient Support
+          <span className="text-xs font-bold text-[#168C8C] tracking-wider uppercase">
+            Parent Support
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] mt-1">
             Frequently Asked Questions
           </h2>
-          <p className="text-xs sm:text-sm text-[#667085] mt-1.5 leading-relaxed">
-            Essential guidelines on OPD timings, token queues, and pathology reports.
+          <p className="text-xs sm:text-sm text-[#647785] mt-1.5 leading-relaxed">
+            Essential guidelines on pediatric OPD timings, token queues, and pathology reports.
           </p>
         </div>
 
@@ -1026,7 +885,7 @@ export const Home: React.FC = () => {
             return (
               <div 
                 key={idx} 
-                className="bg-white rounded-xl border border-[#E1E8ED] overflow-hidden transition-colors"
+                className="bg-white rounded-xl border border-[#E5ECEF] overflow-hidden transition-colors"
               >
                 <button
                   type="button"
@@ -1034,11 +893,11 @@ export const Home: React.FC = () => {
                   className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 cursor-pointer focus:outline-hidden"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-xs sm:text-sm font-bold text-[#243447] flex items-center gap-2.5">
-                    <HelpCircle className="w-4 h-4 text-[#3DA9DF] shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold text-[#193247] flex items-center gap-2.5">
+                    <HelpCircle className="w-4 h-4 text-[#168C8C] shrink-0" />
                     <span>{item.q}</span>
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-[#667085] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-[#3DA9DF]' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-[#647785] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-[#168C8C]' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -1050,7 +909,7 @@ export const Home: React.FC = () => {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-5 pt-1 text-xs text-[#667085] leading-relaxed border-t border-[#E1E8ED]/60">
+                      <div className="px-5 pb-5 pt-1 text-xs text-[#647785] leading-relaxed border-t border-[#E5ECEF]">
                         {item.a}
                       </div>
                     </motion.div>
@@ -1063,61 +922,61 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          12. HOSPITAL LOCATION & CONTACT CARD (LINK TO /contact)
+          9. HOSPITAL LOCATION & CONTACT CARD
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-sm">
+        <div className="bg-white rounded-3xl border border-[#CBD7DD] p-8 sm:p-10 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center">
                 <Clock className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-[#243447]">Outpatient Consultation Hours</h3>
-              <p className="text-xs text-[#667085] leading-relaxed">
-                OPD clinics commence daily at <strong>{settings.opdStartTime} AM</strong>. Same-day online booking portal closes strictly at <strong>{settings.onlineCutoffTime} AM IST</strong>.
+              <h3 className="text-base font-bold text-[#193247]">OPD Consultation Hours</h3>
+              <p className="text-xs text-[#647785] leading-relaxed">
+                Clinics start daily at <strong>{settings.opdStartTime} AM</strong>. Same-day online booking portal closes strictly at <strong>{settings.onlineCutoffTime} AM IST</strong>.
               </p>
-              <div className="text-xs text-[#243447] font-semibold">
+              <div className="text-xs text-[#193247] font-semibold">
                 Operating Days: Monday through Saturday
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-[#688D23]" />
+              <div className="w-10 h-10 rounded-xl bg-[#DFF3FA] text-[#0E6E8C] flex items-center justify-center">
+                <MapPin className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-[#243447]">Hospital Address</h3>
-              <p className="text-xs text-[#667085] leading-relaxed">
+              <h3 className="text-base font-bold text-[#193247]">Hospital Address</h3>
+              <p className="text-xs text-[#647785] leading-relaxed">
                 {settings.address}
               </p>
-              <div className="text-xs text-[#3DA9DF] font-semibold">
-                Centrally located with patient parking &amp; ramp access.
+              <div className="text-xs text-[#168C8C] font-semibold">
+                Civil Lines campus with ramp and stroller accessibility.
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#FFF0E7] text-[#9A3412] flex items-center justify-center">
                 <PhoneCall className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-[#243447]">Contact Desks</h3>
-              <p className="text-xs text-[#667085] leading-relaxed">
+              <h3 className="text-base font-bold text-[#193247]">Hospital Contacts</h3>
+              <p className="text-xs text-[#647785] leading-relaxed">
                 For routine OPD queries, connect with our reception desk. For acute emergencies, call our hotline immediately.
               </p>
               <div className="space-y-1 text-xs">
                 <div>
-                  <span className="text-[#667085]">Reception Desk: </span>
-                  <a href={`tel:${settings.phone.split(' ')[0]}`} className="text-[#243447] font-bold hover:underline">
-                    {settings.phone}
+                  <span className="text-[#647785]">Reception Desk: </span>
+                  <a href={`tel:${phoneRaw}`} className="text-[#193247] font-bold hover:underline">
+                    {phoneRaw}
                   </a>
                 </div>
                 <div>
-                  <span className="text-[#667085]">Emergency Hotline: </span>
-                  <a href={`tel:${settings.emergencyPhone.split(' ')[0]}`} className="text-red-600 font-bold hover:underline">
+                  <span className="text-[#647785]">Emergency Hotline: </span>
+                  <a href={`tel:${settings.emergencyPhone.split(' ')[0]}`} className="text-[#9A3412] font-bold hover:underline">
                     {settings.emergencyPhone}
                   </a>
                 </div>
                 <div className="pt-2">
-                  <Link to="/contact" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
+                  <Link to="/contact" className="text-xs font-bold text-[#168C8C] hover:underline">
                     View Full Directions &amp; Inquiry Form &rarr;
                   </Link>
                 </div>

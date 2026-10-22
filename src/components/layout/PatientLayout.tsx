@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { 
-  Activity, 
+  Heart, 
   Calendar, 
   FileText, 
   User, 
@@ -9,7 +9,8 @@ import {
   LogOut, 
   PlusCircle, 
   Home,
-  CheckCircle2
+  CheckCircle2,
+  Baby
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../common/Button';
@@ -35,24 +36,24 @@ export const PatientLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F8FA] flex flex-col">
+    <div className="min-h-screen bg-[#FCFDFB] flex flex-col">
       {/* Patient Top Header */}
-      <header className="bg-white border-b border-[#E1E8ED] sticky top-0 z-30 shadow-2xs">
+      <header className="bg-white border-b border-[#E5ECEF] sticky top-0 z-30 shadow-2xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-[#3DA9DF] flex items-center justify-center text-white">
-                <Activity className="w-5 h-5" />
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#168C8C] to-[#0E5C5C] flex items-center justify-center text-white shadow-2xs">
+                <Heart className="w-5 h-5" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-base font-bold text-[#243447] leading-none">Satya Hospital</h1>
-                <span className="text-[11px] font-semibold text-[#91BB40] uppercase">Patient Portal</span>
+                <h1 className="text-base font-extrabold text-[#193247] leading-none">Satya Hospital</h1>
+                <span className="text-[11px] font-bold text-[#168C8C] uppercase tracking-wide">Patient Portal</span>
               </div>
             </Link>
 
             {patientProfile && (
-              <div className="ml-2 pl-3 border-l border-[#E1E8ED] flex items-center gap-2">
-                <Badge variant="lime-green" size="md">
+              <div className="ml-2 pl-3 border-l border-[#E5ECEF] flex items-center gap-2">
+                <Badge variant="teal" size="md">
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                   ID: {patientProfile.patientId}
                 </Badge>
@@ -62,14 +63,14 @@ export const PatientLayout: React.FC = () => {
 
           <div className="flex items-center gap-2.5">
             <Link to="/book-appointment">
-              <Button variant="accent" size="sm" leftIcon={<PlusCircle className="w-4 h-4" />}>
-                New Appointment
+              <Button variant="primary" size="sm" leftIcon={<PlusCircle className="w-4 h-4" />} className="font-bold">
+                New OPD Appointment
               </Button>
             </Link>
 
             <button
               onClick={handleLogout}
-              className="p-2 text-[#667085] hover:text-red-600 hover:bg-[#F4F8FA] rounded-lg transition-colors cursor-pointer"
+              className="p-2 text-[#647785] hover:text-red-600 hover:bg-[#E6F5EF] rounded-xl transition-colors cursor-pointer"
               title="Sign Out"
               aria-label="Sign Out"
             >
@@ -87,10 +88,10 @@ export const PatientLayout: React.FC = () => {
                 <Link
                   key={tab.path}
                   to={tab.path}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-colors ${
                     active
-                      ? 'bg-[#EBF6FC] text-[#3DA9DF] font-semibold'
-                      : 'text-[#667085] hover:text-[#243447] hover:bg-[#F4F8FA]'
+                      ? 'bg-[#E6F5EF] text-[#168C8C]'
+                      : 'text-[#647785] hover:text-[#193247] hover:bg-[#FCFDFB]'
                   }`}
                 >
                   {tab.icon}
@@ -102,16 +103,19 @@ export const PatientLayout: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Body */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      {/* Main Outlet Container */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
         <Outlet />
       </main>
 
-      {/* Patient Footer */}
-      <footer className="bg-white border-t border-[#E1E8ED] py-4 text-center text-xs text-[#667085]">
+      {/* Portal Footer */}
+      <footer className="bg-white border-t border-[#E5ECEF] py-4 text-center text-xs text-[#647785]">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Satya Hospital Secure Patient Portal &copy; {new Date().getFullYear()}</span>
-          <span>Emergency OPD Helpline: +91 98380 00000 [Hospital Helpline Placeholder]</span>
+          <span>&copy; {new Date().getFullYear()} Satya Hospital &amp; Pathology &bull; Civil Lines, Prayagraj</span>
+          <span className="flex items-center gap-1.5 text-[11px] text-[#0F6B56]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#168C8C]" />
+            DPDP Act Compliant Medical Record Protection
+          </span>
         </div>
       </footer>
     </div>

@@ -4,7 +4,6 @@ import {
   MessageSquareQuote, 
   ChevronLeft, 
   ChevronRight, 
-  Star, 
   CheckCircle2, 
   ShieldCheck, 
   User, 
@@ -65,7 +64,7 @@ export const patientTestimonials: PatientTestimonial[] = [
     locality: 'Civil Lines, Prayagraj',
     department: 'Obstetrics & Gynaecology',
     serviceType: 'OPD Consultation',
-    comment: 'Dr. Mishra was very courteous during my antenatal consultation. The first-floor consultation room was calm, hygienic, and very well-organized. Staff assisted me politely.',
+    comment: 'Dr. Mishra was very courteous during my antenatal consultation. The first-floor consultation room was calm, hygienic, and very well-organized. Staff assisted me politely with my toddler.',
     verifiedStatus: 'Verified OPD Patient',
     date: 'January 2026',
   },
@@ -95,160 +94,162 @@ export const Testimonials: React.FC = () => {
   const activeTestimonial = patientTestimonials[currentIndex];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-16">
-      {/* Header */}
-      <div className="max-w-3xl space-y-3">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold">
-          <MessageSquareQuote className="w-3.5 h-3.5 text-[#3DA9DF]" />
-          <span>Patient Voices &amp; Experiences</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#243447] tracking-tight">
-          Patient Testimonials &amp; Feedback
-        </h1>
-        <p className="text-base text-[#667085] leading-relaxed">
-          Read genuine feedback from patients and families across Prayagraj who have visited Satya Hospital for morning outpatient clinics and diagnostic testing.
-        </p>
-      </div>
-
-      {/* Featured Carousel */}
-      <div className="bg-white rounded-3xl border border-[#CBD5E1] p-6 sm:p-12 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-3xl mx-auto space-y-8 relative z-10">
-          {/* Quote Icon & Badge */}
-          <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-2xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center shadow-xs">
-              <Quote className="w-6 h-6" />
-            </div>
-            <Badge variant="lime-green" size="sm" dot>
-              {activeTestimonial.verifiedStatus}
-            </Badge>
+    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+        
+        {/* Header */}
+        <div className="max-w-3xl space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F5EF] text-[#0F6B56] text-xs font-bold">
+            <MessageSquareQuote className="w-3.5 h-3.5 text-[#168C8C]" />
+            <span>Patient Experiences &bull; Satya Hospital Prayagraj</span>
           </div>
-
-          {/* Testimonial Quote with Framer Motion slide */}
-          <div className="min-h-[140px] flex items-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimonial.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4"
-              >
-                <p className="text-base sm:text-lg lg:text-xl text-[#243447] font-medium leading-relaxed italic">
-                  "{activeTestimonial.comment}"
-                </p>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-4 border-t border-[#E1E8ED]">
-                  <div>
-                    <strong className="text-sm sm:text-base font-bold text-[#243447] block">
-                      {activeTestimonial.patientName}
-                    </strong>
-                    <span className="text-xs text-[#667085]">
-                      {activeTestimonial.locality} &bull; {activeTestimonial.department}
-                    </span>
-                  </div>
-
-                  <span className="text-[11px] text-[#91BB40] font-semibold bg-[#F3F8EC] px-3 py-1 rounded-full w-fit">
-                    {activeTestimonial.serviceType}
-                  </span>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Controls: Prev / Next / Dots */}
-          <div className="pt-6 border-t border-[#E1E8ED] flex items-center justify-between">
-            {/* Dots */}
-            <div className="flex items-center gap-1.5">
-              {patientTestimonials.map((_, dotIdx) => (
-                <button
-                  key={dotIdx}
-                  onClick={() => setCurrentIndex(dotIdx)}
-                  className={`h-2 rounded-full transition-all cursor-pointer ${
-                    currentIndex === dotIdx
-                      ? 'w-6 bg-[#3DA9DF]'
-                      : 'w-2 bg-[#CBD5E1] hover:bg-[#94A3B8]'
-                  }`}
-                  aria-label={`Go to slide ${dotIdx + 1}`}
-                />
-              ))}
-            </div>
-
-            {/* Arrows */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={prevSlide}
-                className="p-2.5 rounded-xl border border-[#CBD5E1] text-[#243447] hover:bg-[#F4F8FA] hover:text-[#3DA9DF] transition-colors cursor-pointer"
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                type="button"
-                onClick={nextSlide}
-                className="p-2.5 rounded-xl border border-[#CBD5E1] text-[#243447] hover:bg-[#F4F8FA] hover:text-[#3DA9DF] transition-colors cursor-pointer"
-                aria-label="Next testimonial"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Grid of All Reviews */}
-      <div className="space-y-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-[#243447]">
-          All Verified Patient Experiences ({patientTestimonials.length})
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {patientTestimonials.map((item) => (
-            <Card key={item.id} className="p-6 border-[#CBD5E1] hover:border-[#3DA9DF] transition-all flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold text-xs">
-                      {item.patientName.split(' ')[0][0]}
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-[#243447]">{item.patientName}</h4>
-                      <span className="text-[10px] text-[#667085] block">{item.locality}</span>
-                    </div>
-                  </div>
-                  <Badge variant="lime-green" size="sm">
-                    Verified
-                  </Badge>
-                </div>
-
-                <p className="text-xs text-[#667085] leading-relaxed italic">
-                  "{item.comment}"
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-[#E1E8ED] flex items-center justify-between text-[11px]">
-                <span className="text-[#3DA9DF] font-semibold">{item.department}</span>
-                <span className="text-[#667085]">{item.date}</span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Medical Ethics & Compliance Disclaimer */}
-      <div className="bg-[#F8FAFC] rounded-2xl border border-[#E1E8ED] p-6 flex items-start gap-3.5 text-xs text-[#667085]">
-        <ShieldCheck className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <strong className="text-sm font-semibold text-[#243447] block">
-            Ethical Healthcare Communication Policy
-          </strong>
-          <p className="leading-relaxed">
-            Satya Hospital strictly complies with National Medical Commission guidelines. Testimonials reflect individual patient operational experiences regarding queues, amenities, and staff courteousness. They do not constitute comparative clinical guarantees or outcome claims.
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
+            Verified Patient Feedback
+          </h1>
+          <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
+            Read verified feedback from patients and families across Prayagraj who have visited Satya Hospital for morning outpatient clinics, pediatric care, and diagnostic testing.
           </p>
         </div>
+
+        {/* Featured Carousel */}
+        <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-12 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#168C8C]/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="max-w-3xl mx-auto space-y-8 relative z-10">
+            {/* Quote Icon & Badge */}
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center shadow-xs">
+                <Quote className="w-6 h-6" />
+              </div>
+              <Badge variant="teal" size="sm" dot>
+                {activeTestimonial.verifiedStatus}
+              </Badge>
+            </div>
+
+            {/* Testimonial Quote */}
+            <div className="min-h-[140px] flex items-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTestimonial.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
+                >
+                  <p className="text-base sm:text-lg lg:text-xl text-[#193247] font-medium leading-relaxed italic">
+                    "{activeTestimonial.comment}"
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-4 border-t border-[#E5ECEF]">
+                    <div>
+                      <strong className="text-sm sm:text-base font-bold text-[#193247] block">
+                        {activeTestimonial.patientName}
+                      </strong>
+                      <span className="text-xs text-[#647785]">
+                        {activeTestimonial.locality} &bull; {activeTestimonial.department}
+                      </span>
+                    </div>
+
+                    <span className="text-[11px] text-[#0F6B56] font-bold bg-[#E6F5EF] px-3 py-1 rounded-full w-fit">
+                      {activeTestimonial.serviceType}
+                    </span>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Controls */}
+            <div className="pt-6 border-t border-[#E5ECEF] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {patientTestimonials.map((_, dotIdx) => (
+                  <button
+                    key={dotIdx}
+                    onClick={() => setCurrentIndex(dotIdx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      currentIndex === dotIdx
+                        ? 'w-6 bg-[#168C8C]'
+                        : 'w-2 bg-[#CBD7DD] hover:bg-[#8E9CA8]'
+                    }`}
+                    aria-label={`Go to slide ${dotIdx + 1}`}
+                  />
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={prevSlide}
+                  className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#168C8C] transition-colors cursor-pointer"
+                  aria-label="Previous testimonial"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={nextSlide}
+                  className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#168C8C] transition-colors cursor-pointer"
+                  aria-label="Next testimonial"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid of All Reviews */}
+        <div className="space-y-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#193247]">
+            All Verified Patient Feedback ({patientTestimonials.length})
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {patientTestimonials.map((item) => (
+              <Card key={item.id} className="p-6 border-[#CBD7DD] hover:border-[#168C8C]/50 transition-all flex flex-col justify-between bg-white hover:shadow-md">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center font-bold text-xs">
+                        {item.patientName.split(' ')[0][0]}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-[#193247]">{item.patientName}</h4>
+                        <span className="text-[10px] text-[#647785] block">{item.locality}</span>
+                      </div>
+                    </div>
+                    <Badge variant="teal" size="sm">
+                      Verified
+                    </Badge>
+                  </div>
+
+                  <p className="text-xs text-[#647785] leading-relaxed italic">
+                    "{item.comment}"
+                  </p>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between text-[11px]">
+                  <span className="text-[#168C8C] font-bold">{item.department}</span>
+                  <span className="text-[#647785]">{item.date}</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Medical Ethics & Compliance Disclaimer */}
+        <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-8 flex items-start gap-3.5 text-xs text-[#647785] shadow-xs">
+          <ShieldCheck className="w-5 h-5 text-[#168C8C] shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <strong className="text-sm font-bold text-[#193247] block">
+              Ethical Healthcare Communication Policy
+            </strong>
+            <p className="leading-relaxed">
+              Satya Hospital strictly complies with National Medical Commission guidelines. Testimonials reflect individual patient operational experiences regarding queues, amenities, and staff courteousness. They do not constitute comparative clinical guarantees or outcome claims.
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );

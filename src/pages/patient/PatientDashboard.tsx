@@ -53,27 +53,27 @@ export const PatientDashboard: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Patient Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#243447] to-[#1B2937] text-white rounded-2xl p-6 sm:p-8 shadow-sm">
+      <div className="bg-gradient-to-r from-[#193247] via-[#168C8C]/90 to-[#168C8C] text-white rounded-3xl p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#91BB40] text-xs font-semibold backdrop-blur-xs">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified Health Account</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-[#DFF3FA] text-xs font-semibold backdrop-blur-xs border border-white/20">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-200" />
+              <span>Verified Pediatric & Family Health Portal</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
               Welcome, {patientProfile?.fullName || user?.fullName}
             </h1>
-            <p className="text-xs text-white/70">
-              Hospital Patient ID: <strong className="text-white text-sm bg-white/15 px-2 py-0.5 rounded font-mono">{patientProfile?.patientId}</strong>
+            <p className="text-xs text-teal-50">
+              Hospital Patient ID: <strong className="text-white text-sm bg-white/20 px-2.5 py-0.5 rounded-lg font-mono">{patientProfile?.patientId}</strong>
               {patientProfile?.phone && (
-                <span className="ml-3 text-white/60">&bull; Phone: +91 {patientProfile.phone}</span>
+                <span className="ml-3 text-teal-100">&bull; Phone: +91 {patientProfile.phone}</span>
               )}
             </p>
           </div>
 
           <div className="shrink-0 flex items-center gap-3">
             <Link to="/book-appointment">
-              <Button variant="accent" size="md" leftIcon={<PlusCircle className="w-4 h-4" />}>
+              <Button variant="accent" size="md" leftIcon={<PlusCircle className="w-4 h-4 text-[#168C8C]" />}>
                 Book OPD Token
               </Button>
             </Link>
@@ -83,47 +83,47 @@ export const PatientDashboard: React.FC = () => {
 
       {/* 3 Quick Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5 border-[#CBD5E1] bg-white">
+        <Card className="p-5 border-teal-100/80 bg-white rounded-2xl shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#667085] font-medium">Upcoming OPD Visits</span>
-            <div className="w-8 h-8 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
+            <span className="text-xs text-[#647785] font-medium">Upcoming OPD Visits</span>
+            <div className="w-9 h-9 rounded-xl bg-[#DFF3FA] text-[#168C8C] flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-[#243447] mt-2">
+          <div className="text-2xl font-bold text-[#193247] mt-2">
             {upcomingAppointments.length}
           </div>
-          <span className="text-[11px] text-[#3DA9DF] font-medium mt-1 block">
+          <span className="text-[11px] text-[#168C8C] font-semibold mt-1 block">
             {upcomingAppointments.length > 0 ? `Token #${upcomingAppointments[0].tokenNumber} active` : 'No visits scheduled today'}
           </span>
         </Card>
 
-        <Card className="p-5 border-[#CBD5E1] bg-white">
+        <Card className="p-5 border-teal-100/80 bg-white rounded-2xl shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#667085] font-medium">Pathology Reports</span>
-            <div className="w-8 h-8 rounded-lg bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
-              <Microscope className="w-4 h-4 text-[#688D23]" />
+            <span className="text-xs text-[#647785] font-medium">Pathology Reports</span>
+            <div className="w-9 h-9 rounded-xl bg-[#E6F5EF] text-[#168C8C] flex items-center justify-center">
+              <Microscope className="w-4 h-4 text-[#168C8C]" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-[#243447] mt-2">
+          <div className="text-2xl font-bold text-[#193247] mt-2">
             {myReports.length}
           </div>
-          <span className="text-[11px] text-[#91BB40] font-medium mt-1 block">
+          <span className="text-[11px] text-[#168C8C] font-semibold mt-1 block">
             Verified &amp; Published PDFs
           </span>
         </Card>
 
-        <Card className="p-5 border-[#CBD5E1] bg-white">
+        <Card className="p-5 border-teal-100/80 bg-white rounded-2xl shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#667085] font-medium">Verified Prescriptions</span>
-            <div className="w-8 h-8 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Stethoscope className="w-4 h-4" />
+            <span className="text-xs text-[#647785] font-medium">Verified Prescriptions</span>
+            <div className="w-9 h-9 rounded-xl bg-[#FFF0E7] text-[#168C8C] flex items-center justify-center">
+              <Stethoscope className="w-4 h-4 text-[#168C8C]" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-[#243447] mt-2">
+          <div className="text-2xl font-bold text-[#193247] mt-2">
             {myPrescriptions.length}
           </div>
-          <span className="text-[11px] text-[#667085] font-medium mt-1 block">
+          <span className="text-[11px] text-[#647785] font-medium mt-1 block">
             Scanned Doctor Rx Files
           </span>
         </Card>
@@ -134,44 +134,44 @@ export const PatientDashboard: React.FC = () => {
         
         {/* Left Column: Appointments (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <Card>
+          <Card className="rounded-2xl border-teal-100 shadow-xs">
             <CardHeader>
               <div className="flex items-center justify-between w-full">
-                <h2 className="text-base font-bold text-[#243447] flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#3DA9DF]" />
+                <h2 className="text-base font-bold text-[#193247] flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#168C8C]" />
                   <span>My Outpatient Appointments</span>
                 </h2>
-                <Link to="/patient/appointments" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
+                <Link to="/patient/appointments" className="text-xs font-semibold text-[#168C8C] hover:underline">
                   View All ({myAppointments.length})
                 </Link>
               </div>
             </CardHeader>
 
-            <CardBody className="p-0 divide-y divide-[#E1E8ED]">
+            <CardBody className="p-0 divide-y divide-slate-100">
               {myAppointments.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#667085]">
+                <div className="p-6 text-center text-xs text-[#647785]">
                   No appointment records found. Book an OPD slot to receive your daily token.
                 </div>
               ) : (
                 myAppointments.slice(0, 3).map((apt) => (
-                  <div key={apt.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-[#F8FAFC] transition-colors">
+                  <div key={apt.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-[#FCFDFB] transition-colors">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <Badge variant={apt.status === 'completed' ? 'success' : apt.status === 'in_consultation' ? 'medical-blue' : 'warning'} size="sm" dot>
+                        <Badge variant={apt.status === 'completed' ? 'success' : apt.status === 'in_consultation' ? 'teal' : 'warning'} size="sm" dot>
                           {apt.status.replace('_', ' ').toUpperCase()}
                         </Badge>
-                        <span className="text-xs font-bold text-[#243447]">
+                        <span className="text-xs font-bold text-[#193247]">
                           Token #{apt.tokenNumber}
                         </span>
-                        <span className="text-[11px] text-[#667085]">
+                        <span className="text-[11px] text-[#647785]">
                           ({apt.appointmentCode})
                         </span>
                       </div>
-                      <div className="text-xs font-semibold text-[#243447]">
+                      <div className="text-xs font-semibold text-[#193247]">
                         Date: {apt.appointmentDate} &bull; Doctor: {apt.doctorName}
                       </div>
                       {apt.notes && (
-                        <p className="text-[11px] text-[#667085] italic">Reason: {apt.notes}</p>
+                        <p className="text-[11px] text-[#647785] italic">Reason: {apt.notes}</p>
                       )}
                     </div>
 
@@ -187,30 +187,30 @@ export const PatientDashboard: React.FC = () => {
           </Card>
 
           {/* Verified Prescriptions Card */}
-          <Card>
+          <Card className="rounded-2xl border-teal-100 shadow-xs">
             <CardHeader>
               <div className="flex items-center justify-between w-full">
-                <h2 className="text-base font-bold text-[#243447] flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#91BB40]" />
+                <h2 className="text-base font-bold text-[#193247] flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#168C8C]" />
                   <span>Doctor Handwritten Prescriptions</span>
                 </h2>
-                <Link to="/patient/prescriptions" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
+                <Link to="/patient/prescriptions" className="text-xs font-semibold text-[#168C8C] hover:underline">
                   View All ({myPrescriptions.length})
                 </Link>
               </div>
             </CardHeader>
 
-            <CardBody className="p-0 divide-y divide-[#E1E8ED]">
+            <CardBody className="p-0 divide-y divide-slate-100">
               {myPrescriptions.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#667085]">
+                <div className="p-6 text-center text-xs text-[#647785]">
                   No scanned prescriptions uploaded yet. Doctor written prescriptions will appear here once verified.
                 </div>
               ) : (
                 myPrescriptions.map((doc) => (
-                  <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+                  <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-[#FCFDFB]">
                     <div>
-                      <h4 className="text-xs font-bold text-[#243447]">{doc.title}</h4>
-                      <span className="text-[11px] text-[#667085] block mt-0.5">
+                      <h4 className="text-xs font-bold text-[#193247]">{doc.title}</h4>
+                      <span className="text-[11px] text-[#647785] block mt-0.5">
                         Verified by: {doc.verifiedBy} &bull; {new Date(doc.createdAt).toLocaleDateString()}
                       </span>
                     </div>
@@ -218,7 +218,7 @@ export const PatientDashboard: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDownload(doc.storageKey, doc.title)}
-                      leftIcon={<Download className="w-3.5 h-3.5 text-[#3DA9DF]" />}
+                      leftIcon={<Download className="w-3.5 h-3.5 text-[#168C8C]" />}
                     >
                       View Rx PDF
                     </Button>
@@ -231,44 +231,44 @@ export const PatientDashboard: React.FC = () => {
 
         {/* Right Column: Pathology Reports (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <Card>
+          <Card className="rounded-2xl border-teal-100 shadow-xs">
             <CardHeader>
               <div className="flex items-center justify-between w-full">
-                <h2 className="text-base font-bold text-[#243447] flex items-center gap-2">
-                  <Microscope className="w-4 h-4 text-[#3DA9DF]" />
+                <h2 className="text-base font-bold text-[#193247] flex items-center gap-2">
+                  <Microscope className="w-4 h-4 text-[#168C8C]" />
                   <span>Published Lab Reports</span>
                 </h2>
-                <Link to="/patient/reports" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
+                <Link to="/patient/reports" className="text-xs font-semibold text-[#168C8C] hover:underline">
                   All Reports ({myReports.length})
                 </Link>
               </div>
             </CardHeader>
 
-            <CardBody className="p-0 divide-y divide-[#E1E8ED]">
+            <CardBody className="p-0 divide-y divide-slate-100">
               {myReports.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#667085]">
+                <div className="p-6 text-center text-xs text-[#647785]">
                   No published reports available. Unverified laboratory files are safeguarded until signed off by the pathologist.
                 </div>
               ) : (
                 myReports.map((rep) => (
-                  <div key={rep.id} className="p-4 space-y-2 hover:bg-[#F8FAFC] transition-colors">
+                  <div key={rep.id} className="p-4 space-y-2 hover:bg-[#FCFDFB] transition-colors">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-xs font-bold text-[#243447]">{rep.testName}</h4>
-                        <span className="text-[11px] text-[#667085]">
+                        <h4 className="text-xs font-bold text-[#193247]">{rep.testName}</h4>
+                        <span className="text-[11px] text-[#647785]">
                           Accession: {rep.labAccessionNumber} &bull; {rep.reportDate}
                         </span>
                       </div>
-                      <Badge variant="lime-green" size="sm">
+                      <Badge variant="teal" size="sm">
                         Verified &amp; Published
                       </Badge>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 text-[11px] text-[#667085]">
+                    <div className="flex items-center justify-between pt-1 text-[11px] text-[#647785]">
                       <span>Sign-off: {rep.verifierName || 'Pathologist'}</span>
                       <button
                         onClick={() => handleDownload(rep.storageKey, rep.testName)}
-                        className="font-semibold text-[#3DA9DF] hover:underline flex items-center gap-1 cursor-pointer"
+                        className="font-semibold text-[#168C8C] hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Download Signed PDF</span>
@@ -281,12 +281,12 @@ export const PatientDashboard: React.FC = () => {
           </Card>
 
           {/* DPDP Compliance Card */}
-          <div className="bg-[#F8FAFC] border border-[#CBD5E1] p-4 rounded-xl text-xs text-[#667085] space-y-2">
-            <div className="font-semibold text-[#243447] flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#91BB40]" />
+          <div className="bg-[#E6F5EF]/60 border border-teal-200/80 p-4 rounded-2xl text-xs text-[#193247] space-y-2 shadow-xs">
+            <div className="font-semibold text-[#193247] flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#168C8C]" />
               <span>Medical Document Confidentiality</span>
             </div>
-            <p className="leading-relaxed">
+            <p className="text-[#647785] leading-relaxed">
               Downloads utilize authenticated short-lived signed URLs. Unverified draft lab results are strictly withheld until medical certification.
             </p>
           </div>

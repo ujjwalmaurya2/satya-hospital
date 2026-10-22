@@ -14,7 +14,8 @@ import {
   X, 
   Home,
   Clock,
-  ClipboardList
+  ClipboardList,
+  Heart
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
@@ -72,17 +73,17 @@ export const StaffLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F8FA] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#FCFDFB] flex flex-col md:flex-row">
       {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-[#E1E8ED] px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+      <div className="md:hidden bg-white border-b border-[#E5ECEF] px-4 py-3 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#3DA9DF] flex items-center justify-center text-white">
-            <Activity className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-lg bg-[#168C8C] flex items-center justify-center text-white">
+            <Heart className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-sm font-bold text-[#243447]">Satya Hospital</span>
+            <span className="text-sm font-bold text-[#193247]">Satya Hospital</span>
             <div className="flex items-center gap-1.5">
-              <Badge variant="lime-green" size="sm">
+              <Badge variant="teal" size="sm">
                 {role.toUpperCase()}
               </Badge>
             </div>
@@ -90,7 +91,7 @@ export const StaffLayout: React.FC = () => {
         </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 text-[#243447] hover:bg-[#F4F8FA] rounded-lg"
+          className="p-2 text-[#193247] hover:bg-[#E6F5EF] rounded-lg"
           aria-label="Toggle staff sidebar"
         >
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -99,19 +100,19 @@ export const StaffLayout: React.FC = () => {
 
       {/* Staff Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-72 bg-[#243447] text-white flex flex-col transition-transform duration-200 ease-in-out ${
+        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-72 bg-[#193247] text-white flex flex-col transition-transform duration-200 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-[#34465B] flex items-center justify-between">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#3DA9DF] flex items-center justify-center text-white shadow-sm">
-              <Activity className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-[#168C8C] flex items-center justify-center text-white shadow-sm">
+              <Heart className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-bold text-white leading-tight">Satya Hospital</h2>
-              <span className="text-xs font-semibold text-[#91BB40] uppercase">
+              <span className="text-xs font-semibold text-[#DFF3FA] uppercase">
                 Staff Workspace
               </span>
             </div>
@@ -125,10 +126,10 @@ export const StaffLayout: React.FC = () => {
         </div>
 
         {/* Current User Card & Fast Role Switcher */}
-        <div className="p-4 bg-[#1B2937] border-b border-[#34465B]">
+        <div className="p-4 bg-white/5 border-b border-white/10">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-white/60">Active Session:</span>
-            <Badge variant="lime-green" size="sm" dot>
+            <Badge variant="teal" size="sm" dot>
               {role.toUpperCase()}
             </Badge>
           </div>
@@ -139,9 +140,9 @@ export const StaffLayout: React.FC = () => {
             {user?.email || 'staff@satyahospital.com'}
           </div>
 
-          {/* Quick Role Switcher for verification */}
-          <div className="mt-3 pt-3 border-t border-[#2A3E54]">
-            <label className="text-[11px] font-semibold text-[#91BB40] block mb-1.5 uppercase tracking-wider">
+          {/* Quick Role Switcher */}
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <label className="text-[11px] font-bold text-[#DFF3FA] block mb-1.5 uppercase tracking-wider">
               Switch Staff Panel:
             </label>
             <div className="grid grid-cols-2 gap-1.5 text-xs">
@@ -151,8 +152,8 @@ export const StaffLayout: React.FC = () => {
                   onClick={() => handleRoleSwitch(r)}
                   className={`px-2 py-1.5 rounded-md text-left text-xs font-medium transition-colors cursor-pointer ${
                     role === r
-                      ? 'bg-[#3DA9DF] text-white font-semibold'
-                      : 'bg-[#243447] text-white/70 hover:bg-[#324559] hover:text-white'
+                      ? 'bg-[#168C8C] text-white font-bold'
+                      : 'bg-white/10 text-white/70 hover:bg-white/15 hover:text-white'
                   }`}
                 >
                   {r === 'admin' ? 'Super Admin' : r.charAt(0).toUpperCase() + r.slice(1)}
@@ -174,10 +175,10 @@ export const StaffLayout: React.FC = () => {
                 key={item.label}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-[#3DA9DF] text-white shadow-xs'
-                    : 'text-white/80 hover:bg-[#2D3E52] hover:text-white'
+                    ? 'bg-[#168C8C] text-white shadow-xs font-bold'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 {item.icon}
@@ -186,32 +187,32 @@ export const StaffLayout: React.FC = () => {
             );
           })}
 
-          <div className="pt-4 mt-4 border-t border-[#34465B]">
+          <div className="pt-4 mt-4 border-t border-white/10">
             <div className="text-[11px] font-semibold text-white/40 uppercase tracking-wider px-3 mb-2">
               External Shortcuts
             </div>
             <Link
               to="/"
-              className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-[#2D3E52] hover:text-white"
+              className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 hover:text-white"
             >
-              <Home className="w-4 h-4 text-[#3DA9DF]" />
+              <Home className="w-4 h-4 text-[#DFF3FA]" />
               <span>Public Hospital Website</span>
             </Link>
             <Link
               to="/patient/dashboard"
-              className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-[#2D3E52] hover:text-white"
+              className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 hover:text-white"
             >
-              <Users className="w-4 h-4 text-[#91BB40]" />
+              <Users className="w-4 h-4 text-[#168C8C]" />
               <span>View Patient Portal</span>
             </Link>
           </div>
         </nav>
 
         {/* Logout Footer */}
-        <div className="p-4 border-t border-[#34465B] bg-[#1E2C3B]">
+        <div className="p-4 border-t border-white/10 bg-black/10">
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-xs font-semibold text-red-300 hover:text-red-200 bg-red-950/40 hover:bg-red-900/50 rounded-lg border border-red-900/50 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-xs font-bold text-red-200 hover:text-white bg-red-900/40 hover:bg-red-800/50 rounded-xl border border-red-800/50 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out Workspace</span>

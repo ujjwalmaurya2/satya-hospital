@@ -50,51 +50,51 @@ export const StaffLogin: React.FC = () => {
       role: 'reception',
       title: 'Reception Desk',
       desc: 'OPD queue management, walk-in registration & scan uploads',
-      icon: <Users className="w-5 h-5 text-[#3DA9DF]" />,
+      icon: <Users className="w-5 h-5 text-[#168C8C]" />,
     },
     {
       role: 'doctor',
       title: 'Consulting Doctor',
       desc: 'Patient consultation records, visit history & Rx verification',
-      icon: <Stethoscope className="w-5 h-5 text-[#3DA9DF]" />,
+      icon: <Stethoscope className="w-5 h-5 text-[#168C8C]" />,
     },
     {
       role: 'pathology',
       title: 'Pathology & Lab',
       desc: 'PDF lab report uploads, accession matching & verified publishing',
-      icon: <Microscope className="w-5 h-5 text-[#91BB40]" />,
+      icon: <Microscope className="w-5 h-5 text-[#168C8C]" />,
     },
     {
       role: 'admin',
       title: 'Hospital Super Admin',
       desc: 'Hospital settings, daily capacity limits & immutable audit logs',
-      icon: <ShieldAlert className="w-5 h-5 text-red-500" />,
+      icon: <ShieldAlert className="w-5 h-5 text-amber-600" />,
     },
   ];
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#FCFDFB]">
       <div className="max-w-xl w-full space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-[#243447] text-[#91BB40] flex items-center justify-center mx-auto shadow-sm">
-            <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
+          <div className="w-14 h-14 rounded-2xl bg-[#DFF3FA] text-[#168C8C] flex items-center justify-center mx-auto shadow-xs border border-teal-100">
+            <ShieldCheck className="w-7 h-7 stroke-[2.2]" />
           </div>
-          <h1 className="text-2xl font-bold text-[#243447]">
+          <h1 className="text-2xl font-bold text-[#193247]">
             Satya Hospital Staff Workspace
           </h1>
-          <p className="text-xs text-[#667085]">
-            Authorized clinical, administrative, and laboratory personnel login.
+          <p className="text-xs text-[#647785]">
+            Authorized clinical, administrative, and laboratory personnel portal.
           </p>
         </div>
 
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between w-full">
-              <span className="text-xs font-bold text-[#243447] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#193247] uppercase tracking-wider">
                 Select Your Assigned Department Role
               </span>
-              <Badge variant="neutral" size="sm">
+              <Badge variant="teal" size="sm">
                 Strict RLS Access
               </Badge>
             </div>
@@ -115,8 +115,8 @@ export const StaffLogin: React.FC = () => {
                   onClick={() => setSelectedRole(item.role)}
                   className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all ${
                     selectedRole === item.role
-                      ? 'border-[#3DA9DF] bg-[#EBF6FC] shadow-xs'
-                      : 'border-[#E1E8ED] bg-white hover:bg-[#F8FAFC]'
+                      ? 'border-[#168C8C] bg-[#DFF3FA]/30 shadow-xs ring-1 ring-[#168C8C]'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -126,11 +126,11 @@ export const StaffLogin: React.FC = () => {
                       name="staff_role"
                       checked={selectedRole === item.role}
                       onChange={() => setSelectedRole(item.role)}
-                      className="text-[#3DA9DF] focus:ring-[#3DA9DF]"
+                      className="text-[#168C8C] focus:ring-[#168C8C]"
                     />
                   </div>
-                  <h3 className="text-xs font-bold text-[#243447]">{item.title}</h3>
-                  <p className="text-[11px] text-[#667085] mt-0.5 leading-snug">{item.desc}</p>
+                  <h3 className="text-xs font-bold text-[#193247]">{item.title}</h3>
+                  <p className="text-[11px] text-[#647785] mt-0.5 leading-snug">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -148,7 +148,7 @@ export const StaffLogin: React.FC = () => {
               </Button>
             </form>
 
-            <div className="pt-2 text-center text-[11px] text-[#667085]">
+            <div className="pt-2 text-center text-[11px] text-[#647785]">
               Hospital staff accounts are provisioned and audited by the Super Administrator. Unauthorized login attempts are recorded.
             </div>
           </CardBody>

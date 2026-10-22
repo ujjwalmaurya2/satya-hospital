@@ -22,6 +22,8 @@ import { Facilities } from './pages/public/Facilities';
 import { Gallery } from './pages/public/Gallery';
 import { Testimonials } from './pages/public/Testimonials';
 import { News } from './pages/public/News';
+import { PediatricCare } from './pages/public/PediatricCare';
+import { NewbornCare } from './pages/public/NewbornCare';
 import { PrivacyPolicy } from './pages/public/PrivacyPolicy';
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { TermsAndConditions } from './pages/public/TermsAndConditions';
@@ -49,7 +51,7 @@ import { NotFound } from './pages/NotFound';
 
 // Public Layout Wrapper
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen flex flex-col bg-[#F4F8FA]">
+  <div className="min-h-screen flex flex-col bg-[#FCFDFB]">
     <Navbar />
     <main className="flex-1">{children}</main>
     <Footer />
@@ -66,6 +68,8 @@ export const App: React.FC = () => {
             {/* PUBLIC MULTI-PAGE ROUTES */}
             <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
             <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+            <Route path="/pediatric-care" element={<PublicLayout><PediatricCare /></PublicLayout>} />
+            <Route path="/newborn-care" element={<PublicLayout><NewbornCare /></PublicLayout>} />
             <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
             <Route path="/departments" element={<PublicLayout><Services /></PublicLayout>} />
             <Route path="/doctors" element={<PublicLayout><Doctors /></PublicLayout>} />
