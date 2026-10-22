@@ -1,0 +1,111 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { HospitalProvider } from './context/HospitalContext';
+
+// Layouts
+import { Navbar } from './components/layout/Navbar';
+import { Footer } from './components/layout/Footer';
+import { PatientLayout } from './components/layout/PatientLayout';
+import { StaffLayout } from './components/layout/StaffLayout';
+
+// Public Pages
+import { Home } from './pages/public/Home';
+import { About } from './pages/public/About';
+import { Services } from './pages/public/Services';
+import { Doctors } from './pages/public/Doctors';
+import { Pathology } from './pages/public/Pathology';
+import { Contact } from './pages/public/Contact';
+import { BookAppointment } from './pages/public/BookAppointment';
+import { PrivacyPolicy } from './pages/public/PrivacyPolicy';
+import { TermsAndConditions } from './pages/public/TermsAndConditions';
+import { CancellationPolicy } from './pages/public/CancellationPolicy';
+import { RefundPolicy } from './pages/public/RefundPolicy';
+import { Accessibility } from './pages/public/Accessibility';
+import { Disclaimer } from './pages/public/Disclaimer';
+
+// Patient Pages
+import { PatientLogin } from './pages/patient/PatientLogin';
+import { PatientDashboard } from './pages/patient/PatientDashboard';
+import { PatientAppointments } from './pages/patient/PatientAppointments';
+import { PatientReports } from './pages/patient/PatientReports';
+import { PatientPrescriptions } from './pages/patient/PatientPrescriptions';
+import { PatientProfilePage } from './pages/patient/PatientProfile';
+import { PatientConsent } from './pages/patient/PatientConsent';
+
+// Staff Pages
+import { StaffLogin } from './pages/staff/StaffLogin';
+import { ReceptionDashboard } from './pages/staff/ReceptionDashboard';
+import { DoctorDashboard } from './pages/staff/DoctorDashboard';
+import { PathologyDashboard } from './pages/staff/PathologyDashboard';
+import { AdminDashboard } from './pages/staff/AdminDashboard';
+import { NotFound } from './pages/NotFound';
+
+// Public Layout Wrapper
+const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="min-h-screen flex flex-col bg-[#F4F8FA]">
+    <Navbar />
+    <main className="flex-1">{children}</main>
+    <Footer />
+  </div>
+);
+
+export const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <HospitalProvider>
+          <Routes>
+            {/* PUBLIC ROUTES */}
+            <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+            <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+            <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
+            <Route path="/departments" element={<PublicLayout><Services /></PublicLayout>} />
+            <Route path="/doctors" element={<PublicLayout><Doctors /></PublicLayout>} />
+            <Route path="/pathology" element={<PublicLayout><Pathology /></PublicLayout>} />
+            <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+            <Route path="/book-appointment" element={<PublicLayout><BookAppointment /></PublicLayout>} />
+            
+            {/* LEGAL & STATUTORY POLICY ROUTES */}
+            <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
+            <Route path="/terms-and-conditions" element={<PublicLayout><TermsAndConditions /></PublicLayout>} />
+            <Route path="/cancellation-policy" element={<PublicLayout><CancellationPolicy /></PublicLayout>} />
+            <Route path="/refund-policy" element={<PublicLayout><RefundPolicy /></PublicLayout>} />
+            <Route path="/accessibility" element={<PublicLayout><Accessibility /></PublicLayout>} />
+            <Route path="/disclaimer" element={<PublicLayout><Disclaimer /></PublicLayout>} />
+
+            {/* PATIENT AUTH */}
+            <Route path="/patient/login" element={<PublicLayout><PatientLogin /></PublicLayout>} />
+
+            {/* PATIENT PORTAL ROUTES (NESTED UNDER PATIENT LAYOUT) */}
+            <Route path="/patient" element={<PatientLayout />}>
+              <Route index element={<Navigate to="/patient/dashboard" replace />} />
+              <Route path="dashboard" element={<PatientDashboard />} />
+              <Route path="appointments" element={<PatientAppointments />} />
+              <Route path="reports" element={<PatientReports />} />
+              <Route path="prescriptions" element={<PatientPrescriptions />} />
+              <Route path="profile" element={<PatientProfilePage />} />
+              <Route path="consent-and-privacy" element={<PatientConsent />} />
+            </Route>
+
+            {/* STAFF AUTH */}
+            <Route path="/staff/login" element={<PublicLayout><StaffLogin /></PublicLayout>} />
+
+            {/* STAFF DASHBOARDS (NESTED UNDER STAFF LAYOUT) */}
+            <Route element={<StaffLayout />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/reception" element={<ReceptionDashboard />} />
+              <Route path="/doctor" element={<DoctorDashboard />} />
+              <Route path="/pathology-dashboard" element={<PathologyDashboard />} />
+            </Route>
+
+            {/* 404 CATCH ALL */}
+            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+          </Routes>
+        </HospitalProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;

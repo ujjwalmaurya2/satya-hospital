@@ -1,0 +1,17 @@
+{
+  "name": "Satya Hospital & Pathology",
+  "short_name": "Satya Hospital",
+  "description": "Complete digital platform for Satya Hospital & Pathology — OPD appointments, medical records, and reports.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F8FA",
+  "theme_color": "#3DA9DF",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

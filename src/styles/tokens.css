@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+:root {
+  /* Satya Hospital Core Brand Colors */
+  --sh-medical-blue: #3DA9DF;
+  --sh-medical-blue-hover: #2b98ce;
+  --sh-medical-blue-light: #EBF6FC;
+  --sh-lime-green: #91BB40;
+  --sh-lime-green-hover: #7fa435;
+  --sh-lime-green-light: #F3F8EC;
+  
+  /* Neutral & Canvas */
+  --sh-white: #FFFFFF;
+  --sh-canvas: #F4F8FA;
+  --sh-canvas-subtle: #EEF4F7;
+  --sh-border: #E1E8ED;
+  --sh-border-strong: #CBD5E1;
+  
+  /* Typography Colors */
+  --sh-navy-text: #243447;
+  --sh-navy-headings: #192635;
+  --sh-muted-text: #667085;
+  --sh-subtle-text: #8E9BAE;
+
+  /* Status Tokens */
+  --sh-status-success: #15803D;
+  --sh-status-success-bg: #DCFCE7;
+  --sh-status-warning: #B45309;
+  --sh-status-warning-bg: #FEF3C7;
+  --sh-status-danger: #B91C1C;
+  --sh-status-danger-bg: #FEE2E2;
+  --sh-status-info: #0284C7;
+  --sh-status-info-bg: #E0F2FE;
+
+  /* Shadows */
+  --sh-shadow-sm: 0 1px 2px 0 rgba(36, 52, 71, 0.05);
+  --sh-shadow-md: 0 4px 6px -1px rgba(36, 52, 71, 0.07), 0 2px 4px -2px rgba(36, 52, 71, 0.05);
+  --sh-shadow-lg: 0 10px 15px -3px rgba(36, 52, 71, 0.08), 0 4px 6px -4px rgba(36, 52, 71, 0.04);
+}
+
+body {
+  background-color: var(--sh-canvas);
+  color: var(--sh-navy-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 2px solid var(--sh-medical-blue);
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
