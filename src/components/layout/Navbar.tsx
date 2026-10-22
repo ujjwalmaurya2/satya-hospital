@@ -18,7 +18,8 @@ import {
   Building,
   Milestone,
   Images,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Newspaper
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../common/Button';
@@ -29,7 +30,6 @@ export interface NavItem {
   label: string;
   shortLabel?: string;
   path: string;
-  hash: string;
   icon: React.ReactNode;
 }
 
@@ -61,58 +61,41 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close mobile drawer on route transition
+  // Close mobile drawer and dropdown on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setMoreDropdownOpen(false);
-  }, [location.pathname, location.hash]);
+  }, [location.pathname]);
 
-  // All 10 required navigation items
-  const navLinks: NavItem[] = [
-    { label: 'Home', path: '/', hash: '#home', icon: <HeartPulse className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'About', path: '/about', hash: '#about', icon: <Building2 className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Doctors', path: '/doctors', hash: '#doctors', icon: <Stethoscope className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Services', path: '/services', hash: '#services', icon: <Activity className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Doctor Pathology & Lab', shortLabel: 'Pathology & Lab', path: '/pathology', hash: '#pathology', icon: <Microscope className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Journey', path: '/journey', hash: '#journey', icon: <Milestone className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Facilities', path: '/facilities', hash: '#facilities', icon: <Building className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Gallery', path: '/gallery', hash: '#gallery', icon: <Images className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Testimonials', path: '/testimonials', hash: '#testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Contact', path: '/contact', hash: '#contact', icon: <PhoneCall className="w-4 h-4 text-[#3DA9DF]" /> },
+  // All 11 dedicated multi-page sections requested
+  const allNavLinks: NavItem[] = [
+    { label: 'Home', path: '/', icon: <HeartPulse className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'About', path: '/about', icon: <Building2 className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Doctors', path: '/doctors', icon: <Stethoscope className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Services', path: '/services', icon: <Activity className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Doctor, Pathology & Lab', shortLabel: 'Pathology & Lab', path: '/pathology-lab', icon: <Microscope className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'Journey', path: '/journey', icon: <Milestone className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Facilities', path: '/facilities', icon: <Building className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'Gallery', path: '/gallery', icon: <Images className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Testimonials', path: '/testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#91BB40]" /> },
+    { label: 'News & Updates', shortLabel: 'News', path: '/news', icon: <Newspaper className="w-4 h-4 text-[#3DA9DF]" /> },
+    { label: 'Contact', path: '/contact', icon: <PhoneCall className="w-4 h-4 text-[#3DA9DF]" /> },
   ];
 
-  // Core items for smaller desktop resolutions (1024px to 1279px)
-  const primaryDesktopLinks = navLinks.slice(0, 5); // Home, About, Doctors, Services, Pathology
-  const overflowDesktopLinks = navLinks.slice(5); // Journey, Facilities, Gallery, Testimonials, Contact
+  // Primary desktop links (displayed inline on standard desktop)
+  const primaryDesktopLinks = allNavLinks.slice(0, 5); // Home, About, Doctors, Services, Pathology & Lab
+  // Overflow links accessed via "More" dropdown on standard desktop
+  const moreDesktopLinks = allNavLinks.slice(5); // Journey, Facilities, Gallery, Testimonials, News, Contact
 
-  const handleNavClick = (e: React.MouseEvent, link: NavItem) => {
-    if (location.pathname === '/') {
-      if (link.hash === '#home' || link.path === '/') {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        window.history.pushState(null, '', '/');
-      } else {
-        const targetElement = document.querySelector(link.hash);
-        if (targetElement) {
-          e.preventDefault();
-          targetElement.scrollIntoView({ behavior: 'smooth' });
-          window.history.pushState(null, '', link.hash);
-        }
-      }
-    }
-    setMobileMenuOpen(false);
-    setMoreDropdownOpen(false);
-  };
-
-  const isActive = (path: string, hash: string) => {
-    if (location.pathname === '/') {
-      if (location.hash) {
-        return location.hash === hash;
-      }
-      return path === '/';
+  const isCurrentActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    if (path === '/pathology-lab') {
+      return location.pathname === '/pathology-lab' || location.pathname === '/pathology';
     }
     return location.pathname.startsWith(path);
   };
+
+  const isMoreGroupActive = moreDesktopLinks.some(link => isCurrentActive(link.path));
 
   return (
     <header className="sticky top-0 z-50 transition-all duration-200">
@@ -177,15 +160,14 @@ export const Navbar: React.FC = () => {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links (xl+ displays all 10 inline) */}
-            <nav className="hidden xl:flex items-center gap-0.5 2xl:gap-1" aria-label="Main Navigation">
-              {navLinks.map((link) => {
-                const active = isActive(link.path, link.hash);
+            {/* Desktop Navigation Links (2xl+ displays all 11 inline) */}
+            <nav className="hidden 2xl:flex items-center gap-1" aria-label="Main Navigation">
+              {allNavLinks.map((link) => {
+                const active = isCurrentActive(link.path);
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    onClick={(e) => handleNavClick(e, link)}
                     className={`relative px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-normal whitespace-nowrap transition-all ${
                       active
                         ? 'text-[#1E78A4] bg-[#EBF6FC]'
@@ -205,15 +187,14 @@ export const Navbar: React.FC = () => {
               })}
             </nav>
 
-            {/* Responsive Desktop Navigation for lg screens (1024px to 1279px) */}
-            <nav className="hidden lg:flex xl:hidden items-center gap-1" aria-label="Main Navigation Condensed">
+            {/* Responsive Desktop Navigation for lg & xl screens (1024px to 1535px) */}
+            <nav className="hidden lg:flex 2xl:hidden items-center gap-1" aria-label="Main Navigation Condensed">
               {primaryDesktopLinks.map((link) => {
-                const active = isActive(link.path, link.hash);
+                const active = isCurrentActive(link.path);
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    onClick={(e) => handleNavClick(e, link)}
                     className={`relative px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                       active
                         ? 'text-[#1E78A4] bg-[#EBF6FC]'
@@ -221,24 +202,31 @@ export const Navbar: React.FC = () => {
                     }`}
                   >
                     {link.shortLabel || link.label}
+                    {active && (
+                      <motion.span 
+                        layoutId="activeNavIndicatorCompact"
+                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#3DA9DF] rounded-full"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
                   </Link>
                 );
               })}
 
-              {/* "More" dropdown for overflow links on lg screens */}
+              {/* "More" dropdown for secondary pages on desktop */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
                   onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                    moreDropdownOpen || overflowDesktopLinks.some(l => isActive(l.path, l.hash))
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                    moreDropdownOpen || isMoreGroupActive
                       ? 'text-[#1E78A4] bg-[#EBF6FC]'
                       : 'text-[#243447] hover:text-[#3DA9DF] hover:bg-[#F4F8FA]'
                   }`}
                   aria-expanded={moreDropdownOpen}
                 >
-                  <span>More</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreDropdownOpen ? 'rotate-180' : ''}`} />
+                  <span>More Pages</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -248,27 +236,29 @@ export const Navbar: React.FC = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-[#CBD5E1] shadow-xl py-2 z-50 divide-y divide-[#E1E8ED]"
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-[#CBD5E1] shadow-xl py-2 z-50 divide-y divide-[#E1E8ED]"
                     >
-                      <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#667085]">
-                        Hospital Sections
+                      <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#667085]">
+                        Hospital Sections &amp; Bulletins
                       </div>
                       <div className="py-1">
-                        {overflowDesktopLinks.map((item) => (
-                          <Link
-                            key={item.path}
-                            to={item.path}
-                            onClick={(e) => handleNavClick(e, item)}
-                            className={`flex items-center gap-2.5 px-3 py-2 text-xs font-medium transition-colors ${
-                              isActive(item.path, item.hash)
-                                ? 'bg-[#EBF6FC] text-[#1E78A4] font-semibold'
-                                : 'text-[#243447] hover:bg-[#F8FAFC]'
-                            }`}
-                          >
-                            {item.icon}
-                            <span>{item.label}</span>
-                          </Link>
-                        ))}
+                        {moreDesktopLinks.map((item) => {
+                          const active = isCurrentActive(item.path);
+                          return (
+                            <Link
+                              key={item.path}
+                              to={item.path}
+                              className={`flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium transition-colors ${
+                                active
+                                  ? 'bg-[#EBF6FC] text-[#1E78A4] font-semibold'
+                                  : 'text-[#243447] hover:bg-[#F8FAFC]'
+                              }`}
+                            >
+                              {item.icon}
+                              <span>{item.label}</span>
+                            </Link>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -330,7 +320,7 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Animated Slide-over (All 10 Sections Accessible) */}
+      {/* Mobile Menu Animated Slide-over (All 11 Dedicated Pages Accessible) */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -348,15 +338,14 @@ export const Navbar: React.FC = () => {
               <span className="text-[11px] font-medium text-[#667085]">Cutoff: {settings.onlineCutoffTime} AM</span>
             </div>
 
-            {/* 10 Navigation Links Grid on Mobile */}
+            {/* 11 Direct Navigation Page Links on Mobile */}
             <div className="space-y-1">
-              {navLinks.map((link) => {
-                const active = isActive(link.path, link.hash);
+              {allNavLinks.map((link) => {
+                const active = isCurrentActive(link.path);
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    onClick={(e) => handleNavClick(e, link)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
                       active
                         ? 'text-[#1E78A4] bg-[#EBF6FC] font-bold'
@@ -385,7 +374,6 @@ export const Navbar: React.FC = () => {
               {isAuthenticated ? (
                 <Link
                   to={role === 'patient' ? '/patient/dashboard' : `/${role}`}
-                  onClick={() => setMobileMenuOpen(false)}
                   className="block"
                 >
                   <Button variant="outline" size="md" className="w-full">
@@ -393,14 +381,14 @@ export const Navbar: React.FC = () => {
                   </Button>
                 </Link>
               ) : (
-                <Link to="/patient/login" onClick={() => setMobileMenuOpen(false)} className="block">
+                <Link to="/patient/login" className="block">
                   <Button variant="outline" size="md" className="w-full" leftIcon={<User className="w-4 h-4" />}>
                     Patient Sign In
                   </Button>
                 </Link>
               )}
 
-              <Link to="/staff/login" onClick={() => setMobileMenuOpen(false)} className="block">
+              <Link to="/staff/login" className="block">
                 <Button variant="ghost" size="sm" className="w-full text-xs text-[#667085]">
                   Hospital Staff Portal Login &rarr;
                 </Button>

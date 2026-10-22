@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
@@ -19,8 +19,6 @@ import {
   Users,
   Search,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Building2,
   Building,
   Syringe,
@@ -30,9 +28,7 @@ import {
   Milestone,
   Images,
   MessageSquareQuote,
-  Maximize2,
-  X,
-  Bed,
+  Newspaper,
   Quote
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,10 +41,9 @@ import {
   checkOnlineBookingCutoff, 
   getHospitalTodayDate 
 } from '../../lib/tokens';
-import { journeyMilestones } from './Journey';
 import { hospitalFacilities } from './Facilities';
-import { hospitalGalleryItems, GalleryItem } from './Gallery';
 import { patientTestimonials } from './Testimonials';
+import { hospitalNewsArticles } from './News';
 
 export const Home: React.FC = () => {
   const { settings, departments, doctors, pathologyTests, getTodayQueueStats } = useHospital();
@@ -67,20 +62,6 @@ export const Home: React.FC = () => {
   const [heroDoctorId, setHeroDoctorId] = useState<string>(doctors[0]?.id || '');
   const [heroDate, setHeroDate] = useState<string>(nextEligibleDate);
 
-  // Doctors Interactive Search & Filter State
-  const [doctorSearch, setDoctorSearch] = useState<string>('');
-  const [selectedSpecialtyFilter, setSelectedSpecialtyFilter] = useState<string>('all');
-
-  // Facilities Tab State
-  const [activeFacilityCategory, setActiveFacilityCategory] = useState<'all' | 'opd' | 'lab' | 'daycare' | 'tech'>('all');
-
-  // Gallery Filter & Lightbox State
-  const [galleryCategory, setGalleryCategory] = useState<string>('all');
-  const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
-
-  // Testimonials Carousel State
-  const [testimonialIdx, setTestimonialIdx] = useState<number>(0);
-
   // FAQ Accordion State
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
@@ -91,26 +72,6 @@ export const Home: React.FC = () => {
         const dept = departments.find(dep => dep.id === heroDeptId);
         return dept ? d.department.toLowerCase().includes(dept.name.toLowerCase().split(' ')[0]) : true;
       });
-
-  // Filter doctors for the interactive directory
-  const filteredDoctors = doctors.filter(d => {
-    const matchesSearch = d.fullName.toLowerCase().includes(doctorSearch.toLowerCase()) ||
-      d.qualifications.toLowerCase().includes(doctorSearch.toLowerCase()) ||
-      d.department.toLowerCase().includes(doctorSearch.toLowerCase());
-    const matchesSpecialty = selectedSpecialtyFilter === 'all' || 
-      d.department.toLowerCase().includes(selectedSpecialtyFilter.toLowerCase());
-    return matchesSearch && matchesSpecialty;
-  });
-
-  // Filter facilities
-  const filteredFacilities = activeFacilityCategory === 'all'
-    ? hospitalFacilities.slice(0, 4)
-    : hospitalFacilities.filter(f => f.category === activeFacilityCategory).slice(0, 4);
-
-  // Filter gallery items for home
-  const filteredGallery = galleryCategory === 'all'
-    ? hospitalGalleryItems.slice(0, 6)
-    : hospitalGalleryItems.filter(item => item.category === galleryCategory).slice(0, 6);
 
   // Live Cutoff Verification for the Hero Quick Booking card
   const heroCutoffStatus = checkOnlineBookingCutoff(heroDate, {
@@ -125,25 +86,6 @@ export const Home: React.FC = () => {
     const dateParam = heroDate ? `&date=${encodeURIComponent(heroDate)}` : '';
     navigate(`/book-appointment?${docParam}${dateParam}`.replace('?&', '?'));
   };
-
-  // Keyboard navigation for Lightbox
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (activeLightboxIndex === null) return;
-      if (e.key === 'Escape') {
-        setActiveLightboxIndex(null);
-      } else if (e.key === 'ArrowRight') {
-        setActiveLightboxIndex((prev) => (prev !== null ? (prev + 1) % filteredGallery.length : 0));
-      } else if (e.key === 'ArrowLeft') {
-        setActiveLightboxIndex((prev) => (prev !== null ? (prev - 1 + filteredGallery.length) % filteredGallery.length : 0));
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeLightboxIndex, filteredGallery.length]);
-
-  const activeGalleryItem = activeLightboxIndex !== null ? filteredGallery[activeLightboxIndex] : null;
 
   // Frequently Asked Questions Content
   const faqItems = [
@@ -175,8 +117,8 @@ export const Home: React.FC = () => {
       {/* =========================================================================
           1. HERO SECTION WITH EMBEDDED APPOINTMENT BOOKING MODULE
          ========================================================================= */}
-      <section id="home" className="scroll-mt-28 relative overflow-hidden bg-gradient-to-b from-[#EBF6FC]/90 via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[#E1E8ED]">
-        {/* Subtle decorative background blur shapes */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF6FC]/90 via-[#F4F8FA] to-[#F4F8FA] pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[#E1E8ED]">
+        {/* Subtle decorative background shapes */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#3DA9DF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
         <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#91BB40]/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
@@ -241,7 +183,7 @@ export const Home: React.FC = () => {
                   </Button>
                 </Link>
 
-                <a href="#doctors" className="w-full sm:w-auto">
+                <Link to="/doctors" className="w-full sm:w-auto">
                   <Button 
                     variant="outline" 
                     size="lg" 
@@ -250,7 +192,7 @@ export const Home: React.FC = () => {
                   >
                     View Doctors ({doctors.length})
                   </Button>
-                </a>
+                </Link>
               </div>
 
               {/* Verified Trust Signals */}
@@ -422,7 +364,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          2. HOSPITAL METRICS & TRUST INDICATORS (STATIC LITERAL NUMBERS - ZERO ANIMATION)
+          2. HOSPITAL METRICS & TRUST INDICATORS (STATIC LITERAL NUMBERS)
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -489,9 +431,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          3. ABOUT US & FOUNDING PRINCIPLES
+          3. HOSPITAL INTRODUCTION & CORE COMMITMENTS (PREVIEW WITH LINK TO /about)
          ========================================================================= */}
-      <section id="about" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold">
@@ -514,10 +456,15 @@ export const Home: React.FC = () => {
                 <p className="text-[#667085] text-[11px]">Online and walk-in patients share a single predictable sequential token queue.</p>
               </div>
             </div>
-            <div className="pt-2">
+            <div className="pt-2 flex items-center gap-3">
               <Link to="/about">
-                <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-                  Read Our Full Hospital Story &rarr;
+                <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                  Learn More About Satya Hospital
+                </Button>
+              </Link>
+              <Link to="/journey">
+                <Button variant="ghost" size="sm" className="text-xs text-[#3DA9DF]">
+                  Our Journey Timeline &rarr;
                 </Button>
               </Link>
             </div>
@@ -564,10 +511,10 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          4. MEDICAL DEPARTMENTS & SPECIALTIES
+          4. CORE MEDICAL SPECIALTIES PREVIEW (LINK TO /services)
          ========================================================================= */}
-      <section id="services" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
           <div>
             <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
               Clinical Specialities
@@ -581,13 +528,13 @@ export const Home: React.FC = () => {
           </div>
           <Link to="/services" className="mt-4 md:mt-0">
             <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              View All Services
+              View All Services Page
             </Button>
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {departments.map((dept) => (
+          {departments.slice(0, 4).map((dept) => (
             <motion.div
               key={dept.id}
               whileHover={{ y: -4 }}
@@ -611,10 +558,10 @@ export const Home: React.FC = () => {
                   {dept.headOfDepartment ? dept.headOfDepartment.split('(')[0].trim() : 'Senior Consultant'}
                 </span>
                 <Link
-                  to={`/book-appointment?doctor=${doctors.find(d => d.department.toLowerCase().includes(dept.name.toLowerCase().split(' ')[0]))?.id || ''}`}
+                  to="/services"
                   className="text-xs font-semibold text-[#1E78A4] hover:text-[#3DA9DF] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
                 >
-                  <span>Book</span>
+                  <span>Details</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -624,68 +571,31 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          5. FIND THE RIGHT DOCTOR (INTERACTIVE DISCOVERY SECTION)
+          5. SENIOR SPECIALISTS SPOTLIGHT (LINK TO /doctors)
          ========================================================================= */}
-      <section id="doctors" className="scroll-mt-28 bg-white py-16 sm:py-20 border-y border-[#E1E8ED]">
+      <section className="bg-white py-14 sm:py-18 border-y border-[#E1E8ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-xs font-bold text-[#91BB40] tracking-wider uppercase">
-              Verified Medical Faculty
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
-              Consult Our Senior Specialists
-            </h2>
-            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 leading-relaxed">
-              Meet our credentialed doctors holding postgraduate medical degrees and extensive clinical experience in Prayagraj.
-            </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
+            <div>
+              <span className="text-xs font-bold text-[#91BB40] tracking-wider uppercase">
+                Verified Medical Faculty
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
+                Consult Our Senior Specialists
+              </h2>
+              <p className="text-xs sm:text-sm text-[#667085] mt-1.5 leading-relaxed">
+                Meet our credentialed doctors holding recognized postgraduate degrees (MD, MS, DNB) in Prayagraj.
+              </p>
+            </div>
+            <Link to="/doctors" className="mt-4 md:mt-0">
+              <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+                View Complete Doctor Directory ({doctors.length})
+              </Button>
+            </Link>
           </div>
 
-          {/* Interactive Search & Filter Controls */}
-          <div className="max-w-3xl mx-auto mb-10 space-y-4">
-            <div className="relative">
-              <Search className="w-4 h-4 text-[#667085] absolute left-3.5 top-3 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search doctors by name, specialty, or qualification..."
-                value={doctorSearch}
-                onChange={(e) => setDoctorSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#CBD5E1] text-xs sm:text-sm text-[#243447] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-              />
-            </div>
-
-            {/* Specialty Pills */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
-              <button
-                type="button"
-                onClick={() => setSelectedSpecialtyFilter('all')}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                  selectedSpecialtyFilter === 'all'
-                    ? 'bg-[#243447] text-white shadow-xs'
-                    : 'bg-[#F4F8FA] text-[#667085] hover:bg-[#E1E8ED]'
-                }`}
-              >
-                All Doctors
-              </button>
-              {departments.map(dept => (
-                <button
-                  key={dept.id}
-                  type="button"
-                  onClick={() => setSelectedSpecialtyFilter(dept.name.split(' ')[0])}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                    selectedSpecialtyFilter.toLowerCase() === dept.name.split(' ')[0].toLowerCase()
-                      ? 'bg-[#3DA9DF] text-white shadow-xs'
-                      : 'bg-[#F4F8FA] text-[#667085] hover:bg-[#E1E8ED]'
-                  }`}
-                >
-                  {dept.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Doctor Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredDoctors.map((doc) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {doctors.map((doc) => (
               <motion.div
                 key={doc.id}
                 whileHover={{ y: -4 }}
@@ -693,9 +603,8 @@ export const Home: React.FC = () => {
                 className="bg-[#F8FAFC] rounded-2xl border border-[#E1E8ED] hover:border-[#3DA9DF] hover:bg-white p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  {/* Doctor Avatar / Header */}
                   <div className="flex items-center gap-3.5 mb-4">
-                    <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#3DA9DF]/20 to-[#91BB40]/20 flex items-center justify-center text-[#1E78A4] font-bold text-lg border border-[#3DA9DF]/30 shrink-0">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#3DA9DF]/20 to-[#91BB40]/20 flex items-center justify-center text-[#1E78A4] font-bold text-base border border-[#3DA9DF]/30 shrink-0">
                       {doc.fullName.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
@@ -712,7 +621,6 @@ export const Home: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Doctor Details */}
                   <div className="space-y-2 text-xs py-3 border-y border-[#E1E8ED]/70 mb-4">
                     <div className="flex items-center justify-between text-[#667085]">
                       <span>Qualifications:</span>
@@ -720,20 +628,15 @@ export const Home: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between text-[#667085]">
                       <span>Department:</span>
-                      <strong className="text-[#243447] font-semibold truncate max-w-[130px]">{doc.department}</strong>
+                      <strong className="text-[#243447] font-semibold truncate max-w-[140px]">{doc.department}</strong>
                     </div>
                     <div className="flex items-center justify-between text-[#667085]">
-                      <span>Consultation Room:</span>
+                      <span>Room:</span>
                       <span className="text-[#243447] font-medium">{doc.consultationRoom}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[#667085]">
-                      <span>Daily OPD Hours:</span>
-                      <span className="text-[#243447] font-medium text-[11px]">{doc.opdTimings}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Card Action */}
                 <Link to={`/book-appointment?doctor=${doc.id}`}>
                   <Button 
                     variant="primary" 
@@ -751,12 +654,11 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          6. PATHOLOGY LABORATORY & DIAGNOSTIC EXCELLENCE
+          6. PATHOLOGY & DIAGNOSTIC LAB HIGHLIGHT (LINK TO /pathology-lab)
          ========================================================================= */}
-      <section id="pathology" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          {/* Left Text & Value Props */}
           <div className="lg:col-span-5 space-y-5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#688D23] text-xs font-semibold">
               <Microscope className="w-3.5 h-3.5" />
@@ -788,20 +690,12 @@ export const Home: React.FC = () => {
                   <span className="text-[#667085]">Reports remain in verification state until certified by the pathologist, preventing unreviewed clinical releases.</span>
                 </div>
               </div>
-
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-[#243447]">Secure Digital Delivery:</strong>
-                  <span className="text-[#667085]">Download authenticated PDF lab reports directly from your Patient Portal via temporary signed links.</span>
-                </div>
-              </div>
             </div>
 
             <div className="pt-2 flex flex-wrap gap-3">
-              <Link to="/pathology">
+              <Link to="/pathology-lab">
                 <Button variant="primary" size="md" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                  Explore Full Test Directory
+                  Explore Full Lab Catalogue &rarr;
                 </Button>
               </Link>
               <Link to="/patient/reports">
@@ -812,7 +706,6 @@ export const Home: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Popular Tests Cards */}
           <div className="lg:col-span-7">
             <div className="bg-white rounded-2xl border border-[#CBD5E1] shadow-sm divide-y divide-[#E1E8ED] overflow-hidden">
               <div className="p-4 bg-[#F8FAFC] flex items-center justify-between border-b border-[#E1E8ED]">
@@ -823,7 +716,7 @@ export const Home: React.FC = () => {
                 <span className="text-[11px] text-[#667085]">Hospital In-House Rates</span>
               </div>
 
-              {pathologyTests.slice(0, 5).map((test) => (
+              {pathologyTests.slice(0, 4).map((test) => (
                 <div key={test.id} className="p-4 flex items-center justify-between hover:bg-[#F8FAFC] transition-colors">
                   <div className="space-y-0.5">
                     <div className="text-sm font-bold text-[#243447]">{test.name}</div>
@@ -832,8 +725,6 @@ export const Home: React.FC = () => {
                         {test.category}
                       </span>
                       <span>Specimen: {test.specimenType}</span>
-                      <span>&bull;</span>
-                      <span>Est. Turnaround: ~{test.turnaroundHours} hrs</span>
                     </div>
                   </div>
 
@@ -847,8 +738,8 @@ export const Home: React.FC = () => {
               ))}
 
               <div className="p-3.5 bg-[#F8FAFC] text-center text-xs text-[#667085] flex items-center justify-center gap-2">
-                <span>Sample collection counters open daily from <strong>08:00 AM to 02:00 PM</strong>.</span>
-                <Link to="/pathology" className="text-[#3DA9DF] font-semibold hover:underline">
+                <span>Sample collection open daily from <strong>08:00 AM to 02:00 PM</strong>.</span>
+                <Link to="/pathology-lab" className="text-[#3DA9DF] font-semibold hover:underline">
                   View All ({pathologyTests.length}) Tests &rarr;
                 </Link>
               </div>
@@ -859,344 +750,72 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          7. THE SATYA HOSPITAL JOURNEY (TIMELINE LAYOUT)
+          7. FACILITIES & INFRASTRUCTURE PREVIEW (LINK TO /facilities)
          ========================================================================= */}
-      <section id="journey" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold mb-2">
-              <Milestone className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Milestones &amp; Evolution</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
-              The Satya Hospital Journey
-            </h2>
-            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
-              Explore the clinical milestones that shaped our ethical healthcare, in-house pathology, and transparent queue model in Prayagraj.
-            </p>
-          </div>
-          <Link to="/journey" className="mt-4 md:mt-0">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              Full Journey History
-            </Button>
-          </Link>
-        </div>
-
-        {/* Timeline Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {journeyMilestones.slice(0, 3).map((item, idx) => (
-            <motion.div
-              key={item.title}
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className={`w-10 h-10 rounded-xl ${item.iconBg} ${item.iconColor} flex items-center justify-center font-bold`}>
-                    {item.icon}
-                  </div>
-                  <Badge variant="medical-blue" size="sm">
-                    {item.badge}
-                  </Badge>
-                </div>
-
-                <div className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">
-                  {item.period}
-                </div>
-
-                <h3 className="text-base font-bold text-[#243447]">
-                  {item.title}
-                </h3>
-
-                <p className="text-xs text-[#667085] leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-[#E1E8ED] text-xs space-y-1.5">
-                {item.highlights.slice(0, 2).map((h, hIdx) => (
-                  <div key={hIdx} className="flex items-center gap-2 text-[#243447]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40] shrink-0" />
-                    <span className="truncate">{h}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* =========================================================================
-          8. CLINICAL FACILITIES & INFRASTRUCTURE
-         ========================================================================= */}
-      <section id="facilities" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#688D23] text-xs font-semibold mb-2">
-              <Building className="w-3.5 h-3.5 text-[#91BB40]" />
-              <span>Campus Infrastructure</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
+            <span className="text-xs font-bold text-[#3DA9DF] tracking-wider uppercase">
+              Clinical Infrastructure
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447] mt-1">
               Hospital Facilities &amp; Amenities
             </h2>
             <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
-              Equipped with modern outpatient consultation suites, diagnostic auto-analyzers, and sterile minor procedure facilities.
+              Equipped for prompt outpatient consultations, day-care observations, and acute triage.
             </p>
           </div>
           <Link to="/facilities" className="mt-4 md:mt-0">
             <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              Explore All Facilities
+              Explore All Facilities Page
             </Button>
           </Link>
         </div>
 
-        {/* 4 Featured Facility Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {hospitalFacilities.slice(0, 4).map((fac) => (
-            <motion.div
-              key={fac.id}
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className={`w-11 h-11 rounded-xl ${fac.iconBg} ${fac.iconColor} flex items-center justify-center`}>
-                  {fac.icon}
-                </div>
-                <Badge variant="medical-blue" size="sm">
-                  {fac.badge}
-                </Badge>
-                <h3 className="text-base font-bold text-[#243447]">
-                  {fac.title}
-                </h3>
-                <p className="text-xs text-[#667085] leading-relaxed line-clamp-3">
-                  {fac.description}
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-[#E1E8ED] text-xs">
-                <span className="text-[#91BB40] font-semibold block text-[11px] mb-1">
-                  {fac.location}
-                </span>
-                <span className="text-[#667085] text-[11px]">
-                  {fac.timing}
-                </span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* =========================================================================
-          9. HOSPITAL & DIAGNOSTIC LAB GALLERY
-         ========================================================================= */}
-      <section id="gallery" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold mb-2">
-              <Images className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Campus Visual Tour</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-2xl border border-[#CBD5E1] shadow-xs space-y-3">
+            <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
+              <Activity className="w-5 h-5 stroke-[2]" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
-              Hospital &amp; Laboratory Gallery
-            </h2>
-            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
-              Explore our clinical consultation chambers, automated diagnostic pathology suites, day care recovery rooms, and patient amenities.
+            <h3 className="text-base font-bold text-[#243447]">Emergency &amp; Acute Care</h3>
+            <p className="text-xs text-[#667085] leading-relaxed">
+              Equipped emergency desk for immediate patient stabilization, vital monitoring, and rapid triage coordination.
             </p>
+            <Link to="/facilities" className="text-xs text-[#3DA9DF] font-semibold hover:underline inline-block pt-1">
+              Learn more &rarr;
+            </Link>
           </div>
-          <Link to="/gallery" className="mt-4 md:mt-0">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
-              Full Gallery Lightbox
-            </Button>
-          </Link>
-        </div>
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGallery.map((item, gIdx) => (
-            <motion.div
-              key={item.id}
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setActiveLightboxIndex(gIdx)}
-              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer group"
-            >
-              <div className={`h-40 bg-gradient-to-br ${item.gradient} p-4 flex flex-col justify-between relative`}>
-                <div className="flex justify-between items-start">
-                  <Badge variant="medical-blue" size="sm" className="bg-white/90">
-                    {item.categoryLabel}
-                  </Badge>
-                  <div className="w-7 h-7 rounded-lg bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Maximize2 className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                  </div>
-                </div>
-                <div className="flex items-center justify-center group-hover:scale-110 transition-transform">
-                  {item.icon}
-                </div>
-                <span className="text-[10px] font-semibold text-[#243447] bg-white/70 px-2 py-0.5 rounded-md w-fit">
-                  {item.roomInfo}
-                </span>
-              </div>
-
-              <div className="p-4 space-y-1.5">
-                <h3 className="text-sm font-bold text-[#243447] group-hover:text-[#3DA9DF] transition-colors truncate">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-[#667085] line-clamp-2 leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Lightbox for Gallery */}
-        <AnimatePresence>
-          {activeGalleryItem && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-[#243447]/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-              onClick={() => setActiveLightboxIndex(null)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl max-w-xl w-full border border-[#CBD5E1] shadow-2xl overflow-hidden relative"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  onClick={() => setActiveLightboxIndex(null)}
-                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white border border-[#E1E8ED] flex items-center justify-center text-[#243447] hover:bg-slate-50 cursor-pointer shadow-xs"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-
-                <div className={`h-48 bg-gradient-to-br ${activeGalleryItem.gradient} p-6 flex flex-col justify-between`}>
-                  <Badge variant="medical-blue" size="sm" className="w-fit bg-white">
-                    {activeGalleryItem.categoryLabel}
-                  </Badge>
-                  <div className="flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-xl bg-white/90 flex items-center justify-center shadow-md">
-                      {activeGalleryItem.icon}
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold text-[#243447] bg-white/80 px-2.5 py-1 rounded-md w-fit">
-                    {activeGalleryItem.roomInfo}
-                  </span>
-                </div>
-
-                <div className="p-6 space-y-4">
-                  <h2 className="text-lg font-bold text-[#243447]">{activeGalleryItem.title}</h2>
-                  <p className="text-xs text-[#667085] leading-relaxed">{activeGalleryItem.description}</p>
-                  <div className="pt-2 border-t border-[#E1E8ED]">
-                    <span className="text-[11px] font-bold text-[#243447] block mb-2">Equipment Available:</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {activeGalleryItem.equipment.map((eq, i) => (
-                        <span key={i} className="text-[11px] bg-[#F4F8FA] border border-[#E1E8ED] px-2.5 py-1 rounded-lg text-[#243447]">
-                          {eq}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </section>
-
-      {/* =========================================================================
-          10. PATIENT TESTIMONIALS & REVIEWS
-         ========================================================================= */}
-      <section id="testimonials" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-12 shadow-sm relative overflow-hidden">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold">
-                <MessageSquareQuote className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                <span>Verified Patient Testimonials</span>
-              </div>
-              <Badge variant="lime-green" size="sm" dot>
-                {patientTestimonials[testimonialIdx].verifiedStatus}
-              </Badge>
+          <div className="bg-white p-6 rounded-2xl border border-[#CBD5E1] shadow-xs space-y-3">
+            <div className="w-11 h-11 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
+              <Syringe className="w-5 h-5 text-[#688D23]" />
             </div>
+            <h3 className="text-base font-bold text-[#243447]">Minor Procedures &amp; Day Care</h3>
+            <p className="text-xs text-[#667085] leading-relaxed">
+              Sterile minor operation theatre for wound management, suturing, minor surgical interventions, and short observation.
+            </p>
+            <Link to="/facilities" className="text-xs text-[#3DA9DF] font-semibold hover:underline inline-block pt-1">
+              Learn more &rarr;
+            </Link>
+          </div>
 
-            <div className="min-h-[120px] flex items-center">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={patientTestimonials[testimonialIdx].id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.25 }}
-                  className="space-y-3"
-                >
-                  <p className="text-base sm:text-lg text-[#243447] font-medium leading-relaxed italic">
-                    "{patientTestimonials[testimonialIdx].comment}"
-                  </p>
-
-                  <div className="pt-3 border-t border-[#E1E8ED] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
-                    <div>
-                      <strong className="text-sm font-bold text-[#243447] block">
-                        {patientTestimonials[testimonialIdx].patientName}
-                      </strong>
-                      <span className="text-[#667085]">
-                        {patientTestimonials[testimonialIdx].locality} &bull; {patientTestimonials[testimonialIdx].department}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-[#91BB40] font-semibold">
-                      {patientTestimonials[testimonialIdx].serviceType}
-                    </span>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+          <div className="bg-white p-6 rounded-2xl border border-[#CBD5E1] shadow-xs space-y-3">
+            <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
+              <Award className="w-5 h-5" />
             </div>
-
-            {/* Controls */}
-            <div className="pt-4 border-t border-[#E1E8ED] flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                {patientTestimonials.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setTestimonialIdx(i)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      testimonialIdx === i ? 'w-6 bg-[#3DA9DF]' : 'w-2 bg-[#CBD5E1]'
-                    }`}
-                    aria-label={`Slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTestimonialIdx(prev => (prev === 0 ? patientTestimonials.length - 1 : prev - 1))}
-                  className="p-2 rounded-lg border border-[#CBD5E1] text-[#243447] hover:bg-[#F4F8FA] cursor-pointer"
-                  aria-label="Previous testimonial"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestimonialIdx(prev => (prev === patientTestimonials.length - 1 ? 0 : prev + 1))}
-                  className="p-2 rounded-lg border border-[#CBD5E1] text-[#243447] hover:bg-[#F4F8FA] cursor-pointer"
-                  aria-label="Next testimonial"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <h3 className="text-base font-bold text-[#243447]">Diagnostics &amp; ECG Facilities</h3>
+            <p className="text-xs text-[#667085] leading-relaxed">
+              12-lead digital ECG and point-of-care vital evaluations supporting cardiology screening and clinical assessments.
+            </p>
+            <Link to="/facilities" className="text-xs text-[#3DA9DF] font-semibold hover:underline inline-block pt-1">
+              Learn more &rarr;
+            </Link>
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          11. HOW OPD QUEUE & APPOINTMENT PROCESS WORKS (3-STEP WALKTHROUGH)
+          8. TRANSPARENT OPD QUEUE PROTOCOL (3-STEP WALKTHROUGH)
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#243447] text-white rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
@@ -1215,7 +834,6 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-            {/* Step 1 */}
             <div className="bg-[#1C2937] p-6 rounded-2xl border border-[#34465B] space-y-3">
               <div className="w-9 h-9 rounded-xl bg-[#3DA9DF] text-white flex items-center justify-center text-sm font-bold shadow-xs">
                 1
@@ -1226,7 +844,6 @@ export const Home: React.FC = () => {
               </p>
             </div>
 
-            {/* Step 2 */}
             <div className="bg-[#1C2937] p-6 rounded-2xl border border-[#34465B] space-y-3">
               <div className="w-9 h-9 rounded-xl bg-[#91BB40] text-[#243447] flex items-center justify-center text-sm font-bold shadow-xs">
                 2
@@ -1237,7 +854,6 @@ export const Home: React.FC = () => {
               </p>
             </div>
 
-            {/* Step 3 */}
             <div className="bg-[#1C2937] p-6 rounded-2xl border border-[#34465B] space-y-3">
               <div className="w-9 h-9 rounded-xl bg-[#3DA9DF] text-white flex items-center justify-center text-sm font-bold shadow-xs">
                 3
@@ -1249,7 +865,6 @@ export const Home: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer note inside card */}
           <div className="mt-8 pt-6 border-t border-[#34465B] flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10 text-xs">
             <span className="text-white/70 max-w-xl">
               Missed the 09:00 AM online cutoff? Physical walk-in registration at the hospital reception continues without disruption throughout clinic hours.
@@ -1264,7 +879,97 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          12. PATIENT RESOURCES & FREQUENTLY ASKED QUESTIONS (FAQ)
+          9. LATEST NEWS & CLINICAL BULLETINS PREVIEW (LINK TO /news)
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold mb-2">
+              <Newspaper className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Hospital Bulletins</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#243447]">
+              News &amp; Clinical Advisories
+            </h2>
+            <p className="text-xs sm:text-sm text-[#667085] mt-1.5 max-w-xl leading-relaxed">
+              Stay informed with official medical advisories, technology updates, and operational guidelines from our medical staff.
+            </p>
+          </div>
+          <Link to="/news" className="mt-4 md:mt-0">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+              View All News Bulletins
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {hospitalNewsArticles.slice(0, 3).map((article) => (
+            <Link 
+              key={article.id} 
+              to="/news"
+              className="bg-white rounded-2xl border border-[#CBD5E1] hover:border-[#3DA9DF] p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant={article.badgeVariant} size="sm">
+                    {article.categoryLabel}
+                  </Badge>
+                  <span className="text-[11px] text-[#667085]">{article.publishDate}</span>
+                </div>
+                <h3 className="text-base font-bold text-[#243447] group-hover:text-[#3DA9DF] transition-colors leading-snug">
+                  {article.title}
+                </h3>
+                <p className="text-xs text-[#667085] line-clamp-3 leading-relaxed">
+                  {article.summary}
+                </p>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-[#E1E8ED] flex items-center justify-between text-xs">
+                <span className="text-[#1E78A4] font-medium text-[11px]">{article.department}</span>
+                <span className="text-[#3DA9DF] font-semibold group-hover:translate-x-1 transition-transform">
+                  Read &rarr;
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* =========================================================================
+          10. PATIENT TESTIMONIAL SPOTLIGHT (LINK TO /testimonials)
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#688D23] text-xs font-semibold">
+              <MessageSquareQuote className="w-3.5 h-3.5" />
+              <span>Verified Patient Feedback</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#243447]">
+              "The 09:00 AM online token system and single queue saved us more than two hours of waiting."
+            </h2>
+            <p className="text-xs text-[#667085]">
+              — Ramesh K. Verma (Tagore Town, Prayagraj) &bull; General Medicine Consultation
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <Link to="/testimonials">
+              <Button variant="outline" size="md" rightIcon={<ArrowRight className="w-4 h-4 text-[#3DA9DF]" />}>
+                Read All Testimonials Page
+              </Button>
+            </Link>
+            <Link to="/gallery">
+              <Button variant="ghost" size="md" className="text-xs text-[#3DA9DF]">
+                Explore Campus Gallery &rarr;
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          11. PATIENT RESOURCES & FREQUENTLY ASKED QUESTIONS (FAQ)
          ========================================================================= */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-10">
@@ -1322,13 +1027,12 @@ export const Home: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          13. HOSPITAL LOCATION & CONTACT CARD
+          12. HOSPITAL LOCATION & CONTACT CARD (LINK TO /contact)
          ========================================================================= */}
-      <section id="contact" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Consultation Hours */}
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
                 <Clock className="w-5 h-5" />
@@ -1342,7 +1046,6 @@ export const Home: React.FC = () => {
               </div>
             </div>
 
-            {/* Location */}
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-[#688D23]" />
@@ -1356,7 +1059,6 @@ export const Home: React.FC = () => {
               </div>
             </div>
 
-            {/* Emergency & Reception Desk */}
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
                 <PhoneCall className="w-5 h-5" />
@@ -1377,6 +1079,11 @@ export const Home: React.FC = () => {
                   <a href={`tel:${settings.emergencyPhone.split(' ')[0]}`} className="text-red-600 font-bold hover:underline">
                     {settings.emergencyPhone}
                   </a>
+                </div>
+                <div className="pt-2">
+                  <Link to="/contact" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
+                    View Full Directions &amp; Inquiry Form &rarr;
+                  </Link>
                 </div>
               </div>
             </div>

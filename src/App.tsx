@@ -21,7 +21,9 @@ import { Journey } from './pages/public/Journey';
 import { Facilities } from './pages/public/Facilities';
 import { Gallery } from './pages/public/Gallery';
 import { Testimonials } from './pages/public/Testimonials';
+import { News } from './pages/public/News';
 import { PrivacyPolicy } from './pages/public/PrivacyPolicy';
+import { ScrollToTop } from './components/common/ScrollToTop';
 import { TermsAndConditions } from './pages/public/TermsAndConditions';
 import { CancellationPolicy } from './pages/public/CancellationPolicy';
 import { RefundPolicy } from './pages/public/RefundPolicy';
@@ -57,20 +59,23 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <HospitalProvider>
           <Routes>
-            {/* PUBLIC ROUTES */}
+            {/* PUBLIC MULTI-PAGE ROUTES */}
             <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
             <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
             <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
             <Route path="/departments" element={<PublicLayout><Services /></PublicLayout>} />
             <Route path="/doctors" element={<PublicLayout><Doctors /></PublicLayout>} />
+            <Route path="/pathology-lab" element={<PublicLayout><Pathology /></PublicLayout>} />
             <Route path="/pathology" element={<PublicLayout><Pathology /></PublicLayout>} />
             <Route path="/journey" element={<PublicLayout><Journey /></PublicLayout>} />
             <Route path="/facilities" element={<PublicLayout><Facilities /></PublicLayout>} />
             <Route path="/gallery" element={<PublicLayout><Gallery /></PublicLayout>} />
             <Route path="/testimonials" element={<PublicLayout><Testimonials /></PublicLayout>} />
+            <Route path="/news" element={<PublicLayout><News /></PublicLayout>} />
             <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
             <Route path="/book-appointment" element={<PublicLayout><BookAppointment /></PublicLayout>} />
             
