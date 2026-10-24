@@ -52,6 +52,88 @@ export interface GalleryItemRecord {
   displayOrder: number;
 }
 
+export type EnquiryStatus = 'new' | 'contacted' | 'closed';
+
+export interface EnquiryInput {
+  name: string;
+  phone: string;
+  email?: string;
+  topic: string;
+  message: string;
+}
+
+export interface EnquiryRecord extends EnquiryInput {
+  id: string;
+  status: EnquiryStatus;
+  createdAt: string;
+}
+
+/**
+ * - `sent`: stored in Supabase; reception will see it.
+ * - `local`: Supabase is not configured, so it was only kept in this browser.
+ *   The UI must not claim the hospital received it.
+ * - `error`: Supabase is configured but the insert failed; safe to retry.
+ */
+export type EnquirySubmitResult =
+  | { status: 'sent' }
+  | { status: 'local' }
+  | { status: 'error'; error: string };
+
+export const ENQUIRY_LIMITS = { name: 120, topic: 60, message: 2000, email: 254 } as const;
+const LOCAL_ENQUIRIES_KEY = 'satya_contact_enquiries';
+
+function readLocalEnquiries(): EnquiryRecord[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(localStorage.getItem(LOCAL_ENQUIRIES_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalEnquiries(list: EnquiryRecord[]) {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_ENQUIRIES_KEY, JSON.stringify(list.slice(0, 50)));
+  } catch {
+    // Storage full or blocked — nothing else to do locally.
+  }
+}
+
+function mapEnquiryRow(r: any): EnquiryRecord {
+  return {
+    id: r.id,
+    name: r.name,
+    phone: r.phone,
+    email: r.email || undefined,
+    topic: r.topic,
+    message: r.message,
+    status: r.status,
+    createdAt: r.created_at,
+  };
+}
+
+/** Mirrors the CHECK constraints in 20261024000004_contact_enquiries.sql. */
+export function normalizeEnquiry(input: EnquiryInput): { value?: EnquiryInput; error?: string } {
+  const value: EnquiryInput = {
+    name: input.name.trim(),
+    phone: input.phone.replace(/\D/g, ''),
+    email: input.email?.trim() || undefined,
+    topic: input.topic.trim(),
+    message: input.message.trim(),
+  };
+  if (!value.name || value.name.length > ENQUIRY_LIMITS.name) return { error: 'Please enter your full name.' };
+  if (!/^[6-9]\d{9}$/.test(value.phone)) return { error: 'Enter a valid 10-digit Indian mobile number.' };
+  if (value.email && (value.email.length > ENQUIRY_LIMITS.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.email))) {
+    return { error: 'Enter a valid email address or leave it blank.' };
+  }
+  if (!value.topic || value.topic.length > ENQUIRY_LIMITS.topic) return { error: 'Please choose a topic.' };
+  if (!value.message) return { error: 'Please tell us how we can help.' };
+  if (value.message.length > ENQUIRY_LIMITS.message) return { error: `Please keep your message under ${ENQUIRY_LIMITS.message} characters.` };
+  return { value };
+}
+
 // Timeout helper to ensure network drops or sandboxed tests fail fast to fallback
 const DEFAULT_TIMEOUT_MS = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ? 300 : 2500;
 
@@ -434,6 +516,85 @@ export const supabaseService = {
       }));
     } catch {
       return null;
+    }
+  },
+
+  /**
+   * Submit a public contact enquiry. Never reports `sent` unless Supabase
+   * accepted the row.
+   */
+  async submitEnquiry(input: EnquiryInput): Promise<EnquirySubmitResult> {
+    const { value, error: invalid } = normalizeEnquiry(input);
+    if (!value) return { status: 'error', error: invalid || 'Please check the form.' };
+
+    if (!isSupabaseConfigured || !supabase) {
+      writeLocalEnquiries([
+        { ...value, id: `local-${Date.now()}`, status: 'new', createdAt: new Date().toISOString() },
+        ...readLocalEnquiries(),
+      ]);
+      return { status: 'local' };
+    }
+
+    try {
+      // No .select(): anon has INSERT but not SELECT on this table.
+      const { error } = await withTimeout(
+        supabase.from('contact_enquiries').insert({
+          name: value.name,
+          phone: value.phone,
+          email: value.email || null,
+          topic: value.topic,
+          message: value.message,
+        })
+      );
+      if (error) {
+        console.warn('Supabase enquiry insert failed:', error.message);
+        return {
+          status: 'error',
+          error: error.message?.includes('Too many enquiries')
+            ? error.message
+            : 'We couldn’t send your enquiry just now. Please try again, or call reception.',
+        };
+      }
+      return { status: 'sent' };
+    } catch {
+      return { status: 'error', error: 'The connection timed out. Please check your internet and try again.' };
+    }
+  },
+
+  /**
+   * Reception/admin: list enquiries, newest first. Returns local-only
+   * enquiries when Supabase is not configured.
+   */
+  async listEnquiries(limit = 100): Promise<{ enquiries: EnquiryRecord[]; source: 'supabase' | 'local'; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) {
+      return { enquiries: readLocalEnquiries(), source: 'local' };
+    }
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('contact_enquiries').select('*').order('created_at', { ascending: false }).limit(limit)
+      );
+      if (error || !data) return { enquiries: [], source: 'supabase', error: error?.message || 'Could not load enquiries.' };
+      return { enquiries: data.map(mapEnquiryRow), source: 'supabase' };
+    } catch {
+      return { enquiries: [], source: 'supabase', error: 'The connection timed out while loading enquiries.' };
+    }
+  },
+
+  /**
+   * Reception/admin: move an enquiry to contacted / closed.
+   */
+  async updateEnquiryStatus(id: string, status: EnquiryStatus): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) {
+      const list = readLocalEnquiries();
+      writeLocalEnquiries(list.map(e => (e.id === id ? { ...e, status } : e)));
+      return { success: true };
+    }
+    try {
+      const { error } = await withTimeout(supabase.from('contact_enquiries').update({ status }).eq('id', id));
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch {
+      return { success: false, error: 'The connection timed out. Please try again.' };
     }
   }
 };

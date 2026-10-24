@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Clock, Mail, MapPin, Phone, PhoneCall, Send, ShieldAlert } from 'lucide-react';
-import { Button } from '../../components/common/Button';
+import { AnchorButton, Button } from '../../components/common/Button';
 import { Alert } from '../../components/common/Alert';
 import { PageHero, Section } from '../../components/site/Section';
 import { useHospital } from '../../context/HospitalContext';
 import { cleanSettingText, isPlaceholder, phoneDisplay, phoneHref, to12h } from '../../lib/contact';
 import { isValidIndianPhone } from '../../lib/tokens';
+import { ENQUIRY_LIMITS, supabaseService } from '../../services/supabaseService';
 
 export const Contact: React.FC = () => {
   const { settings } = useHospital();
@@ -16,23 +17,31 @@ export const Contact: React.FC = () => {
   const [department, setDepartment] = useState('Pediatric Enquiry');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; phone?: string; message?: string }>({});
+  const [outcome, setOutcome] = useState<'sent' | 'local' | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ name?: string; phone?: string; email?: string; message?: string }>({});
+
+  const send = async () => {
+    setIsSubmitting(true);
+    setSendError(null);
+    const res = await supabaseService.submitEnquiry({ name, phone, email, topic: department, message });
+    setIsSubmitting(false);
+    if (res.status === 'error') setSendError(res.error);
+    else setOutcome(res.status);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     const next: typeof errors = {};
     if (!name.trim()) next.name = 'Please enter your full name.';
     if (!isValidIndianPhone(phone)) next.phone = 'Enter a valid 10-digit Indian mobile number.';
+    if (email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) next.email = 'Enter a valid email address or leave it blank.';
     if (!message.trim()) next.message = 'Please tell us how we can help.';
+    else if (message.trim().length > ENQUIRY_LIMITS.message) next.message = `Please keep your message under ${ENQUIRY_LIMITS.message} characters.`;
     setErrors(next);
     if (Object.keys(next).length) return;
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-    }, 500);
+    void send();
   };
 
   const desks = [
@@ -116,21 +125,41 @@ export const Contact: React.FC = () => {
 
           <div className="lg:col-span-7">
             <div className="rounded-3xl border border-line bg-white p-6 shadow-card sm:p-8">
-              {submitted ? (
+              {outcome ? (
                 <div className="py-10 text-center" role="status">
-                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-leaf-100 text-leaf-700">
-                    <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
-                  </span>
-                  <h2 className="mt-5 text-xl font-semibold tracking-tight text-ink-900">Thank you, {name.split(' ')[0]}</h2>
-                  <p className="mx-auto mt-2 max-w-md text-[15px] text-ink-600">
-                    Your enquiry has been noted. A member of the reception team will contact you on {phone}. For anything urgent, please call
-                    reception.
-                  </p>
+                  {outcome === 'sent' ? (
+                    <>
+                      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-leaf-100 text-leaf-700">
+                        <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+                      </span>
+                      <h2 className="mt-5 text-xl font-semibold tracking-tight text-ink-900">Thank you, {name.trim().split(' ')[0]}</h2>
+                      <p className="mx-auto mt-2 max-w-md text-[15px] text-ink-600">
+                        Your enquiry has been sent. A member of the reception team will contact you on {phone}. For anything urgent, please call
+                        reception.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-warning-50 text-warning-600">
+                        <ShieldAlert className="h-7 w-7" aria-hidden="true" />
+                      </span>
+                      <h2 className="mt-5 text-xl font-semibold tracking-tight text-ink-900">Saved on this device only</h2>
+                      <p className="mx-auto mt-2 max-w-md text-[15px] text-ink-600">
+                        Online enquiries aren’t connected yet, so the hospital has <strong>not</strong> received this message. Please call
+                        reception{isPlaceholder(settings.phone) ? '' : ` on ${phoneDisplay(settings.phone)}`} so we can help you.
+                      </p>
+                      {!isPlaceholder(settings.phone) && (
+                        <AnchorButton variant="primary" href={phoneHref(settings.phone)} className="mt-6" leftIcon={<Phone className="h-4 w-4" />}>
+                          Call reception
+                        </AnchorButton>
+                      )}
+                    </>
+                  )}
                   <Button
                     variant="outline"
                     className="mt-7"
                     onClick={() => {
-                      setSubmitted(false);
+                      setOutcome(null);
                       setName('');
                       setPhone('');
                       setEmail('');
@@ -147,6 +176,19 @@ export const Contact: React.FC = () => {
                     <p className="mt-1 text-sm text-ink-500">The reception team reviews enquiries during working hours.</p>
                   </div>
                   {Object.keys(errors).length > 0 && <Alert type="error">Please correct the highlighted fields.</Alert>}
+                  {sendError && Object.keys(errors).length === 0 && (
+                    <Alert
+                      type="error"
+                      title="Enquiry not sent"
+                      action={
+                        <Button type="button" variant="outline" size="sm" onClick={() => void send()} isLoading={isSubmitting} loadingText="Retrying…">
+                          Try again
+                        </Button>
+                      }
+                    >
+                      {sendError}
+                    </Alert>
+                  )}
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div>
                       <label htmlFor="c-name" className="field-label">Full name</label>
@@ -184,7 +226,17 @@ export const Contact: React.FC = () => {
                       <label htmlFor="c-email" className="field-label">
                         Email <span className="font-normal text-ink-400">(optional)</span>
                       </label>
-                      <input id="c-email" type="email" autoComplete="email" className="field-control" value={email} onChange={e => setEmail(e.target.value)} />
+                      <input
+                        id="c-email"
+                        type="email"
+                        autoComplete="email"
+                        className="field-control"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        aria-invalid={Boolean(errors.email)}
+                        aria-describedby={errors.email ? 'c-email-err' : undefined}
+                      />
+                      {errors.email && <p id="c-email-err" className="field-error">{errors.email}</p>}
                     </div>
                     <div>
                       <label htmlFor="c-dept" className="field-label">Topic</label>
@@ -205,6 +257,7 @@ export const Contact: React.FC = () => {
                       className="field-control resize-y"
                       placeholder="How can we help?"
                       value={message}
+                      maxLength={ENQUIRY_LIMITS.message}
                       onChange={e => setMessage(e.target.value)}
                       aria-invalid={Boolean(errors.message)}
                       aria-describedby={errors.message ? 'c-msg-err' : undefined}
