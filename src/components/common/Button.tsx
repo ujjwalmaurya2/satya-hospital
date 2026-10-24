@@ -1,14 +1,41 @@
 import React, { ButtonHTMLAttributes } from 'react';
-import clsx from 'clsx';
+import { Link, LinkProps } from 'react-router-dom';
+import { cn } from '../../lib/cn';
 import { Loader2 } from 'lucide-react';
 
-export type ButtonVariant = 'primary' | 'accent' | 'outline' | 'danger' | 'ghost';
+export type ButtonVariant = 'primary' | 'accent' | 'outline' | 'danger' | 'ghost' | 'dark' | 'soft';
 export type ButtonSize = 'sm' | 'md' | 'lg';
+
+const base =
+  'inline-flex items-center justify-center whitespace-nowrap font-semibold rounded-full select-none cursor-pointer ' +
+  'transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-55 disabled:cursor-not-allowed disabled:active:scale-100';
+
+const variants: Record<ButtonVariant, string> = {
+  primary: 'bg-brand-700 text-white shadow-soft hover:bg-brand-800 focus-visible:outline-brand-500',
+  accent: 'bg-leaf-700 text-white shadow-soft hover:bg-leaf-800 focus-visible:outline-leaf-500',
+  dark: 'bg-ink-800 text-white shadow-soft hover:bg-ink-900 focus-visible:outline-brand-500',
+  outline: 'border border-line-strong bg-white text-ink-800 hover:border-brand-500 hover:text-brand-700 focus-visible:outline-brand-500',
+  soft: 'bg-brand-100 text-brand-800 hover:bg-brand-200/70 focus-visible:outline-brand-500',
+  danger: 'bg-danger-600 text-white shadow-soft hover:bg-danger-700 focus-visible:outline-danger-600',
+  ghost: 'text-ink-700 hover:bg-ink-50 hover:text-ink-900 focus-visible:outline-brand-500',
+};
+
+const sizes: Record<ButtonSize, string> = {
+  sm: 'text-[13px] h-9 px-3.5 gap-1.5',
+  md: 'text-sm h-11 px-5 gap-2',
+  lg: 'text-[15px] h-12 px-6 gap-2.5',
+};
+
+export function buttonClasses(variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className = '') {
+  return cn(base, variants[variant], sizes[size], className);
+}
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
+  loadingText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
@@ -18,51 +45,78 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
+  loadingText,
   leftIcon,
   rightIcon,
   className = '',
   disabled,
   ...props
-}) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-150 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer select-none';
+}) => (
+  <button
+    className={buttonClasses(variant, size, className)}
+    disabled={disabled || isLoading}
+    aria-busy={isLoading || undefined}
+    {...props}
+  >
+    {isLoading ? (
+      <>
+        <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden="true" />
+        <span>{loadingText ?? children}</span>
+      </>
+    ) : (
+      <>
+        {leftIcon && <span className="shrink-0 inline-flex" aria-hidden="true">{leftIcon}</span>}
+        {children}
+        {rightIcon && <span className="shrink-0 inline-flex" aria-hidden="true">{rightIcon}</span>}
+      </>
+    )}
+  </button>
+);
 
-  const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-[#3DA9DF] text-white hover:bg-[#2B92C4] active:bg-[#1E78A4] focus-visible:outline-[#3DA9DF] shadow-sm font-semibold',
-    accent: 'bg-[#91BB40] text-white hover:bg-[#7EA631] active:bg-[#6B8F27] focus-visible:outline-[#91BB40] font-semibold shadow-xs',
-    outline: 'border border-[#CBD7DD] bg-white text-[#193247] hover:bg-[#EBF6FC] hover:border-[#3DA9DF] hover:text-[#3DA9DF] focus-visible:outline-[#3DA9DF]',
-    danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:outline-[#DC2626] shadow-sm',
-    ghost: 'text-[#193247] hover:bg-[#EBF6FC] hover:text-[#3DA9DF] active:bg-[#D4EDF9] focus-visible:outline-[#3DA9DF]',
-  };
+interface LinkButtonProps extends LinkProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}
 
-  const sizeStyles: Record<ButtonSize, string> = {
-    sm: 'text-xs px-3 py-1.5 gap-1.5 min-h-[32px]',
-    md: 'text-sm px-4 py-2 gap-2 min-h-[40px]',
-    lg: 'text-base px-5 py-2.5 gap-2.5 min-h-[48px]',
-  };
+/** Router link styled as a button (avoids nesting <button> inside <a>). */
+export const LinkButton: React.FC<LinkButtonProps> = ({
+  variant = 'primary',
+  size = 'md',
+  leftIcon,
+  rightIcon,
+  className = '',
+  children,
+  ...props
+}) => (
+  <Link className={buttonClasses(variant, size, typeof className === 'string' ? className : '')} {...props}>
+    {leftIcon && <span className="shrink-0 inline-flex" aria-hidden="true">{leftIcon}</span>}
+    {children}
+    {rightIcon && <span className="shrink-0 inline-flex" aria-hidden="true">{rightIcon}</span>}
+  </Link>
+);
 
-  return (
-    <button
-      className={clsx(
-        baseStyles,
-        variantStyles[variant],
-        sizeStyles[size],
-        className
-      )}
-      disabled={disabled || isLoading}
-      {...props}
-    >
-      {isLoading ? (
-        <>
-          <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden="true" />
-          <span>Processing...</span>
-        </>
-      ) : (
-        <>
-          {leftIcon && <span className="shrink-0">{leftIcon}</span>}
-          <span>{children}</span>
-          {rightIcon && <span className="shrink-0">{rightIcon}</span>}
-        </>
-      )}
-    </button>
-  );
-};
+interface AnchorButtonProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}
+
+/** External / tel: / mailto: link styled as a button. */
+export const AnchorButton: React.FC<AnchorButtonProps> = ({
+  variant = 'outline',
+  size = 'md',
+  leftIcon,
+  rightIcon,
+  className = '',
+  children,
+  ...props
+}) => (
+  <a className={buttonClasses(variant, size, className)} {...props}>
+    {leftIcon && <span className="shrink-0 inline-flex" aria-hidden="true">{leftIcon}</span>}
+    {children}
+    {rightIcon && <span className="shrink-0 inline-flex" aria-hidden="true">{rightIcon}</span>}
+  </a>
+);

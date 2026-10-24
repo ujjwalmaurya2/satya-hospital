@@ -1,229 +1,107 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Milestone, 
-  Clock, 
-  ShieldCheck, 
-  Microscope, 
-  Stethoscope, 
-  HeartPulse, 
-  Users, 
-  Calendar,
-  CheckCircle2, 
-  ArrowRight,
-  FileCheck,
-  Baby,
-  Sparkles
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
+import { Baby, CheckCircle2, Clock, HeartPulse, Microscope, ShieldCheck } from 'lucide-react';
 import { ScrollReveal } from '../../components/motion';
+import { PageHero, Section } from '../../components/site/Section';
+import { CtaBand } from '../../components/site/CtaBand';
 
 export interface JourneyMilestone {
   period: string;
-  badge: string;
   title: string;
   subtitle: string;
   description: string;
   highlights: string[];
   icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
 }
 
 export const journeyMilestones: JourneyMilestone[] = [
   {
-    period: 'Foundational Phase',
-    badge: 'Clinical Inception',
-    title: 'Founding of Satya Hospital in Prayagraj',
+    period: 'Foundation',
+    title: 'Satya Hospital opens in Civil Lines',
     subtitle: 'A commitment to accessible, ethical outpatient medicine',
-    description: 'Satya Hospital was established in Civil Lines, Prayagraj to bridge the gap between compassionate community care and modern clinical practice. From day one, the founding team pledged zero fabricated claims and patient-first consultations.',
-    highlights: [
-      'Dedicated Outpatient Department (OPD) chambers',
-      'Ground-floor accessible reception and triage desk',
-      'Core clinical consultations in General Medicine and Family Care'
-    ],
-    icon: <HeartPulse className="w-6 h-6" />,
-    iconBg: 'bg-[#F3F8EC]',
-    iconColor: 'text-[#91BB40]',
+    description:
+      'Satya Hospital was established in Civil Lines, Prayagraj to bring compassionate community care and modern clinical practice together — with honest information and patient-first consultations from the start.',
+    highlights: ['Dedicated outpatient (OPD) chambers', 'Ground-floor, accessible reception desk', 'General medicine and family care consultations'],
+    icon: <HeartPulse className="h-5 w-5" />,
   },
   {
-    period: 'Pediatric Care Focus',
-    badge: 'Child & Family Care',
-    title: 'Dedicated Childcare & Pediatric Consultation Suite',
-    subtitle: 'Specialized infant, newborn, and adolescent healthcare',
-    description: 'Recognizing that children need gentle, empathetic medical environments, Satya Hospital designed dedicated pediatric outpatient chambers with sanitized examination mats, calibrated growth tracking, and unhurried doctor-parent discussions.',
-    highlights: [
-      'Child-appropriate diagnostic equipment & gentle examination spaces',
-      'Routine childhood immunization tracking adhering to certified protocols',
-      'Infant wellness assessments and maternal feeding guidance'
-    ],
-    icon: <Baby className="w-6 h-6" />,
-    iconBg: 'bg-[#EBF6FC]',
-    iconColor: 'text-[#3DA9DF]',
+    period: 'Pediatric focus',
+    title: 'A consultation suite for children',
+    subtitle: 'Care for newborns, infants and adolescents',
+    description:
+      'Children need gentle, calm medical spaces. Dedicated pediatric chambers were set up with sanitised examination mats, calibrated growth tracking and unhurried conversations with parents.',
+    highlights: ['Child-appropriate equipment and examination spaces', 'Routine immunisation tracking', 'Infant wellness assessments and feeding guidance'],
+    icon: <Baby className="h-5 w-5" />,
   },
   {
-    period: 'Laboratory Expansion',
-    badge: 'Diagnostic Excellence',
-    title: 'In-House Automated Pathology Laboratory',
-    subtitle: 'High-precision auto-analyzers & 2-step pathologist verification',
-    description: 'Clinical decisions require accurate, prompt lab results. Satya Hospital installed calibrated hematology and biochemistry auto-analyzers right on hospital premises, ensuring rapid turnaround for OPD patients and gentle pediatric micro-sampling.',
-    highlights: [
-      'Automated biochemistry & hematology testing suites',
-      'Mandatory 2-step pathologist sign-off before report publication',
-      'Fast 2 to 4 hour turnaround for routine outpatient blood panels'
-    ],
-    icon: <Microscope className="w-6 h-6" />,
-    iconBg: 'bg-[#F3F8EC]',
-    iconColor: 'text-[#91BB40]',
+    period: 'Laboratory',
+    title: 'An in-house pathology laboratory',
+    subtitle: 'Automated analysers and pathologist verification',
+    description:
+      'Clinical decisions need prompt, accurate results. Calibrated haematology and biochemistry analysers were installed on the premises, with gentle micro-sampling for children.',
+    highlights: ['Automated biochemistry and haematology testing', 'Pathologist sign-off before any report is released', 'Quick turnaround for routine outpatient blood panels'],
+    icon: <Microscope className="h-5 w-5" />,
   },
   {
-    period: 'Process Innovation',
-    badge: 'Queue Transparency',
-    title: 'The Unified Sequential Token Queue System',
-    subtitle: 'Ending favoritism and oversubscription with strict sequential fairness',
-    description: 'To end unpredictable waiting times and queue-jumping, Satya Hospital implemented the unified token queue. Online reservations and in-person walk-ins receive token numbers from the same sequential daily queue without distinction.',
-    highlights: [
-      'T-1 booking window opening 1 day prior to appointment',
-      'Strict 09:00 AM same-day cutoff locking dispensary rosters',
-      'Zero duplicate tokens with atomic database reservation locking'
-    ],
-    icon: <Clock className="w-6 h-6" />,
-    iconBg: 'bg-[#FFF0E7]',
-    iconColor: 'text-[#9A3412]',
+    period: 'Fair queue',
+    title: 'One sequential token queue',
+    subtitle: 'Predictable waits, with no queue-jumping',
+    description:
+      'Online reservations and walk-in patients now receive token numbers from the same daily sequence, without distinction — so waiting times are fair and predictable.',
+    highlights: ['Online booking opens one day before the visit', `Same-day online booking closes at 09:00 AM`, 'No duplicate tokens'],
+    icon: <Clock className="h-5 w-5" />,
   },
   {
-    period: 'Digital Transformation',
-    badge: 'Modern Health Portal',
-    title: 'Patient Health Portal & DPDP-Compliant Digital Records',
-    subtitle: 'Paperless records, prescription scanning, and secure PDF delivery',
-    description: 'Delivered a modern patient health portal. Patients access signed lab reports via short-lived authenticated URLs, review scanned handwritten prescriptions, and manage upcoming OPD tokens from any device.',
-    highlights: [
-      'Full compliance with India’s Digital Personal Data Protection (DPDP) Act',
-      'Row Level Security (RLS) across patient clinical records',
-      'Instant access to authenticated digital pathology reports and receipts'
-    ],
-    icon: <ShieldCheck className="w-6 h-6" />,
-    iconBg: 'bg-[#F3F8EC]',
-    iconColor: 'text-[#91BB40]',
+    period: 'Digital records',
+    title: 'A secure patient portal',
+    subtitle: 'Paperless records and private report delivery',
+    description:
+      'Patients can view verified lab reports, scanned prescriptions and upcoming OPD tokens from any device, with access limited to their own records.',
+    highlights: ["Designed in line with India's DPDP Act", 'Each patient sees only their own records', 'Verified pathology reports as downloadable PDFs'],
+    icon: <ShieldCheck className="h-5 w-5" />,
   },
 ];
 
-export const Journey: React.FC = () => {
-  return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        
-        {/* Header */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-              <Milestone className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Clinical Evolution &amp; Milestones &bull; Prayagraj</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-              The Satya Hospital Journey
-            </h1>
-            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-              From a focused community clinic to a family-trusted pediatric and diagnostic center in Civil Lines, Prayagraj. Explore the milestones that shaped our patient-first healthcare model.
-            </p>
-          </div>
-        </ScrollReveal>
+export const Journey: React.FC = () => (
+  <>
+    <PageHero
+      crumbs={[{ label: 'Journey' }]}
+      eyebrow="Our journey"
+      title="How Satya Hospital grew, step by step"
+      description="From a focused community clinic to a pediatric and diagnostic centre in Civil Lines, Prayagraj — the milestones that shaped our patient-first model."
+    />
 
-        {/* Timeline Section */}
-        <div className="relative">
-          {/* Central connecting vertical line */}
-          <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#3DA9DF] via-[#91BB40] to-[#CBD7DD] -translate-x-1/2" />
-
-          <div className="space-y-12 md:space-y-16">
-            {journeyMilestones.map((milestone, idx) => {
-              const isEven = idx % 2 === 0;
-
-              return (
-                <div
-                  key={milestone.title}
-                  className={`relative flex flex-col md:flex-row items-center ${
-                    isEven ? 'md:flex-row-reverse' : ''
-                  } gap-6 md:gap-12`}
-                >
-                  {/* Timeline Node Dot */}
-                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-12 h-12 rounded-2xl bg-white border-2 border-[#CBD7DD] items-center justify-center shadow-md z-10 group-hover:scale-110 transition-transform">
-                    <div className={`w-8 h-8 rounded-xl ${milestone.iconBg} ${milestone.iconColor} flex items-center justify-center font-bold`}>
-                      {milestone.icon}
-                    </div>
-                  </div>
-
-                  {/* Content Card (Half width) */}
-                  <div className="w-full md:w-1/2">
-                    <ScrollReveal direction={isEven ? "left" : "right"} delay={idx * 0.05} distance={20}>
-                      <Card className="p-6 sm:p-7 border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all hover:shadow-md bg-white">
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className="text-xs font-bold text-[#647785] uppercase tracking-wider">
-                            {milestone.period}
-                          </span>
-                          <Badge variant="medical-blue" size="sm">
-                            {milestone.badge}
-                          </Badge>
-                        </div>
-
-                        <h2 className="text-lg sm:text-xl font-bold text-[#193247] mb-1">
-                          {milestone.title}
-                        </h2>
-                        <h3 className="text-xs font-bold text-[#3DA9DF] mb-3">
-                          {milestone.subtitle}
-                        </h3>
-
-                        <p className="text-xs sm:text-sm text-[#647785] leading-relaxed mb-4">
-                          {milestone.description}
-                        </p>
-
-                        <div className="space-y-2 pt-3 border-t border-[#E5ECEF] text-xs">
-                          {milestone.highlights.map((item, hIdx) => (
-                            <div key={hIdx} className="flex items-start gap-2 text-[#193247]">
-                              <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                              <span>{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </Card>
-                    </ScrollReveal>
-                  </div>
-
-                  {/* Spacer for the other half */}
-                  <div className="hidden md:block w-1/2" />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Bottom CTA Card */}
-        <ScrollReveal direction="up" distance={20}>
-          <div className="bg-[#193247] text-white rounded-3xl p-8 sm:p-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <h2 className="text-xl sm:text-2xl font-bold">Experience Child-First, Family-Centred Care</h2>
-              <p className="text-xs sm:text-sm text-white/70 max-w-xl">
-                Join the hundreds of Prayagraj families who rely on Satya Hospital for transparent OPD consultations and certified diagnostic pathology.
+    <Section size="lg">
+      <ol className="relative mx-auto max-w-4xl">
+        <div aria-hidden="true" className="absolute left-[23px] top-3 bottom-3 w-px bg-gradient-to-b from-brand-300 via-leaf-300 to-line sm:left-[31px]" />
+        {journeyMilestones.map((m, i) => (
+          <li key={m.title} className="relative pb-14 pl-16 last:pb-0 sm:pl-24">
+            <span
+              className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-brand-700 shadow-card ring-1 ring-line sm:h-16 sm:w-16"
+              aria-hidden="true"
+            >
+              {m.icon}
+            </span>
+            <ScrollReveal distance={14} delay={0.04}>
+              <p className="text-sm font-semibold text-leaf-700">
+                {String(i + 1).padStart(2, '0')} · {m.period}
               </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
-              <Link to="/book-appointment">
-                <Button variant="primary" size="lg" leftIcon={<Calendar className="w-5 h-5" />} className="font-bold">
-                  Book OPD Token
-                </Button>
-              </Link>
-              <Link to="/doctors">
-                <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
-                  Meet Doctors &rarr;
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </ScrollReveal>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900 sm:text-[1.75rem]">{m.title}</h2>
+              <p className="mt-1 text-[15px] font-medium text-brand-700">{m.subtitle}</p>
+              <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-600">{m.description}</p>
+              <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {m.highlights.map(h => (
+                  <li key={h} className="flex items-start gap-2.5 text-sm text-ink-700">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </ScrollReveal>
+          </li>
+        ))}
+      </ol>
+    </Section>
 
-      </div>
-    </div>
-  );
-};
+    <CtaBand title="Experience child-first, family-centred care" />
+  </>
+);

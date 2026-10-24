@@ -1,28 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Newspaper, 
-  Calendar, 
-  Tag, 
-  Clock, 
-  ArrowRight, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Search, 
-  AlertCircle,
-  X,
-  Building,
-  Microscope,
-  Stethoscope,
-  HeartPulse,
-  Baby,
-  Share2
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
-import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
+import { motion } from 'framer-motion';
+import { ArrowRight, CheckCircle2, Search } from 'lucide-react';
+import { EmptyState } from '../../components/common/EmptyState';
+import { Modal } from '../../components/common/Modal';
+import { ScrollReveal } from '../../components/motion';
+import { PageHero, Section } from '../../components/site/Section';
+import { CtaBand } from '../../components/site/CtaBand';
+import { cn } from '../../lib/cn';
 
 export interface NewsArticle {
   id: string;
@@ -126,214 +110,151 @@ export const hospitalNewsArticles: NewsArticle[] = [
 ];
 
 export const News: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeArticle, setActiveArticle] = useState<NewsArticle | null>(null);
+  const [category, setCategory] = useState('all');
+  const [query, setQuery] = useState('');
+  const [active, setActive] = useState<NewsArticle | null>(null);
 
   const categories = [
-    { id: 'all', label: 'All News & Bulletins' },
-    { id: 'clinical', label: 'Clinical Advisories' },
-    { id: 'operational', label: 'OPD Operational Notices' },
-    { id: 'lab', label: 'Pathology Upgrades' },
-    { id: 'community', label: 'Child Health Guidance' },
+    { id: 'all', label: 'All' },
+    { id: 'clinical', label: 'Clinical advisories' },
+    { id: 'operational', label: 'OPD notices' },
+    { id: 'lab', label: 'Laboratory' },
+    { id: 'community', label: 'Child health' },
   ];
 
-  const filteredArticles = hospitalNewsArticles.filter((article) => {
-    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
-    const matchesSearch = 
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.department.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const q = query.trim().toLowerCase();
+  const list = hospitalNewsArticles.filter(
+    a =>
+      (category === 'all' || a.category === category) &&
+      (!q || a.title.toLowerCase().includes(q) || a.summary.toLowerCase().includes(q) || a.department.toLowerCase().includes(q))
+  );
+  const [featured, ...rest] = list;
 
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        {/* Header */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-              <Newspaper className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Official News &amp; Clinical Advisories &bull; Satya Hospital</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-              Hospital Bulletins &amp; Health Updates
-            </h1>
-            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-              Stay informed with official operational notices, pediatric health advisories, diagnostic laboratory upgrades, and clinical announcements from Satya Hospital in Prayagraj.
-            </p>
-          </div>
-        </ScrollReveal>
+    <>
+      <PageHero
+        crumbs={[{ label: 'News' }]}
+        eyebrow="News & advisories"
+        title="Hospital bulletins and health updates"
+        description="Operational notices, pediatric health advisories and laboratory updates from Satya Hospital."
+      />
 
-        {/* Search and Category Filters */}
-        <ScrollReveal direction="up" delay={0.06} distance={12}>
-          <div className="space-y-4">
-            <div className="max-w-md relative">
-              <Search className="w-4 h-4 text-[#647785] absolute left-3.5 top-3 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search news, advisories, or departments..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#CBD7DD] text-xs sm:text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {categories.map((cat) => (
+      <Section size="md">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div role="tablist" aria-label="News categories" className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
+            {categories.map(c => {
+              const on = c.id === category;
+              return (
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-[#3DA9DF] text-white shadow-xs'
-                      : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-                  }`}
+                  key={c.id}
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setCategory(c.id)}
+                  className={cn(
+                    'relative h-10 shrink-0 rounded-full px-4 text-sm font-medium transition-colors cursor-pointer',
+                    on ? 'text-white' : 'border border-line bg-white text-ink-700 hover:border-ink-300'
+                  )}
                 >
-                  {cat.label}
+                  {on && <motion.span layoutId="news-pill" className="absolute inset-0 rounded-full bg-ink-800" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                  <span className="relative">{c.label}</span>
                 </button>
+              );
+            })}
+          </div>
+          <div className="relative w-full lg:w-80">
+            <label htmlFor="news-search" className="sr-only">Search news</label>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <input
+              id="news-search"
+              type="search"
+              placeholder="Search bulletins"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className="field-control pl-10"
+            />
+          </div>
+        </div>
+
+        {list.length === 0 ? (
+          <div className="mt-10 rounded-3xl border border-line bg-white">
+            <EmptyState
+              title="No matching bulletins"
+              description="Try a different search term or category."
+              actionLabel="Clear filters"
+              onAction={() => {
+                setQuery('');
+                setCategory('all');
+              }}
+            />
+          </div>
+        ) : (
+          <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-5">
+            {featured && (
+              <ScrollReveal className="lg:col-span-3" distance={12}>
+                <button
+                  type="button"
+                  onClick={() => setActive(featured)}
+                  className="group flex h-full w-full flex-col justify-between rounded-3xl bg-ink-800 p-8 text-left text-white transition-shadow hover:shadow-lift sm:p-10 cursor-pointer"
+                >
+                  <div>
+                    <p className="text-sm text-brand-300">
+                      {featured.categoryLabel} · {featured.publishDate}
+                    </p>
+                    <h2 className="mt-4 text-2xl font-semibold leading-snug tracking-tight sm:text-[1.9rem]">{featured.title}</h2>
+                    <p className="mt-4 text-[15px] leading-relaxed text-white/70">{featured.summary}</p>
+                  </div>
+                  <span className="mt-10 inline-flex items-center gap-2 text-sm font-semibold">
+                    Read bulletin <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                    <span className="ml-auto font-normal text-white/50">{featured.readTime}</span>
+                  </span>
+                </button>
+              </ScrollReveal>
+            )}
+            <div className="flex flex-col gap-4 lg:col-span-2">
+              {rest.map(a => (
+                <ScrollReveal key={a.id} distance={10}>
+                  <button
+                    type="button"
+                    onClick={() => setActive(a)}
+                    className="group w-full rounded-3xl border border-line bg-white p-6 text-left transition-[border-color,box-shadow] hover:border-brand-200 hover:shadow-card cursor-pointer"
+                  >
+                    <p className="text-[13px] text-ink-500">
+                      <span className="font-medium text-leaf-700">{a.categoryLabel}</span> · {a.publishDate}
+                    </p>
+                    <h3 className="mt-2 font-semibold leading-snug text-ink-900 group-hover:text-brand-700">{a.title}</h3>
+                    <p className="mt-2 line-clamp-2 text-sm text-ink-500">{a.summary}</p>
+                  </button>
+                </ScrollReveal>
               ))}
             </div>
           </div>
-        </ScrollReveal>
-
-        {/* News Grid */}
-        <StaggerContainer staggerDelay={0.07} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredArticles.map((article) => (
-            <StaggerItem key={article.id} hoverLift className="h-full">
-              <div
-                className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer h-full"
-                onClick={() => setActiveArticle(article)}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant={article.badgeVariant} size="sm">
-                      {article.categoryLabel}
-                    </Badge>
-                    <span className="text-[11px] text-[#647785] flex items-center gap-1 font-medium">
-                      <Calendar className="w-3 h-3 text-[#3DA9DF]" />
-                      <span>{article.publishDate}</span>
-                    </span>
-                  </div>
-
-                  <h2 className="text-base font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors leading-snug">
-                    {article.title}
-                  </h2>
-
-                  <p className="text-xs text-[#647785] leading-relaxed line-clamp-3">
-                    {article.summary}
-                  </p>
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-[#3DA9DF] font-semibold truncate max-w-[170px]">
-                    {article.department}
-                  </span>
-                  <span className="text-xs font-bold text-[#3DA9DF] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                    <span>Read Full</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-              </div>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
-
-        {filteredArticles.length === 0 && (
-          <div className="bg-white rounded-2xl border border-[#E5ECEF] p-12 text-center max-w-lg mx-auto space-y-3">
-            <AlertCircle className="w-8 h-8 text-[#647785] mx-auto opacity-40" />
-            <h3 className="text-base font-bold text-[#193247]">No Matching Bulletins</h3>
-            <p className="text-xs text-[#647785]">
-              No announcements matched your search terms. Try clearing your search query or selecting a different category.
-            </p>
-            <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}>
-              Reset Filters
-            </Button>
-          </div>
         )}
+      </Section>
 
-        {/* Article Detail Modal */}
-        <AnimatePresence>
-          {activeArticle && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-[#193247]/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-              onClick={() => setActiveArticle(null)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white rounded-3xl max-w-2xl w-full border border-[#CBD7DD] shadow-2xl overflow-hidden relative max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-6 sm:p-8 space-y-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={activeArticle.badgeVariant} size="sm">
-                          {activeArticle.categoryLabel}
-                        </Badge>
-                        <span className="text-xs text-[#647785]">{activeArticle.publishDate}</span>
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-extrabold text-[#193247] pt-1">
-                        {activeArticle.title}
-                      </h2>
-                      <span className="text-xs text-[#3DA9DF] font-bold block">
-                        {activeArticle.department} &bull; {activeArticle.readTime}
-                      </span>
-                    </div>
+      <Modal isOpen={Boolean(active)} onClose={() => setActive(null)} title={active?.title ?? ''} description={active ? `${active.categoryLabel} · ${active.publishDate} · ${active.department}` : ''} maxWidth="2xl">
+        {active && (
+          <article className="space-y-4 text-[15px] leading-relaxed text-ink-700">
+            {active.fullContent.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+            {active.keyPoints.length > 0 && (
+              <div className="rounded-2xl bg-leaf-50 p-5 ring-1 ring-leaf-200/70">
+                <h3 className="text-sm font-semibold text-ink-900">Key points</h3>
+                <ul className="mt-3 space-y-2.5">
+                  {active.keyPoints.map(k => (
+                    <li key={k} className="flex items-start gap-2.5 text-sm text-ink-700">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                      {k}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </article>
+        )}
+      </Modal>
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveArticle(null)}
-                      className="w-8 h-8 rounded-full border border-[#E5ECEF] flex items-center justify-center text-[#193247] hover:bg-[#FCFDFB] transition-colors cursor-pointer shrink-0"
-                      aria-label="Close modal"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-3 text-xs sm:text-sm text-[#647785] leading-relaxed border-t border-[#E5ECEF] pt-4">
-                    {activeArticle.fullContent.map((paragraph, pIdx) => (
-                      <p key={pIdx}>{paragraph}</p>
-                    ))}
-                  </div>
-
-                  <div className="p-4 bg-[#F3F8EC] rounded-2xl border border-[#D5E8BA] space-y-2">
-                    <span className="text-xs font-bold text-[#486812] block uppercase tracking-wider">
-                      Key Takeaways for Patients &amp; Families:
-                    </span>
-                    <ul className="space-y-1.5 text-xs text-[#193247]">
-                      {activeArticle.keyPoints.map((point, kIdx) => (
-                        <li key={kIdx} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="pt-4 border-t border-[#E5ECEF] flex items-center justify-between">
-                    <span className="text-xs text-[#647785]">Official Hospital Clinical Communication</span>
-                    <Link to="/book-appointment">
-                      <Button variant="primary" size="sm" className="font-bold">
-                        Book OPD Slot &rarr;
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-      </div>
-    </div>
+      <CtaBand />
+    </>
   );
 };

@@ -1,28 +1,37 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Home, ArrowLeft } from 'lucide-react';
-import { Button } from '../components/common/Button';
+import { ArrowLeft, ArrowRight, Compass } from 'lucide-react';
+import { LinkButton } from '../components/common/Button';
 
-export const NotFound: React.FC = () => {
-  return (
-    <div className="min-h-[70vh] flex items-center justify-center p-4 bg-[#FCFDFB]">
-      <div className="max-w-md w-full text-center space-y-4 bg-white p-8 rounded-3xl border border-sky-100 shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center mx-auto">
-          <Activity className="w-8 h-8" />
-        </div>
-        <h1 className="text-4xl font-extrabold text-[#193247]">404</h1>
-        <h2 className="text-xl font-bold text-[#193247]">Page Not Found</h2>
-        <p className="text-sm text-[#647785]">
-          The medical portal page you requested does not exist or has been relocated to our pediatric care directory.
-        </p>
-        <div className="pt-2">
-          <Link to="/">
-            <Button variant="primary" size="md" leftIcon={<Home className="w-4 h-4" />}>
-              Return to Hospital Homepage
-            </Button>
-          </Link>
-        </div>
-      </div>
+const shortcuts = [
+  { label: 'Book an appointment', to: '/book-appointment' },
+  { label: 'Our doctors', to: '/doctors' },
+  { label: 'Pathology tests', to: '/pathology-lab' },
+  { label: 'Contact & directions', to: '/contact' },
+];
+
+export const NotFound: React.FC = () => (
+  <section className="container-page flex min-h-[70vh] items-center justify-center py-20">
+    <div className="max-w-lg text-center">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-brand-100" aria-hidden="true">
+        <Compass className="h-7 w-7" />
+      </span>
+      <p className="mt-6 text-sm font-semibold text-brand-700">Error 404</p>
+      <h1 className="display-2 mt-2">We couldn’t find that page</h1>
+      <p className="lead mt-4">The page may have moved, or the link may be mistyped. These might help:</p>
+      <ul className="mt-8 grid grid-cols-1 gap-2 text-left sm:grid-cols-2">
+        {shortcuts.map(s => (
+          <li key={s.to}>
+            <Link to={s.to} className="flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium text-ink-800 hover:border-brand-200 hover:text-brand-700">
+              {s.label}
+              <ArrowRight className="h-4 w-4 text-ink-300" aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <LinkButton to="/" variant="ghost" className="mt-8" leftIcon={<ArrowLeft className="h-4 w-4" />}>
+        Back to the homepage
+      </LinkButton>
     </div>
-  );
-};
+  </section>
+);

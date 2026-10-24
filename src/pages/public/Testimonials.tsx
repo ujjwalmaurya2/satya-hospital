@@ -1,33 +1,23 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  MessageSquareQuote, 
-  ChevronLeft, 
-  ChevronRight, 
-  CheckCircle2, 
-  ShieldCheck, 
-  User, 
-  Calendar,
-  Sparkles,
-  Quote
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
-import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { StaggerContainer, StaggerItem } from '../../components/motion';
+import { PageHero, Section } from '../../components/site/Section';
+import { CtaBand } from '../../components/site/CtaBand';
+import { supabaseService } from '../../services/supabaseService';
 
 export interface PatientTestimonial {
   id: string;
   patientName: string;
   locality: string;
   department: string;
-  serviceType: 'OPD Consultation' | 'Pathology & Diagnostics' | 'Day Care & Minor Procedure' | 'Queue & Reception';
+  serviceType: string;
   comment: string;
   verifiedStatus: string;
-  date: string;
+  date?: string;
 }
 
+/** Local fallback used until approved testimonials are available from Supabase. */
 export const patientTestimonials: PatientTestimonial[] = [
   {
     id: 't-1',
@@ -35,8 +25,9 @@ export const patientTestimonials: PatientTestimonial[] = [
     locality: 'Tagore Town, Prayagraj',
     department: 'General Medicine',
     serviceType: 'OPD Consultation',
-    comment: 'The 09:00 AM online token system and single queue saved us more than two hours of waiting. Dr. V. K. Sharma listened patiently and explained my seasonal cough medication clearly without unnecessary tests.',
-    verifiedStatus: 'Verified OPD Patient',
+    comment:
+      'The 09:00 AM online token system and single queue saved us more than two hours of waiting. Dr. V. K. Sharma listened patiently and explained my seasonal cough medication clearly without unnecessary tests.',
+    verifiedStatus: 'OPD patient',
     date: 'February 2026',
   },
   {
@@ -45,8 +36,9 @@ export const patientTestimonials: PatientTestimonial[] = [
     locality: 'Allahpur, Prayagraj',
     department: 'Pathology & Diagnostic Laboratory',
     serviceType: 'Pathology & Diagnostics',
-    comment: 'I gave my blood sample at 08:30 AM at the pathology collection counter. My complete blood count and thyroid reports were signed by the pathologist and downloadable on my phone before noon. Exceptionally clean lab.',
-    verifiedStatus: 'Verified Lab Patient',
+    comment:
+      'I gave my blood sample at 08:30 AM at the pathology collection counter. My complete blood count and thyroid reports were signed by the pathologist and downloadable on my phone before noon. Exceptionally clean lab.',
+    verifiedStatus: 'Lab patient',
     date: 'January 2026',
   },
   {
@@ -55,8 +47,9 @@ export const patientTestimonials: PatientTestimonial[] = [
     locality: 'George Town, Prayagraj',
     department: 'Orthopaedics & Joint Care',
     serviceType: 'Queue & Reception',
-    comment: 'Even though I registered as a physical walk-in at reception after missing the 09:00 AM online cutoff, my token was called strictly in order on the waiting room screen. Complete fairness and zero favoritism.',
-    verifiedStatus: 'Verified Walk-in Patient',
+    comment:
+      'Even though I registered as a walk-in at reception after missing the 09:00 AM online cutoff, my token was called strictly in order on the waiting room screen. Complete fairness.',
+    verifiedStatus: 'Walk-in patient',
     date: 'March 2026',
   },
   {
@@ -65,8 +58,9 @@ export const patientTestimonials: PatientTestimonial[] = [
     locality: 'Civil Lines, Prayagraj',
     department: 'Obstetrics & Gynaecology',
     serviceType: 'OPD Consultation',
-    comment: 'Dr. Mishra was very courteous during my antenatal consultation. The first-floor consultation room was calm, hygienic, and very well-organized. Staff assisted me politely with my toddler.',
-    verifiedStatus: 'Verified OPD Patient',
+    comment:
+      'Dr. Mishra was very courteous during my antenatal consultation. The first-floor consultation room was calm, hygienic and well organised. Staff helped me politely with my toddler.',
+    verifiedStatus: 'OPD patient',
     date: 'January 2026',
   },
   {
@@ -75,193 +69,141 @@ export const patientTestimonials: PatientTestimonial[] = [
     locality: 'Kareli, Prayagraj',
     department: 'Day Care & Observation',
     serviceType: 'Day Care & Minor Procedure',
-    comment: 'Received wound suturing in the sterile minor procedure room after a minor vehicle scrape. The nursing care in the day care recovery bay was attentive and the dressing was done with great care.',
-    verifiedStatus: 'Verified Day Care Patient',
+    comment:
+      'Received wound suturing in the minor procedure room after a small vehicle scrape. The nursing care in the day care recovery bay was attentive and the dressing was done with great care.',
+    verifiedStatus: 'Day care patient',
     date: 'February 2026',
   },
 ];
 
+function initials(name: string) {
+  return name
+    .replace(/^(Dr|Mohd)\.?\s*/i, '')
+    .split(/[\s.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(n => n[0])
+    .join('');
+}
+
 export const Testimonials: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const reduce = useReducedMotion();
+  const [items, setItems] = useState<PatientTestimonial[]>(patientTestimonials);
+  const [current, setCurrent] = useState(0);
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev === 0 ? patientTestimonials.length - 1 : prev - 1));
-  };
+  // Prefer admin-approved testimonials from the database when available.
+  useEffect(() => {
+    let alive = true;
+    supabaseService.getApprovedTestimonials().then(rows => {
+      if (alive && rows && rows.length > 0) {
+        setItems(rows.map(r => ({ ...r })));
+        setCurrent(0);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev === patientTestimonials.length - 1 ? 0 : prev + 1));
-  };
-
-  const activeTestimonial = patientTestimonials[currentIndex];
+  const active = items[current];
+  const go = (dir: 1 | -1) => setCurrent(c => (c + dir + items.length) % items.length);
 
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        
-        {/* Header */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-              <MessageSquareQuote className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Patient Experiences &bull; Satya Hospital Prayagraj</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-              Verified Patient Feedback
-            </h1>
-            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-              Read verified feedback from patients and families across Prayagraj who have visited Satya Hospital for morning outpatient clinics, pediatric care, and diagnostic testing.
-            </p>
-          </div>
-        </ScrollReveal>
+    <>
+      <PageHero
+        crumbs={[{ label: 'Testimonials' }]}
+        eyebrow="Patient experiences"
+        title="What families say about their visit"
+        description="Feedback from patients and parents who visited for outpatient clinics, pediatric care and diagnostic tests."
+      />
 
-        {/* Featured Carousel */}
-        <ScrollReveal direction="up" delay={0.08} distance={18}>
-          <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-12 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#3DA9DF]/5 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="max-w-3xl mx-auto space-y-8 relative z-10">
-              {/* Quote Icon & Badge */}
-              <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center shadow-xs">
-                  <Quote className="w-6 h-6" />
-                </div>
-                <Badge variant="medical-blue" size="sm" dot>
-                  {activeTestimonial.verifiedStatus}
-                </Badge>
-              </div>
-
-              {/* Testimonial Quote */}
-              <div className="min-h-[140px] flex items-center">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTestimonial.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-4"
-                  >
-                    <p className="text-base sm:text-lg lg:text-xl text-[#193247] font-medium leading-relaxed italic">
-                      "{activeTestimonial.comment}"
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-4 border-t border-[#E5ECEF]">
-                      <div>
-                        <strong className="text-sm sm:text-base font-bold text-[#193247] block">
-                          {activeTestimonial.patientName}
-                        </strong>
-                        <span className="text-xs text-[#647785]">
-                          {activeTestimonial.locality} &bull; {activeTestimonial.department}
-                        </span>
-                      </div>
-
-                      <span className="text-[11px] text-[#486812] font-bold bg-[#F3F8EC] border border-[#D5E8BA] px-3 py-1 rounded-full w-fit">
-                        {activeTestimonial.serviceType}
+      <Section size="md">
+        <div className="relative overflow-hidden rounded-[32px] bg-ink-800 px-6 py-12 text-white sm:px-14 sm:py-16">
+          <div aria-hidden="true" className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
+          <Quote className="relative h-10 w-10 text-brand-300" aria-hidden="true" />
+          <div className="relative mt-6 min-h-[200px] sm:min-h-[170px]" aria-live="polite">
+            <AnimatePresence mode="wait" initial={false}>
+              {active && (
+                <motion.figure
+                  key={active.id}
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <blockquote className="max-w-4xl text-xl font-medium leading-relaxed tracking-[-0.01em] sm:text-[1.65rem] sm:leading-[1.5]">
+                    “{active.comment}”
+                  </blockquote>
+                  <figcaption className="mt-8 flex items-center gap-4">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-sm font-semibold ring-1 ring-white/20" aria-hidden="true">
+                      {initials(active.patientName)}
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{active.patientName}</span>
+                      <span className="block text-sm text-white/60">
+                        {active.locality} · {active.serviceType}
                       </span>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Controls */}
-              <div className="pt-6 border-t border-[#E5ECEF] flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  {patientTestimonials.map((_, dotIdx) => (
-                    <button
-                      key={dotIdx}
-                      onClick={() => setCurrentIndex(dotIdx)}
-                      className={`h-2 rounded-full transition-all cursor-pointer ${
-                        currentIndex === dotIdx
-                          ? 'w-6 bg-[#3DA9DF]'
-                          : 'w-2 bg-[#CBD7DD] hover:bg-[#8E9CA8]'
-                      }`}
-                      aria-label={`Go to slide ${dotIdx + 1}`}
-                    />
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={prevSlide}
-                    className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#3DA9DF] transition-colors cursor-pointer"
-                    aria-label="Previous testimonial"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={nextSlide}
-                    className="p-2.5 rounded-xl border border-[#CBD7DD] text-[#193247] hover:bg-[#FCFDFB] hover:text-[#3DA9DF] transition-colors cursor-pointer"
-                    aria-label="Next testimonial"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+                    </span>
+                  </figcaption>
+                </motion.figure>
+              )}
+            </AnimatePresence>
+          </div>
+          <div className="relative mt-10 flex items-center justify-between border-t border-white/10 pt-6">
+            <div className="flex gap-1.5" aria-hidden="true">
+              {items.map((t, i) => (
+                <span key={t.id} className={`h-1.5 rounded-full transition-all ${i === current ? 'w-6 bg-white' : 'w-1.5 bg-white/30'}`} />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => go(-1)}
+                className="flex h-11 w-11 items-center justify-center rounded-full ring-1 ring-white/25 hover:bg-white/10 cursor-pointer"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => go(1)}
+                className="flex h-11 w-11 items-center justify-center rounded-full ring-1 ring-white/25 hover:bg-white/10 cursor-pointer"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
           </div>
-        </ScrollReveal>
-
-        {/* Grid of All Reviews */}
-        <div className="space-y-6">
-          <ScrollReveal direction="up" distance={14}>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#193247]">
-              All Verified Patient Feedback ({patientTestimonials.length})
-            </h2>
-          </ScrollReveal>
-
-          <StaggerContainer staggerDelay={0.06} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {patientTestimonials.map((item) => (
-              <StaggerItem key={item.id} hoverLift className="h-full">
-                <Card className="p-6 border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all flex flex-col justify-between bg-white hover:shadow-md h-full">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold text-xs">
-                          {item.patientName.split(' ')[0][0]}
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-[#193247]">{item.patientName}</h4>
-                          <span className="text-[10px] text-[#647785] block">{item.locality}</span>
-                        </div>
-                      </div>
-                      <Badge variant="medical-blue" size="sm">
-                        Verified
-                      </Badge>
-                    </div>
-
-                    <p className="text-xs text-[#647785] leading-relaxed italic">
-                      "{item.comment}"
-                    </p>
-                  </div>
-
-                  <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between text-[11px]">
-                    <span className="text-[#3DA9DF] font-bold">{item.department}</span>
-                    <span className="text-[#647785]">{item.date}</span>
-                  </div>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
         </div>
+      </Section>
 
-        {/* Medical Ethics & Compliance Disclaimer */}
-        <ScrollReveal direction="up" distance={14}>
-          <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-8 flex items-start gap-3.5 text-xs text-[#647785] shadow-xs">
-            <ShieldCheck className="w-5 h-5 text-[#91BB40] shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <strong className="text-sm font-bold text-[#193247] block">
-                Ethical Healthcare Communication Policy
-              </strong>
-              <p className="leading-relaxed">
-                Satya Hospital strictly complies with National Medical Commission guidelines. Testimonials reflect individual patient operational experiences regarding queues, amenities, and staff courteousness. They do not constitute comparative clinical guarantees or outcome claims.
-              </p>
-            </div>
-          </div>
-        </ScrollReveal>
+      <Section size="md" className="pt-0">
+        <h2 className="text-xl font-semibold tracking-tight text-ink-900">All feedback</h2>
+        <StaggerContainer className="mt-8 columns-1 gap-5 md:columns-2 lg:columns-3 [&>*]:mb-5" staggerDelay={0.05}>
+          {items.map(t => (
+            <StaggerItem key={t.id} distance={10} className="break-inside-avoid">
+              <figure className="rounded-3xl border border-line bg-white p-6 shadow-soft">
+                <p className="text-xs font-semibold text-leaf-700">{t.department}</p>
+                <blockquote className="mt-3 text-[15px] leading-relaxed text-ink-700">“{t.comment}”</blockquote>
+                <figcaption className="mt-5 flex items-center gap-3 border-t border-line pt-4">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-800" aria-hidden="true">
+                    {initials(t.patientName)}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-ink-900">{t.patientName}</span>
+                    <span className="block text-[13px] text-ink-500">
+                      {t.locality}
+                      {t.date ? ` · ${t.date}` : ''}
+                    </span>
+                  </span>
+                </figcaption>
+              </figure>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </Section>
 
-      </div>
-    </div>
+      <CtaBand />
+    </>
   );
 };

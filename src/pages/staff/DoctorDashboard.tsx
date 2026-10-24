@@ -1,80 +1,44 @@
 import React, { useState } from 'react';
-import { 
-  Stethoscope, 
-  Calendar, 
-  CheckCircle2, 
-  FileText, 
-  Clock, 
-  User, 
-  Download, 
-  PlusCircle, 
-  History,
-  ShieldCheck,
-  AlertCircle
-} from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
+import { CheckCircle2, ClipboardCheck, Eye, FileText, History, PenLine, Stethoscope, UserRound } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { Alert } from '../../components/common/Alert';
-import { Table } from '../../components/common/Table';
+import { EmptyState } from '../../components/common/EmptyState';
+import { APPOINTMENT_BADGE, PageHeader, Panel, StatCard } from '../../components/dashboard/Dashboard';
 import { useHospital } from '../../context/HospitalContext';
 import { useAuth } from '../../context/AuthContext';
 import { getHospitalTodayDate } from '../../lib/tokens';
 import { getAuthorizedSignedDocumentUrl } from '../../lib/storage';
-import { Appointment, PatientVisit, MedicalDocument } from '../../types';
+import { cn } from '../../lib/cn';
+import { Appointment } from '../../types';
 
 export const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { 
-    appointments, 
-    patientProfiles, 
-    visits, 
-    medicalDocuments, 
-    pathologyReports, 
-    updateAppointmentStatus,
-    addPatientVisit,
-    verifyMedicalDocument
-  } = useHospital();
+  const { appointments, visits, medicalDocuments, updateAppointmentStatus, addPatientVisit, verifyMedicalDocument } = useHospital();
 
   const today = getHospitalTodayDate();
 
-  // Consultation state
   const [activeConsultationApt, setActiveConsultationApt] = useState<Appointment | null>(null);
   const [complaint, setComplaint] = useState('');
   const [clinicalNotes, setClinicalNotes] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
-  // Active doctor's OPD appointments for today
-  const doctorTodayAppointments = appointments.filter(
-    a => a.appointmentDate === today
-  ).sort((a, b) => a.tokenNumber - b.tokenNumber);
+  const doctorTodayAppointments = appointments.filter(a => a.appointmentDate === today).sort((a, b) => a.tokenNumber - b.tokenNumber);
+  const waitingAppointments = doctorTodayAppointments.filter(a => a.status === 'checked_in' || a.status === 'booked');
+  const inConsultationAppointments = doctorTodayAppointments.filter(a => a.status === 'in_consultation');
+  const completedAppointments = doctorTodayAppointments.filter(a => a.status === 'completed');
+  const unverifiedPrescriptions = medicalDocuments.filter(d => d.verificationStatus === 'unverified');
 
-  const waitingAppointments = doctorTodayAppointments.filter(
-    a => a.status === 'checked_in' || a.status === 'booked'
-  );
-  const inConsultationAppointments = doctorTodayAppointments.filter(
-    a => a.status === 'in_consultation'
-  );
-  const completedAppointments = doctorTodayAppointments.filter(
-    a => a.status === 'completed'
-  );
-
-  // Unverified prescription documents awaiting doctor sign-off
-  const unverifiedPrescriptions = medicalDocuments.filter(
-    d => d.verificationStatus === 'unverified'
-  );
-
-  // When opening consultation for a patient
   const handleOpenConsultation = (apt: Appointment) => {
     setActiveConsultationApt(apt);
     setComplaint(apt.notes || '');
     setClinicalNotes('');
     setDiagnosis('');
     setSaveSuccess(false);
-
-    if (apt.status !== 'in_consultation') {
+    if (apt.status !== 'in_consultation' && apt.status !== 'completed') {
       updateAppointmentStatus(apt.id, 'in_consultation', 'doctor');
     }
   };
@@ -82,7 +46,6 @@ export const DoctorDashboard: React.FC = () => {
   const handleCompleteConsultation = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeConsultationApt) return;
-
     addPatientVisit({
       patientProfileId: activeConsultationApt.patientProfileId,
       appointmentId: activeConsultationApt.id,
@@ -95,301 +58,199 @@ export const DoctorDashboard: React.FC = () => {
       doctorSignature: `${user?.fullName || 'Doctor'} (MD)`,
       status: 'completed',
     });
-
     setSaveSuccess(true);
-    setTimeout(() => {
-      setActiveConsultationApt(null);
-    }, 1200);
+    setTimeout(() => setActiveConsultationApt(null), 1200);
   };
 
-  const handleDocumentPreview = (storageKey: string, title: string) => {
+  const handleDocumentPreview = (storageKey: string) => {
+    setPreviewError(null);
     const res = getAuthorizedSignedDocumentUrl(storageKey, 'doctor');
-    if (res.success && res.url) {
-      window.open(res.url, '_blank');
-    } else {
-      alert(res.error || 'Failed to preview document.');
-    }
+    if (res.success && res.url) window.open(res.url, '_blank', 'noopener');
+    else setPreviewError(res.error || 'Could not open this document.');
   };
 
-  const handleVerifyPrescription = (docId: string) => {
-    verifyMedicalDocument(docId, user?.fullName || 'Consulting Physician');
-  };
+  const history = activeConsultationApt ? visits.filter(v => v.patientProfileId === activeConsultationApt.patientProfileId) : [];
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#243447]">
-            Doctor Clinical Workspace
-          </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Logged in as: <strong>{user?.fullName || 'Dr. V. K. Sharma'}</strong> &bull; OPD Clinics ({today})
-          </p>
-        </div>
+      <PageHeader eyebrow="Doctor workspace" title="Today’s consultations" description={`Signed in as ${user?.fullName || 'Consulting doctor'}`} />
 
-        <div className="flex items-center gap-2">
-          <Badge variant="lime-green" size="md">
-            OPD In Session
-          </Badge>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Waiting" value={waitingAppointments.length} hint="Booked or checked-in" tone="warning" icon={<UserRound className="h-4 w-4" />} />
+        <StatCard label="In consultation" value={inConsultationAppointments.length} hint="In the examination room" tone="brand" icon={<Stethoscope className="h-4 w-4" />} />
+        <StatCard label="Completed" value={completedAppointments.length} hint="Notes finalised" tone="leaf" icon={<ClipboardCheck className="h-4 w-4" />} />
       </div>
 
-      {/* Metrics Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Waiting in OPD Lounge</span>
-          <div className="text-2xl font-bold text-amber-600 mt-1">{waitingAppointments.length}</div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">Checked-in &bull; Ready for consult</span>
-        </Card>
+      {previewError && <Alert type="error">{previewError}</Alert>}
 
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">In Active Consultation</span>
-          <div className="text-2xl font-bold text-[#3DA9DF] mt-1">{inConsultationAppointments.length}</div>
-          <span className="text-[11px] text-[#3DA9DF] block mt-0.5">In examination chamber</span>
-        </Card>
-
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Visits Completed Today</span>
-          <div className="text-2xl font-bold text-[#91BB40] mt-1">{completedAppointments.length}</div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">Clinical notes finalised</span>
-        </Card>
-      </div>
-
-      {/* Section 1: Prescriptions Awaiting Doctor Verification */}
       {unverifiedPrescriptions.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50/40">
-          <CardHeader className="bg-amber-100/50">
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wider">
-                <FileText className="w-4 h-4 text-amber-700" />
-                <span>Scanned Handwritten Prescriptions Awaiting Your Sign-Off ({unverifiedPrescriptions.length})</span>
-              </div>
-              <Badge variant="warning" size="sm">Action Required</Badge>
-            </div>
-          </CardHeader>
-          <CardBody className="p-0 divide-y divide-amber-200/60">
-            {unverifiedPrescriptions.map((doc) => (
-              <div key={doc.id} className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                <div>
-                  <h4 className="font-bold text-[#243447]">{doc.title}</h4>
-                  <span className="text-[#667085] block mt-0.5">
-                    Uploaded by: {doc.uploaderName} &bull; Attached to Patient Record
-                  </span>
+        <Panel
+          flush
+          className="border-warning-200"
+          title={
+            <span className="inline-flex items-center gap-2">
+              <FileText className="h-4 w-4 text-warning-600" aria-hidden="true" />
+              Prescription scans awaiting your sign-off
+            </span>
+          }
+          actions={<Badge variant="warning">{unverifiedPrescriptions.length} pending</Badge>}
+        >
+          <ul className="divide-y divide-line">
+            {unverifiedPrescriptions.map(doc => (
+              <li key={doc.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-ink-900">{doc.title}</p>
+                  <p className="mt-0.5 text-[13px] text-ink-500">Uploaded by {doc.uploaderName}</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDocumentPreview(doc.storageKey, doc.title)}
-                  >
-                    Preview Scan
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />} onClick={() => handleDocumentPreview(doc.storageKey)}>
+                    Preview
                   </Button>
                   <Button
                     variant="accent"
                     size="sm"
-                    onClick={() => handleVerifyPrescription(doc.id)}
-                    leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                    leftIcon={<CheckCircle2 className="h-4 w-4" />}
+                    onClick={() => verifyMedicalDocument(doc.id, user?.fullName || 'Consulting Physician')}
                   >
-                    Verify &amp; Authorize for Patient
+                    Verify for patient
                   </Button>
                 </div>
-              </div>
+              </li>
             ))}
-          </CardBody>
-        </Card>
+          </ul>
+        </Panel>
       )}
 
-      {/* Section 2: Today's Patient Queue */}
-      <Card>
-        <CardHeader>
-          <h2 className="text-base font-bold text-[#243447]">
-            Today's Assigned OPD Consultation Queue
-          </h2>
-        </CardHeader>
-
-        <CardBody className="p-0">
-          <Table
-            data={doctorTodayAppointments}
-            keyExtractor={(item) => item.id}
-            emptyMessage="No patient visits scheduled for today."
-            columns={[
-              {
-                header: 'Token',
-                cell: (item) => (
-                  <span className="px-2.5 py-1 rounded bg-[#243447] text-white font-mono font-bold text-xs">
+      <Panel flush title="OPD queue" description="Ordered by token number">
+        {doctorTodayAppointments.length === 0 ? (
+          <EmptyState title="No patients scheduled today" description="Booked and walk-in patients will appear here in token order." icon={<Stethoscope className="h-6 w-6" />} />
+        ) : (
+          <ul className="divide-y divide-line">
+            {doctorTodayAppointments.map(item => {
+              const badge = APPOINTMENT_BADGE[item.status];
+              const active = item.status === 'in_consultation';
+              return (
+                <li key={item.id} className={cn('flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:px-6', active && 'bg-brand-50/50')}>
+                  <span
+                    className={cn(
+                      'flex h-11 w-14 shrink-0 items-center justify-center rounded-xl font-mono text-base font-bold tabular-nums text-white',
+                      active ? 'bg-brand-700' : 'bg-ink-800'
+                    )}
+                  >
                     #{item.tokenNumber}
                   </span>
-                ),
-              },
-              {
-                header: 'Patient Name & ID',
-                cell: (item) => (
-                  <div>
-                    <div className="font-bold text-[#243447]">{item.patientName}</div>
-                    <div className="text-[11px] text-[#3DA9DF] font-mono">{item.patientId}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-ink-900">{item.patientName}</p>
+                      <Badge variant={badge.variant} size="sm" dot>
+                        {badge.label}
+                      </Badge>
+                    </div>
+                    <p className="mt-0.5 truncate text-[13px] text-ink-500">
+                      <span className="font-mono text-xs text-brand-700">{item.patientId}</span> · {item.notes || 'Routine follow-up'}
+                    </p>
                   </div>
-                ),
-              },
-              {
-                header: 'Complaints / Note',
-                cell: (item) => (
-                  <span className="text-xs text-[#667085] italic max-w-xs truncate block">
-                    {item.notes || 'Routine follow-up'}
-                  </span>
-                ),
-              },
-              {
-                header: 'Queue Status',
-                cell: (item) => (
-                  <Badge variant={item.status === 'completed' ? 'success' : item.status === 'in_consultation' ? 'medical-blue' : 'warning'} size="sm" dot>
-                    {item.status.replace('_', ' ').toUpperCase()}
-                  </Badge>
-                ),
-              },
-              {
-                header: 'Action',
-                cell: (item) => (
-                  <div className="flex items-center gap-2">
-                    {item.status !== 'completed' ? (
-                      <Button
-                        variant={item.status === 'in_consultation' ? 'primary' : 'outline'}
-                        size="sm"
-                        onClick={() => handleOpenConsultation(item)}
-                      >
-                        {item.status === 'in_consultation' ? 'Resume Consult' : 'Start Consult'}
+                  <div className="shrink-0">
+                    {item.status === 'completed' ? (
+                      <Button variant="ghost" size="sm" onClick={() => handleOpenConsultation(item)}>
+                        View summary
+                      </Button>
+                    ) : item.status === 'checked_in' || active ? (
+                      <Button variant={active ? 'primary' : 'outline'} size="sm" leftIcon={<PenLine className="h-4 w-4" />} onClick={() => handleOpenConsultation(item)}>
+                        {active ? 'Resume consult' : 'Start consult'}
                       </Button>
                     ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenConsultation(item)}
-                      >
-                        View Visit Summary
-                      </Button>
+                      // Booked patients must check in at reception first; no-shows can be re-checked-in there.
+                      <span className="text-[13px] text-ink-400">{item.status === 'booked' ? 'Awaiting check-in' : 'Not in queue'}</span>
                     )}
                   </div>
-                ),
-              },
-            ]}
-          />
-        </CardBody>
-      </Card>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Panel>
 
-      {/* CONSULTATION & CLINICAL HISTORY MODAL */}
       <Modal
         isOpen={Boolean(activeConsultationApt)}
         onClose={() => setActiveConsultationApt(null)}
-        title={`Clinical Consultation: ${activeConsultationApt?.patientName} (${activeConsultationApt?.patientId})`}
+        title={activeConsultationApt ? `${activeConsultationApt.patientName}` : ''}
+        description={activeConsultationApt ? `${activeConsultationApt.patientId} · Token #${activeConsultationApt.tokenNumber} · ${today}` : ''}
         maxWidth="2xl"
       >
         {activeConsultationApt && (
-          <div className="space-y-6 text-xs">
+          <div className="space-y-6">
             {saveSuccess && (
-              <Alert type="success" title="Consultation Finalized">
-                Clinical visit notes recorded and synchronized with patient records.
+              <Alert type="success" title="Consultation finalised">
+                Visit notes are saved to the patient record.
               </Alert>
             )}
 
-            {/* Historical Visits Drawer / Accordion */}
-            <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E1E8ED] space-y-3">
-              <div className="flex items-center justify-between text-[#243447] font-bold">
-                <span className="flex items-center gap-1.5">
-                  <History className="w-4 h-4 text-[#3DA9DF]" />
-                  <span>Prior Medical Visits History</span>
-                </span>
-                <span className="text-[11px] text-[#667085]">
-                  Separated from today's visit
-                </span>
-              </div>
-
-              {visits.filter(v => v.patientProfileId === activeConsultationApt.patientProfileId).length === 0 ? (
-                <p className="text-[#667085] italic text-[11px]">No prior hospital visit records on file.</p>
-              ) : (
-                <div className="space-y-2">
-                  {visits.filter(v => v.patientProfileId === activeConsultationApt.patientProfileId).map((v) => (
-                    <div key={v.id} className="p-2.5 bg-white rounded border border-[#E1E8ED] space-y-1">
-                      <div className="flex justify-between font-semibold text-[#243447]">
-                        <span>Date: {v.visitDate} &bull; Doctor: {v.doctorName}</span>
-                        <span className="text-[#3DA9DF]">{v.diagnosis || 'Diagnosis Not Noted'}</span>
-                      </div>
-                      <p className="text-[#667085] text-[11px]">{v.clinicalNotes}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Current Visit Consultation Notes Form */}
-            <form onSubmit={handleCompleteConsultation} className="space-y-4">
-              <h3 className="font-bold text-[#243447] uppercase tracking-wider text-xs">
-                Current Consultation Entry (Visit #{activeConsultationApt.tokenNumber})
+            <section className="rounded-2xl bg-ink-50/70 p-4 ring-1 ring-inset ring-line">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+                <History className="h-4 w-4 text-brand-600" aria-hidden="true" /> Previous visits
               </h3>
+              {history.length === 0 ? (
+                <p className="mt-2 text-[13px] text-ink-500">No earlier visits on file.</p>
+              ) : (
+                <ol className="mt-3 space-y-2.5">
+                  {history.map(v => (
+                    <li key={v.id} className="rounded-xl bg-white p-3 ring-1 ring-line">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-[13px]">
+                        <span className="font-medium text-ink-900">
+                          {v.visitDate} · {v.doctorName}
+                        </span>
+                        <span className="font-medium text-brand-700">{v.diagnosis || 'No diagnosis noted'}</span>
+                      </div>
+                      <p className="mt-1 text-[13px] text-ink-600">{v.clinicalNotes}</p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
 
+            <form onSubmit={handleCompleteConsultation} className="space-y-4">
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Chief Complaint &amp; Patient Presentation
-                </label>
+                <label htmlFor="dx-complaint" className="field-label">Chief complaint</label>
                 <input
-                  type="text"
+                  id="dx-complaint"
                   value={complaint}
-                  onChange={(e) => setComplaint(e.target.value)}
-                  placeholder="e.g. Cough with low grade fever for 4 days..."
-                  className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] text-xs"
+                  onChange={e => setComplaint(e.target.value)}
+                  placeholder="e.g. Cough with low-grade fever for 4 days"
+                  className="field-control"
                   required
                 />
               </div>
-
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Clinical Examination &amp; Physician Notes <span className="text-red-500">*</span>
-                </label>
+                <label htmlFor="dx-notes" className="field-label">Examination & notes</label>
                 <textarea
-                  rows={4}
+                  id="dx-notes"
+                  rows={5}
                   value={clinicalNotes}
-                  onChange={(e) => setClinicalNotes(e.target.value)}
-                  placeholder="Pulse, BP, chest auscultation, treatment recommendations, diet advice..."
-                  className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] text-xs"
+                  onChange={e => setClinicalNotes(e.target.value)}
+                  placeholder="Pulse, BP, chest auscultation, treatment, diet advice…"
+                  className="field-control resize-y"
                   required
                 />
               </div>
-
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Provisional / Confirmed Diagnosis
+                <label htmlFor="dx-diagnosis" className="field-label">
+                  Diagnosis <span className="font-normal text-ink-400">(provisional or confirmed)</span>
                 </label>
-                <input
-                  type="text"
-                  value={diagnosis}
-                  onChange={(e) => setDiagnosis(e.target.value)}
-                  placeholder="e.g. Acute Bronchitis, Essential Hypertension..."
-                  className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] text-xs"
-                />
+                <input id="dx-diagnosis" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} placeholder="e.g. Acute bronchitis" className="field-control" />
               </div>
-
-              <div className="p-3 bg-[#EBF6FC] rounded-lg border border-[#BCE1F5] flex items-center justify-between">
-                <span className="text-[11px] text-[#1E78A4]">
-                  Consultant Digital Signature: <strong>{user?.fullName || 'Doctor'} (MD)</strong>
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-50 px-4 py-3 text-[13px] text-brand-900 ring-1 ring-inset ring-brand-100">
+                <span>
+                  Signed by <strong className="font-semibold">{user?.fullName || 'Doctor'} (MD)</strong>
                 </span>
-                <span className="text-[11px] text-[#667085]">{today}</span>
+                <span className="text-brand-700">{today}</span>
               </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#E1E8ED]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  onClick={() => setActiveConsultationApt(null)}
-                >
-                  Close Window
+              <div className="flex justify-end gap-2 border-t border-line pt-4">
+                <Button variant="ghost" type="button" onClick={() => setActiveConsultationApt(null)}>
+                  Close
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  type="submit"
-                  leftIcon={<CheckCircle2 className="w-4 h-4" />}
-                >
-                  Finalize &amp; Complete Visit
+                <Button type="submit" leftIcon={<CheckCircle2 className="h-4 w-4" />} disabled={saveSuccess}>
+                  Finalise visit
                 </Button>
               </div>
             </form>

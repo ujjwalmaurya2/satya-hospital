@@ -1,297 +1,198 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Calendar, 
-  FileText, 
-  Clock, 
-  CheckCircle2, 
-  ArrowRight, 
-  PlusCircle, 
-  AlertCircle,
-  Download,
-  Stethoscope,
-  Microscope,
-  ShieldCheck
-} from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
+import { ArrowRight, CalendarCheck, CalendarDays, Download, FileText, Lock, Microscope } from 'lucide-react';
+import { Button, LinkButton } from '../../components/common/Button';
+import { Alert } from '../../components/common/Alert';
+import { EmptyState } from '../../components/common/EmptyState';
+import { Panel } from '../../components/dashboard/Dashboard';
+import { AppointmentItem, InlineNote, prettyDate, usePatientDocumentOpener } from '../../components/patient/PatientUI';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
-import { getAuthorizedSignedDocumentUrl } from '../../lib/storage';
+import { to12h } from '../../lib/contact';
 
 export const PatientDashboard: React.FC = () => {
   const { user, patientProfile } = useAuth();
-  const { appointments, pathologyReports, medicalDocuments } = useHospital();
+  const { appointments, pathologyReports, medicalDocuments, settings } = useHospital();
+  const docs = usePatientDocumentOpener();
 
-  // Filter records belonging exclusively to this authenticated patient
-  const myAppointments = appointments.filter(
-    a => a.patientProfileId === patientProfile?.id || a.patientId === patientProfile?.patientId
-  );
-
+  // Only records belonging to the signed-in patient
+  const myAppointments = appointments.filter(a => a.patientProfileId === patientProfile?.id || a.patientId === patientProfile?.patientId);
   const myReports = pathologyReports.filter(
     r => (r.patientProfileId === patientProfile?.id || r.patientId === patientProfile?.patientId) && r.status === 'published'
   );
+  const myPrescriptions = medicalDocuments.filter(d => d.patientProfileId === patientProfile?.id && d.verificationStatus === 'verified');
+  const upcoming = myAppointments.filter(a => a.status === 'booked' || a.status === 'checked_in' || a.status === 'in_consultation');
+  const next = upcoming[0];
 
-  const myPrescriptions = medicalDocuments.filter(
-    d => d.patientProfileId === patientProfile?.id && d.verificationStatus === 'verified'
-  );
-
-  const upcomingAppointments = myAppointments.filter(
-    a => a.status === 'booked' || a.status === 'checked_in' || a.status === 'in_consultation'
-  );
-
-  const handleDownload = (storageKey: string, title: string) => {
-    const res = getAuthorizedSignedDocumentUrl(storageKey, 'patient', patientProfile?.patientId, patientProfile?.patientId);
-    if (res.success && res.url) {
-      window.open(res.url, '_blank');
-    } else {
-      alert(res.error || 'Unable to open medical document.');
-    }
-  };
+  const firstName = (patientProfile?.fullName || user?.fullName || '').split(' ')[0];
 
   return (
     <div className="space-y-8">
-      {/* Patient Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#193247] via-[#3DA9DF]/90 to-[#3DA9DF] text-white rounded-3xl p-6 sm:p-8 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-[#EBF6FC] text-xs font-semibold backdrop-blur-xs border border-white/20">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#91BB40]" />
-              <span>Verified Pediatric & Family Health Portal</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Welcome, {patientProfile?.fullName || user?.fullName}
-            </h1>
-            <p className="text-xs text-sky-100">
-              Hospital Patient ID: <strong className="text-white text-sm bg-white/20 px-2.5 py-0.5 rounded-lg font-mono">{patientProfile?.patientId}</strong>
-              {patientProfile?.phone && (
-                <span className="ml-3 text-sky-100">&bull; Phone: +91 {patientProfile.phone}</span>
-              )}
+      {/* Greeting + next visit */}
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1.2fr_1fr]">
+        <div className="relative overflow-hidden rounded-3xl bg-ink-800 p-7 text-white sm:p-8">
+          <div aria-hidden="true" className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-brand-500/30 blur-3xl" />
+          <div aria-hidden="true" className="absolute -bottom-24 left-10 h-48 w-48 rounded-full bg-leaf-500/15 blur-3xl" />
+          <div className="relative">
+            <p className="text-sm text-brand-200">Patient portal</p>
+            <h1 className="mt-2 text-[1.9rem] font-bold leading-tight tracking-[-0.02em]">Hello{firstName ? `, ${firstName}` : ''}</h1>
+            <p className="mt-2 text-[15px] text-white/70">
+              Patient ID <span className="font-mono font-semibold text-white">{patientProfile?.patientId}</span>
+              {patientProfile?.phone ? ` · +91 ${patientProfile.phone}` : ''}
             </p>
-          </div>
-
-          <div className="shrink-0 flex items-center gap-3">
-            <Link to="/book-appointment">
-              <Button variant="accent" size="md" leftIcon={<PlusCircle className="w-4 h-4 text-white" />}>
-                Book OPD Token
-              </Button>
-            </Link>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <LinkButton to="/book-appointment" className="bg-white text-ink-900 hover:bg-brand-50" leftIcon={<CalendarCheck className="h-4 w-4 text-brand-600" />}>
+                Book appointment
+              </LinkButton>
+              <LinkButton to="/patient/reports" variant="outline" className="border-white/25 bg-transparent text-white hover:border-white/50 hover:text-white">
+                Lab reports
+              </LinkButton>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 3 Quick Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5 border-sky-100/80 bg-white rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#647785] font-medium">Upcoming OPD Visits</span>
-            <div className="w-9 h-9 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-[#193247] mt-2">
-            {upcomingAppointments.length}
-          </div>
-          <span className="text-[11px] text-[#3DA9DF] font-semibold mt-1 block">
-            {upcomingAppointments.length > 0 ? `Token #${upcomingAppointments[0].tokenNumber} active` : 'No visits scheduled today'}
-          </span>
-        </Card>
-
-        <Card className="p-5 border-lime-100/80 bg-white rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#647785] font-medium">Pathology Reports</span>
-            <div className="w-9 h-9 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center">
-              <Microscope className="w-4 h-4 text-[#91BB40]" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-[#193247] mt-2">
-            {myReports.length}
-          </div>
-          <span className="text-[11px] text-[#486812] font-semibold mt-1 block">
-            Verified &amp; Published PDFs
-          </span>
-        </Card>
-
-        <Card className="p-5 border-sky-100/80 bg-white rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#647785] font-medium">Verified Prescriptions</span>
-            <div className="w-9 h-9 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-              <Stethoscope className="w-4 h-4 text-[#3DA9DF]" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-[#193247] mt-2">
-            {myPrescriptions.length}
-          </div>
-          <span className="text-[11px] text-[#647785] font-medium mt-1 block">
-            Scanned Doctor Rx Files
-          </span>
-        </Card>
-      </div>
-
-      {/* Main Grid: Active Appointments & Recent Reports */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Column: Appointments (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="rounded-2xl border-sky-100 shadow-xs">
-            <CardHeader>
-              <div className="flex items-center justify-between w-full">
-                <h2 className="text-base font-bold text-[#193247] flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#3DA9DF]" />
-                  <span>My Outpatient Appointments</span>
-                </h2>
-                <Link to="/patient/appointments" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
-                  View All ({myAppointments.length})
-                </Link>
+        <div className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-8">
+          <p className="text-sm font-medium text-ink-500">Next visit</p>
+          {next ? (
+            <>
+              <div className="mt-3 flex items-end gap-4">
+                <p className="text-5xl font-bold leading-none tracking-tight tabular-nums text-ink-900">#{next.tokenNumber}</p>
+                <p className="pb-1 text-sm text-ink-500">token</p>
               </div>
-            </CardHeader>
+              <p className="mt-4 font-semibold text-ink-900">{prettyDate(next.appointmentDate, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+              <p className="mt-0.5 text-sm text-ink-500">
+                {next.doctorName} · arrive by {to12h(settings.opdStartTime)}
+              </p>
+              <Link to="/patient/appointments" className="link mt-5 inline-flex items-center gap-1 text-sm">
+                All appointments <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="mt-3 text-lg font-semibold text-ink-900">No upcoming visits</p>
+              <p className="mt-1 text-sm text-ink-500">Online booking opens a day ahead and closes at {to12h(settings.onlineCutoffTime)} on the day.</p>
+              <LinkButton to="/book-appointment" variant="soft" className="mt-5" leftIcon={<CalendarCheck className="h-4 w-4" />}>
+                Book a token
+              </LinkButton>
+            </>
+          )}
+        </div>
+      </section>
 
-            <CardBody className="p-0 divide-y divide-slate-100">
-              {myAppointments.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#647785]">
-                  No appointment records found. Book an OPD slot to receive your daily token.
-                </div>
-              ) : (
-                myAppointments.slice(0, 3).map((apt) => (
-                  <div key={apt.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-[#FCFDFB] transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={apt.status === 'completed' ? 'success' : apt.status === 'in_consultation' ? 'medical-blue' : 'warning'} size="sm" dot>
-                          {apt.status.replace('_', ' ').toUpperCase()}
-                        </Badge>
-                        <span className="text-xs font-bold text-[#193247]">
-                          Token #{apt.tokenNumber}
-                        </span>
-                        <span className="text-[11px] text-[#647785]">
-                          ({apt.appointmentCode})
-                        </span>
-                      </div>
-                      <div className="text-xs font-semibold text-[#193247]">
-                        Date: {apt.appointmentDate} &bull; Doctor: {apt.doctorName}
-                      </div>
-                      {apt.notes && (
-                        <p className="text-[11px] text-[#647785] italic">Reason: {apt.notes}</p>
-                      )}
-                    </div>
+      {docs.error && <Alert type="error">{docs.error}</Alert>}
 
-                    <div className="text-right shrink-0">
-                      <Badge variant="neutral" size="sm">
-                        {apt.queueType === 'online' ? 'Online Booking' : 'Walk-in'}
-                      </Badge>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardBody>
-          </Card>
-
-          {/* Verified Prescriptions Card */}
-          <Card className="rounded-2xl border-sky-100 shadow-xs">
-            <CardHeader>
-              <div className="flex items-center justify-between w-full">
-                <h2 className="text-base font-bold text-[#193247] flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#3DA9DF]" />
-                  <span>Doctor Handwritten Prescriptions</span>
-                </h2>
-                <Link to="/patient/prescriptions" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
-                  View All ({myPrescriptions.length})
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-7">
+          <Panel
+            flush
+            title={
+              <span className="inline-flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-brand-600" aria-hidden="true" /> Appointments
+              </span>
+            }
+            actions={
+              myAppointments.length > 0 && (
+                <Link to="/patient/appointments" className="link text-sm">
+                  View all ({myAppointments.length})
                 </Link>
+              )
+            }
+          >
+            {myAppointments.length === 0 ? (
+              <EmptyState
+                title="No appointments yet"
+                description="Book an OPD token online and it will appear here."
+                actionLabel="Book appointment"
+                actionLink="/book-appointment"
+                icon={<CalendarDays className="h-6 w-6" />}
+              />
+            ) : (
+              <div className="divide-y divide-line">
+                {myAppointments.slice(0, 3).map(a => (
+                  <AppointmentItem key={a.id} appt={a} />
+                ))}
               </div>
-            </CardHeader>
+            )}
+          </Panel>
 
-            <CardBody className="p-0 divide-y divide-slate-100">
-              {myPrescriptions.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#647785]">
-                  No scanned prescriptions uploaded yet. Doctor written prescriptions will appear here once verified.
-                </div>
-              ) : (
-                myPrescriptions.map((doc) => (
-                  <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-[#FCFDFB]">
-                    <div>
-                      <h4 className="text-xs font-bold text-[#193247]">{doc.title}</h4>
-                      <span className="text-[11px] text-[#647785] block mt-0.5">
-                        Verified by: {doc.verifiedBy} &bull; {new Date(doc.createdAt).toLocaleDateString()}
-                      </span>
+          <Panel
+            flush
+            title={
+              <span className="inline-flex items-center gap-2">
+                <FileText className="h-4 w-4 text-brand-600" aria-hidden="true" /> Prescriptions
+              </span>
+            }
+            actions={
+              myPrescriptions.length > 0 && (
+                <Link to="/patient/prescriptions" className="link text-sm">
+                  View all ({myPrescriptions.length})
+                </Link>
+              )
+            }
+          >
+            {myPrescriptions.length === 0 ? (
+              <p className="px-6 py-8 text-center text-sm text-ink-500">Prescriptions appear here once your doctor has verified the scan.</p>
+            ) : (
+              <ul className="divide-y divide-line">
+                {myPrescriptions.slice(0, 3).map(doc => (
+                  <li key={doc.id} className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-ink-900">{doc.title}</p>
+                      <p className="text-[13px] text-ink-500">
+                        Verified by {doc.verifiedBy} · {prettyDate(doc.createdAt)}
+                      </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownload(doc.storageKey, doc.title)}
-                      leftIcon={<Download className="w-3.5 h-3.5 text-[#3DA9DF]" />}
-                    >
-                      View Rx PDF
+                    <Button variant="outline" size="sm" leftIcon={<Download className="h-4 w-4" />} onClick={() => docs.open(doc.storageKey)}>
+                      Open
                     </Button>
-                  </div>
-                ))
-              )}
-            </CardBody>
-          </Card>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
         </div>
 
-        {/* Right Column: Pathology Reports (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <Card className="rounded-2xl border-lime-100 shadow-xs">
-            <CardHeader>
-              <div className="flex items-center justify-between w-full">
-                <h2 className="text-base font-bold text-[#193247] flex items-center gap-2">
-                  <Microscope className="w-4 h-4 text-[#91BB40]" />
-                  <span>Published Lab Reports</span>
-                </h2>
-                <Link to="/patient/reports" className="text-xs font-semibold text-[#3DA9DF] hover:underline">
-                  All Reports ({myReports.length})
+        <div className="space-y-6 lg:col-span-5">
+          <Panel
+            flush
+            title={
+              <span className="inline-flex items-center gap-2">
+                <Microscope className="h-4 w-4 text-leaf-600" aria-hidden="true" /> Lab reports
+              </span>
+            }
+            actions={
+              myReports.length > 0 && (
+                <Link to="/patient/reports" className="link text-sm">
+                  View all ({myReports.length})
                 </Link>
-              </div>
-            </CardHeader>
-
-            <CardBody className="p-0 divide-y divide-slate-100">
-              {myReports.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#647785]">
-                  No published reports available. Unverified laboratory files are safeguarded until signed off by the pathologist.
-                </div>
-              ) : (
-                myReports.map((rep) => (
-                  <div key={rep.id} className="p-4 space-y-2 hover:bg-[#FCFDFB] transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="text-xs font-bold text-[#193247]">{rep.testName}</h4>
-                        <span className="text-[11px] text-[#647785]">
-                          Accession: {rep.labAccessionNumber} &bull; {rep.reportDate}
-                        </span>
-                      </div>
-                      <Badge variant="lime-green" size="sm">
-                        Verified &amp; Published
-                      </Badge>
+              )
+            }
+          >
+            {myReports.length === 0 ? (
+              <p className="px-6 py-8 text-center text-sm text-ink-500">Reports appear here after the pathologist signs them off.</p>
+            ) : (
+              <ul className="divide-y divide-line">
+                {myReports.slice(0, 4).map(rep => (
+                  <li key={rep.id} className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-ink-900">{rep.testName}</p>
+                      <p className="text-[13px] text-ink-500">
+                        {prettyDate(rep.reportDate)} · signed by {rep.verifierName || 'pathologist'}
+                      </p>
                     </div>
+                    <Button variant="soft" size="sm" leftIcon={<Download className="h-4 w-4" />} onClick={() => docs.open(rep.storageKey)} aria-label={`Download ${rep.testName}`}>
+                      PDF
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
 
-                    <div className="flex items-center justify-between pt-1 text-[11px] text-[#647785]">
-                      <span>Sign-off: {rep.verifierName || 'Pathologist'}</span>
-                      <button
-                        onClick={() => handleDownload(rep.storageKey, rep.testName)}
-                        className="font-semibold text-[#3DA9DF] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download Signed PDF</span>
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardBody>
-          </Card>
-
-          {/* DPDP Compliance Card */}
-          <div className="bg-[#F3F8EC]/80 border border-[#D5E8BA] p-4 rounded-2xl text-xs text-[#193247] space-y-2 shadow-xs">
-            <div className="font-semibold text-[#193247] flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#91BB40]" />
-              <span>Medical Document Confidentiality</span>
-            </div>
-            <p className="text-[#647785] leading-relaxed">
-              Downloads utilize authenticated short-lived signed URLs. Unverified draft lab results are strictly withheld until medical certification.
-            </p>
-          </div>
+          <InlineNote tone="leaf" icon={<Lock className="h-4 w-4 text-leaf-700" />}>
+            Downloads use short-lived private links. Lab results stay hidden until a pathologist has verified them.
+          </InlineNote>
         </div>
-
       </div>
     </div>
   );

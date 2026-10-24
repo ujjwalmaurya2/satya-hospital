@@ -1,255 +1,202 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Microscope, 
-  Search, 
-  Clock, 
-  CheckCircle2, 
-  ShieldCheck, 
-  FileCheck, 
-  PhoneCall, 
-  AlertCircle,
-  FileText,
-  Baby
-} from 'lucide-react';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
+import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Barcode, Cpu, FileLock2, FileText, FlaskConical, PhoneCall, Search, UserCheck } from 'lucide-react';
+import { AnchorButton, LinkButton } from '../../components/common/Button';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
+import { PageHero, Section, SectionHeading } from '../../components/site/Section';
 import { useHospital } from '../../context/HospitalContext';
+import { phoneDisplay, phoneHref } from '../../lib/contact';
+import { cn } from '../../lib/cn';
+
+const steps = [
+  { icon: <Barcode className="h-5 w-5" />, title: 'Labelled collection', text: 'Each sample gets a unique accession number at collection to prevent mix-ups.' },
+  { icon: <Cpu className="h-5 w-5" />, title: 'Automated analysis', text: 'Processed on calibrated analysers with daily internal quality control.' },
+  { icon: <UserCheck className="h-5 w-5" />, title: 'Pathologist sign-off', text: 'A qualified pathologist reviews the results before the report is authorised.' },
+  { icon: <FileLock2 className="h-5 w-5" />, title: 'Secure PDF access', text: 'Reports open in your patient portal through private, time-limited links.' },
+];
 
 export const Pathology: React.FC = () => {
   const { pathologyTests, settings } = useHospital();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('All');
 
-  const categories = ['All', 'Hematology', 'Biochemistry', 'Diabetes Care', 'Endocrinology', 'Clinical Pathology'];
+  const categories = useMemo(() => ['All', ...Array.from(new Set(pathologyTests.map(t => t.category)))], [pathologyTests]);
 
-  const filteredTests = pathologyTests.filter(test => {
-    const matchesSearch = test.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          test.testCode.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || test.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+  const tests = pathologyTests.filter(t => {
+    const q = query.trim().toLowerCase();
+    const matchesQuery = !q || t.name.toLowerCase().includes(q) || t.testCode.toLowerCase().includes(q);
+    return matchesQuery && (category === 'All' || t.category === category);
   });
 
-  const phoneRaw = settings.phone.split(' ')[0] || '+915322900000';
-
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        {/* Header */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-              <Microscope className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Certified Diagnostic Laboratory &amp; Pathology &bull; Satya Hospital</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
-              In-House Automated Diagnostic Pathology
-            </h1>
-            <p className="text-sm text-[#647785] leading-relaxed">
-              Satya Hospital's certified laboratory delivers high-precision clinical pathology, hematology, and biochemistry testing. Every patient report undergoes mandatory validation before publication to your secure patient account.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        {/* Lab Safety & Workflow 4-Step Card */}
-        <ScrollReveal direction="up" delay={0.06} distance={18}>
-          <div className="bg-white rounded-3xl border border-[#CBD7DD] p-6 sm:p-8 shadow-xs">
-            <div className="text-center max-w-xl mx-auto mb-8">
-              <h2 className="text-lg font-bold text-[#193247]">4-Step Diagnostic Quality Safeguard</h2>
-              <p className="text-xs text-[#647785] mt-1">
-                How we protect patient sample integrity from collection to digital report delivery.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center sm:text-left">
-              <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-                <span className="w-7 h-7 rounded-full bg-[#3DA9DF] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
-                  1
-                </span>
-                <h3 className="text-sm font-bold text-[#193247]">Barcoded Phlebotomy</h3>
-                <p className="text-xs text-[#647785]">
-                  Blood &amp; urine specimens are labeled with unique lab accession numbers to prevent sample mix-ups.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-                <span className="w-7 h-7 rounded-full bg-[#91BB40] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
-                  2
-                </span>
-                <h3 className="text-sm font-bold text-[#193247]">Automated Analysis</h3>
-                <p className="text-xs text-[#647785]">
-                  Processed on calibrated auto-analyzers with daily quality control checks and internal controls.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-                <span className="w-7 h-7 rounded-full bg-[#3DA9DF] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
-                  3
-                </span>
-                <h3 className="text-sm font-bold text-[#193247]">Pathologist Sign-Off</h3>
-                <p className="text-xs text-[#647785]">
-                  A qualified medical pathologist reviews critical values before authorising digital publication.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FCFDFB] border border-[#E5ECEF] space-y-2">
-                <span className="w-7 h-7 rounded-full bg-[#91BB40] text-white flex items-center justify-center text-xs font-bold mx-auto sm:mx-0 shadow-2xs">
-                  4
-                </span>
-                <h3 className="text-sm font-bold text-[#193247]">Secure PDF Access</h3>
-                <p className="text-xs text-[#647785]">
-                  Instant access in your Patient Portal via signed, encrypted links with no public web exposure.
-                </p>
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* Tests Catalogue with Search & Filters */}
-        <div className="space-y-6">
-          <ScrollReveal direction="up" distance={14}>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <>
+      <PageHero
+        crumbs={[{ label: 'Pathology lab' }]}
+        eyebrow="In-house diagnostic laboratory"
+        title="Clinical pathology you can rely on"
+        description="Haematology, biochemistry and clinical pathology processed on-site. Every report is validated before it is published to your patient account."
+        actions={
+          <>
+            <LinkButton to="/patient/reports" leftIcon={<FileText className="h-4 w-4" />}>
+              Access my reports
+            </LinkButton>
+            <AnchorButton href={phoneHref(settings.phone)} variant="outline" leftIcon={<PhoneCall className="h-4 w-4 text-brand-600" />}>
+              Call the lab desk
+            </AnchorButton>
+          </>
+        }
+        aside={
+          <div className="rounded-3xl bg-white p-6 shadow-card ring-1 ring-line">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-leaf-50 text-leaf-700 ring-1 ring-inset ring-leaf-200" aria-hidden="true">
+                <FlaskConical className="h-5 w-5" />
+              </span>
               <div>
-                <h3 className="text-xl font-bold text-[#193247]">Diagnostic Test Catalogue &amp; Pricing</h3>
-                <p className="text-xs text-[#647785]">Transparent hospital lab rates with expected turnaround times.</p>
-              </div>
-
-              {/* Search Input */}
-              <div className="relative w-full md:w-72">
-                <Search className="w-4 h-4 text-[#647785] absolute left-3 top-2.5 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search tests (e.g. CBC, TSH)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-[#CBD7DD] text-xs text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                />
+                <p className="font-semibold text-ink-900">Sample collection</p>
+                <p className="text-sm text-ink-500">Daily, 08:00 AM – 02:00 PM</p>
               </div>
             </div>
-          </ScrollReveal>
+            <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-5 text-sm">
+              <div>
+                <dt className="text-ink-500">Tests listed</dt>
+                <dd className="mt-0.5 text-lg font-semibold text-ink-900">{pathologyTests.length}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-500">Reports</dt>
+                <dd className="mt-0.5 text-lg font-semibold text-ink-900">Pathologist verified</dd>
+              </div>
+            </dl>
+          </div>
+        }
+      />
 
-          {/* Categories Bar */}
-          <ScrollReveal direction="up" delay={0.04} distance={10}>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                    selectedCategory === cat
-                      ? 'bg-[#3DA9DF] text-white shadow-xs'
-                      : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </ScrollReveal>
+      <Section size="lg">
+        <ScrollReveal distance={14}>
+          <SectionHeading eyebrow="Quality safeguards" title="From collection to your report" align="center" />
+        </ScrollReveal>
+        <StaggerContainer className="relative mt-14 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8" staggerDelay={0.07}>
+          {steps.map((s, i) => (
+            <StaggerItem key={s.title} distance={12} className="relative">
+              {i < steps.length - 1 && (
+                <div aria-hidden="true" className="absolute left-14 right-0 top-6 hidden h-px bg-gradient-to-r from-line-strong to-transparent lg:block" />
+              )}
+              <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-brand-700 shadow-card ring-1 ring-line" aria-hidden="true">
+                {s.icon}
+              </span>
+              <p className="mt-5 text-xs font-semibold text-leaf-700">Step {i + 1}</p>
+              <h3 className="heading-3 mt-1">{s.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{s.text}</p>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </Section>
 
-          {/* Test Cards List with Friendly Empty State */}
-          {filteredTests.length === 0 ? (
+      <Section size="md" tone="tint" id="tests">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="eyebrow">Test catalogue</p>
+            <h2 className="display-2 mt-3">Tests and in-house rates</h2>
+            <p className="lead mt-3">Specimen, fasting needs and expected turnaround for each test.</p>
+          </div>
+          <div className="relative w-full md:w-80">
+            <label htmlFor="test-search" className="sr-only">Search tests</label>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <input
+              id="test-search"
+              type="search"
+              placeholder="Search by name or code, e.g. CBC"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className="field-control pl-10"
+            />
+          </div>
+        </div>
+
+        <div role="tablist" aria-label="Test categories" className="no-scrollbar -mx-5 mt-8 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
+          {categories.map(c => {
+            const active = c === category;
+            return (
+              <button
+                key={c}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setCategory(c)}
+                className={cn(
+                  'relative h-9 shrink-0 rounded-full px-4 text-[13px] font-medium transition-colors cursor-pointer',
+                  active ? 'text-white' : 'border border-line bg-white text-ink-700 hover:border-ink-300'
+                )}
+              >
+                {active && <motion.span layoutId="test-cat" className="absolute inset-0 rounded-full bg-ink-800" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                <span className="relative">{c}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-6 overflow-hidden rounded-3xl border border-line bg-white shadow-soft">
+          {tests.length === 0 ? (
             <EmptyState
-              title="No Diagnostic Tests Found"
-              description={`We couldn't find any laboratory tests matching "${searchQuery}". Please check the spelling or select a different category above.`}
-              actionLabel="Reset Search & Filters"
+              title="No tests match your search"
+              description={`Nothing found for “${query}”. Check the spelling or choose another category.`}
+              actionLabel="Clear filters"
               onAction={() => {
-                setSearchQuery('');
-                setSelectedCategory('All');
+                setQuery('');
+                setCategory('All');
               }}
             />
           ) : (
-            <StaggerContainer staggerDelay={0.05} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTests.map((test) => (
-                <StaggerItem key={test.id} hoverLift className="h-full">
-                  <Card className="p-5 flex flex-col justify-between border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-colors bg-white hover:shadow-md h-full">
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <Badge variant="medical-blue" size="sm">
-                          {test.category}
-                        </Badge>
-                        <span className="text-base font-extrabold text-[#193247]">
-                          ₹{test.price}
-                        </span>
+            <>
+              <div className="hidden grid-cols-[minmax(0,2.2fr)_1fr_1fr_1fr_auto] gap-6 border-b border-line bg-ink-50/60 px-6 py-3 text-xs font-semibold text-ink-500 md:grid">
+                <span>Test</span>
+                <span>Specimen</span>
+                <span>Fasting</span>
+                <span>Turnaround</span>
+                <span className="w-20 text-right">Rate</span>
+              </div>
+              <ul className="divide-y divide-line">
+                {tests.map(t => (
+                  <li key={t.id} className="grid grid-cols-1 gap-x-6 gap-y-2 px-6 py-4 md:grid-cols-[minmax(0,2.2fr)_1fr_1fr_1fr_auto] md:items-center">
+                    <div className="flex items-start justify-between gap-4 md:block">
+                      <div className="min-w-0">
+                        <p className="font-medium text-ink-900">{t.name}</p>
+                        <p className="mt-0.5 text-[13px] text-ink-500">
+                          <span className="font-mono text-xs">{t.testCode}</span> · {t.category}
+                        </p>
                       </div>
-
-                      <div>
-                        <h4 className="text-sm font-bold text-[#193247]">{test.name}</h4>
-                        <span className="text-[11px] font-bold text-[#3DA9DF] block mt-0.5">
-                          Code: {test.testCode}
-                        </span>
-                      </div>
-
-                      <div className="bg-[#FCFDFB] p-3 rounded-xl border border-[#E5ECEF] text-xs space-y-1.5">
-                        <div className="flex justify-between text-[#647785]">
-                          <span>Specimen:</span>
-                          <strong className="text-[#193247]">{test.specimenType}</strong>
-                        </div>
-                        <div className="flex justify-between text-[#647785]">
-                          <span>Fasting Required:</span>
-                          <Badge variant={test.fastingRequired ? 'warning' : 'success'} size="sm">
-                            {test.fastingRequired ? 'Yes (8-10 hrs)' : 'No'}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between text-[#647785]">
-                          <span>Turnaround Time:</span>
-                          <strong className="text-[#193247]">~{test.turnaroundHours} hours</strong>
-                        </div>
-                      </div>
+                      <p className="shrink-0 text-base font-semibold tabular-nums text-ink-900 md:hidden">₹{t.price}</p>
                     </div>
-
-                    <div className="pt-4 border-t border-[#E5ECEF] mt-4 flex items-center justify-between">
-                      <span className="text-[11px] text-[#486812] font-bold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40]" />
-                        Available Daily
-                      </span>
-                      <Link to="/book-appointment">
-                        <Button variant="outline" size="sm" className="font-bold">
-                          Book OPD / Test
-                        </Button>
-                      </Link>
-                    </div>
-                  </Card>
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
+                    <p className="text-sm text-ink-700">
+                      <span className="text-ink-400 md:hidden">Specimen: </span>
+                      {t.specimenType}
+                    </p>
+                    <p className="text-sm">
+                      {t.fastingRequired ? (
+                        <span className="rounded-full bg-warning-50 px-2.5 py-0.5 text-xs font-medium text-warning-700 ring-1 ring-inset ring-warning-200">8–10 h fasting</span>
+                      ) : (
+                        <span className="text-ink-500">Not required</span>
+                      )}
+                    </p>
+                    <p className="text-sm text-ink-700">
+                      <span className="text-ink-400 md:hidden">Turnaround: </span>~{t.turnaroundHours} hours
+                    </p>
+                    <p className="hidden w-20 text-right text-base font-semibold tabular-nums text-ink-900 md:block">₹{t.price}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
+        <p className="mt-5 text-sm text-ink-500">
+          Questions about fasting or sample drop-off? Call the laboratory desk on{' '}
+          <a href={phoneHref(settings.phone)} className="link">
+            {phoneDisplay(settings.phone)}
+          </a>
+          .
+        </p>
+      </Section>
 
-        {/* Pathology Contact Strip */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="bg-[#EBF6FC] border border-[#BCE1F5] p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-[#3DA9DF] text-white flex items-center justify-center shrink-0 font-bold">
-                <PhoneCall className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-[#193247]">Pathology Collection &amp; Report Inquiries</h4>
-                <p className="text-xs text-[#647785]">
-                  Need advice on fasting guidelines or sample drop-off times? Contact our laboratory desk at {phoneRaw}.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link to="/patient/reports">
-                <Button variant="primary" size="sm" leftIcon={<FileText className="w-4 h-4" />}>
-                  Access My Reports
-                </Button>
-              </Link>
-              <a href={`tel:${phoneRaw}`}>
-                <Button variant="outline" size="sm">
-                  Call Lab Desk
-                </Button>
-              </a>
-            </div>
-          </div>
-        </ScrollReveal>
-
-      </div>
-    </div>
+      <div className="h-16 sm:h-20" />
+    </>
   );
 };

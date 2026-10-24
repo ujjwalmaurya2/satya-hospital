@@ -57,12 +57,19 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { PageTransition } from './components/motion';
 
 const ALL_STAFF_ROLES: UserRole[] = ['reception', 'doctor', 'pathology', 'admin'];
+const PATIENT_ROLES: UserRole[] = ['patient'];
 
 // Public Layout Wrapper
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen flex flex-col bg-[#FCFDFB]">
+  <div className="min-h-screen flex flex-col bg-canvas">
+    <a
+      href="#main"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+    >
+      Skip to content
+    </a>
     <Navbar />
-    <main className="flex-1">
+    <main id="main" className="flex-1">
       <ErrorBoundary>
         <PageTransition>
           {children}
@@ -111,7 +118,7 @@ export const App: React.FC = () => {
             <Route path="/patient/login" element={<PublicLayout><PatientLogin /></PublicLayout>} />
 
             {/* PATIENT PORTAL ROUTES (NESTED UNDER PATIENT LAYOUT) */}
-            <Route path="/patient" element={<PatientLayout />}>
+            <Route path="/patient" element={<RequireRole roles={PATIENT_ROLES} loginPath="/patient/login"><PatientLayout /></RequireRole>}>
               <Route index element={<Navigate to="/patient/dashboard" replace />} />
               <Route path="dashboard" element={<PatientDashboard />} />
               <Route path="appointments" element={<PatientAppointments />} />

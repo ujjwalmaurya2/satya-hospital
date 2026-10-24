@@ -1,153 +1,90 @@
-import React, { useState } from 'react';
-import { 
-  Users, 
-  Calendar, 
-  Search, 
-  PlusCircle, 
-  Upload, 
-  CheckCircle2, 
-  Clock, 
-  FileText, 
-  Phone, 
-  AlertCircle,
-  Eye,
-  X
-} from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
+import React, { useRef, useState } from 'react';
+import { CalendarPlus, FileUp, Search, Upload, UploadCloud, UserPlus, X } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { Alert } from '../../components/common/Alert';
 import { Table } from '../../components/common/Table';
+import { APPOINTMENT_BADGE, Avatar, PageHeader, Panel, StatCard, Tabs } from '../../components/dashboard/Dashboard';
 import { useHospital } from '../../context/HospitalContext';
 import { useAuth } from '../../context/AuthContext';
 import { getHospitalTodayDate, isValidIndianPhone } from '../../lib/tokens';
 import { uploadDocumentToSecureStorage } from '../../lib/storage';
-import { Appointment, PatientProfile } from '../../types';
+import { to12h } from '../../lib/contact';
+import { cn } from '../../lib/cn';
+
+type Tab = 'queue' | 'search' | 'upload';
 
 export const ReceptionDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { 
-    settings, 
-    appointments, 
-    doctors, 
-    patientProfiles, 
-    registerPatient, 
-    registerWalkInAppointment, 
-    updateAppointmentStatus,
-    uploadMedicalDocument,
-    getTodayQueueStats,
-    searchPatients
-  } = useHospital();
+  const { settings, appointments, doctors, patientProfiles, registerPatient, registerWalkInAppointment, updateAppointmentStatus, uploadMedicalDocument, getTodayQueueStats, searchPatients } =
+    useHospital();
 
   const today = getHospitalTodayDate();
   const queueStats = getTodayQueueStats();
 
-  // Search state
   const [patientSearchQuery, setPatientSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'queue' | 'search' | 'upload'>('queue');
+  const [activeTab, setActiveTab] = useState<Tab>('queue');
 
-  // Walk-in Registration Modal
+  // Walk-in registration modal
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   const [walkInName, setWalkInName] = useState('');
   const [walkInPhone, setWalkInPhone] = useState('');
   const [walkInGender, setWalkInGender] = useState<'male' | 'female' | 'other'>('male');
-  const [walkInAge, setWalkInAge] = useState('40');
+  const [walkInAge, setWalkInAge] = useState('4');
   const [walkInDoctorId, setWalkInDoctorId] = useState(doctors[0]?.id || '');
   const [walkInNotes, setWalkInNotes] = useState('');
   const [walkInError, setWalkInError] = useState<string | null>(null);
 
-  // Document Upload State
+  // Document upload
   const [uploadPatientId, setUploadPatientId] = useState('');
-  const [uploadDocTitle, setUploadDocTitle] = useState('Handwritten Prescription Scan');
+  const [uploadDocTitle, setUploadDocTitle] = useState('Handwritten prescription scan');
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
-  // Today's appointments list
-  const todayAppointments = appointments.filter(
-    a => a.appointmentDate === today
-  ).sort((a, b) => a.tokenNumber - b.tokenNumber);
+  const todayAppointments = appointments.filter(a => a.appointmentDate === today).sort((a, b) => a.tokenNumber - b.tokenNumber);
 
-  // Handle Walk-in Registration
   const handleWalkInSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setWalkInError(null);
+    if (!walkInName.trim()) return setWalkInError('Patient name is required.');
+    if (!isValidIndianPhone(walkInPhone)) return setWalkInError('A valid 10-digit phone number is required.');
 
-    if (!walkInName.trim()) {
-      setWalkInError('Patient name is required.');
-      return;
-    }
-    if (!isValidIndianPhone(walkInPhone)) {
-      setWalkInError('Valid 10-digit phone number is required.');
-      return;
-    }
-
-    // Step 1: Register or find patient
     const regRes = registerPatient(
-      {
-        fullName: walkInName.trim(),
-        phone: walkInPhone.trim(),
-        gender: walkInGender,
-        age: parseInt(walkInAge, 10) || undefined,
-      },
+      { fullName: walkInName.trim(), phone: walkInPhone.trim(), gender: walkInGender, age: parseInt(walkInAge, 10) || undefined },
       'reception'
     );
+    if (!regRes.success || !regRes.patient) return setWalkInError(regRes.error || 'Failed to register patient profile.');
 
-    if (!regRes.success || !regRes.patient) {
-      setWalkInError(regRes.error || 'Failed to register patient profile.');
-      return;
-    }
+    const walkInRes = registerWalkInAppointment({ patientProfileId: regRes.patient.id, doctorId: walkInDoctorId, notes: walkInNotes.trim() });
+    if (!walkInRes.success || !walkInRes.appointment) return setWalkInError(walkInRes.error || 'Failed to allocate walk-in token.');
 
-    // Step 2: Allocate Walk-In Token
-    const walkInRes = registerWalkInAppointment({
-      patientProfileId: regRes.patient.id,
-      doctorId: walkInDoctorId,
-      notes: walkInNotes.trim(),
-    });
-
-    if (!walkInRes.success || !walkInRes.appointment) {
-      setWalkInError(walkInRes.error || 'Failed to allocate walk-in token.');
-      return;
-    }
-
-    // Reset and close
     setWalkInModalOpen(false);
     setWalkInName('');
     setWalkInPhone('');
     setWalkInNotes('');
   };
 
-  // Handle Rx Scan Upload
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploadError(null);
     setUploadSuccess(null);
+    if (!uploadFile) return setUploadError('Choose a scanned PDF or image.');
 
-    if (!uploadFile) {
-      setUploadError('Please choose a scanned PDF or image document.');
-      return;
-    }
-
-    const patient = patientProfiles.find(
-      p => p.patientId.toLowerCase() === uploadPatientId.trim().toLowerCase()
-    );
-    if (!patient) {
-      setUploadError(`No patient found matching Patient ID: "${uploadPatientId}".`);
-      return;
-    }
+    const patient = patientProfiles.find(p => p.patientId.toLowerCase() === uploadPatientId.trim().toLowerCase());
+    if (!patient) return setUploadError(`No patient found with ID “${uploadPatientId}”.`);
 
     setUploading(true);
-
     try {
       const uploadRes = await uploadDocumentToSecureStorage(uploadFile, 'prescriptions', patient.patientId);
       if (!uploadRes.success || !uploadRes.storageKey) {
         setUploadError(uploadRes.error || 'File upload failed.');
-        setUploading(false);
         return;
       }
-
       uploadMedicalDocument({
         patientProfileId: patient.id,
         documentType: 'handwritten_prescription_scan',
@@ -160,15 +97,13 @@ export const ReceptionDashboard: React.FC = () => {
         uploaderName: user?.fullName || 'Reception Desk',
         uploaderRole: 'reception',
         verificationStatus: 'unverified', // Doctor must verify before publishing
-        notes: `Uploaded at reception desk. Awaiting Doctor review.`,
+        notes: 'Uploaded at reception desk. Awaiting doctor review.',
       });
-
-      setUploadSuccess(`Document safely uploaded for ${patient.fullName} (${patient.patientId}). It is now in the Doctor's verification queue.`);
+      setUploadSuccess(`Uploaded for ${patient.fullName} (${patient.patientId}). It is now waiting in the doctor’s verification queue.`);
       setUploadFile(null);
       setUploadPatientId('');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown upload error.';
-      setUploadError(msg);
+      setUploadError(err instanceof Error ? err.message : 'Unknown upload error.');
     } finally {
       setUploading(false);
     }
@@ -178,266 +113,165 @@ export const ReceptionDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#243447]">
-            Reception &amp; OPD Admissions Desk
-          </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Today's Date: <strong>{today}</strong> &bull; OPD Clinics Active: <strong>{settings.opdStartTime} AM</strong>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="accent"
-            size="md"
-            onClick={() => setWalkInModalOpen(true)}
-            leftIcon={<PlusCircle className="w-4 h-4" />}
-            disabled={queueStats.isCapacityFull}
-          >
-            Register Walk-In Patient
+      <PageHeader
+        eyebrow="Reception"
+        title="Records & uploads"
+        description={`Today’s list, patient directory and prescription scans · OPD from ${to12h(settings.opdStartTime)}`}
+        actions={
+          <Button variant="accent" onClick={() => setWalkInModalOpen(true)} leftIcon={<UserPlus className="h-4 w-4" />} disabled={queueStats.isCapacityFull}>
+            Register walk-in
           </Button>
-        </div>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Registered today" value={queueStats.totalBooked} hint={`${queueStats.onlineCount} online · ${queueStats.walkInCount} walk-in`} />
+        <StatCard label="Waiting" value={queueStats.waitingCount} hint="Booked or arrived" />
+        <StatCard label="Completed" value={queueStats.completedCount} hint="Seen by a doctor" />
+        <StatCard
+          label="Daily intake"
+          value={queueStats.remainingCapacity !== null ? queueStats.remainingCapacity : 'Open'}
+          hint={settings.maxDailyCapacity ? `Cap ${settings.maxDailyCapacity}` : 'No daily cap'}
+        />
       </div>
 
-      {/* 4 Quick Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Total Registered Today</span>
-          <div className="text-2xl font-bold text-[#243447] mt-1">{queueStats.totalBooked}</div>
-          <span className="text-[11px] text-[#3DA9DF] font-semibold block mt-0.5">
-            {queueStats.onlineCount} Online &bull; {queueStats.walkInCount} Walk-in
-          </span>
-        </Card>
+      <Panel flush>
+        <Tabs
+          label="Reception sections"
+          layoutId="reception-tab"
+          value={activeTab}
+          onChange={setActiveTab}
+          className="px-3 sm:px-4"
+          items={[
+            { id: 'queue', label: 'Today’s list', count: todayAppointments.length },
+            { id: 'search', label: 'Patient directory' },
+            { id: 'upload', label: 'Upload scan' },
+          ]}
+        />
 
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Waiting in Lounge</span>
-          <div className="text-2xl font-bold text-amber-600 mt-1">{queueStats.waitingCount}</div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">Tokens Booked / Arrived</span>
-        </Card>
+        {activeTab === 'queue' && (
+          <Table
+            caption="Today's OPD appointments"
+            data={todayAppointments}
+            keyExtractor={item => item.id}
+            emptyMessage="No patients scheduled today"
+            emptyHint="Online bookings and walk-ins will appear here."
+            columns={[
+              {
+                header: 'Token',
+                cell: item => <span className="inline-flex h-8 min-w-11 items-center justify-center rounded-lg bg-ink-800 px-2 font-mono text-xs font-bold text-white">#{item.tokenNumber}</span>,
+              },
+              {
+                header: 'Patient',
+                cell: item => (
+                  <div>
+                    <p className="font-semibold text-ink-900">{item.patientName}</p>
+                    <p className="font-mono text-xs text-ink-500">
+                      {item.patientId} · +91 {item.patientPhone}
+                    </p>
+                  </div>
+                ),
+              },
+              {
+                header: 'Type',
+                cell: item => (
+                  <Badge variant={item.queueType === 'online' ? 'medical-blue' : 'mint'} size="sm">
+                    {item.queueType === 'online' ? 'Online' : 'Walk-in'}
+                  </Badge>
+                ),
+              },
+              { header: 'Doctor', cell: item => <span className="text-ink-700">{item.doctorName}</span> },
+              {
+                header: 'Status',
+                cell: item => (
+                  <Badge variant={APPOINTMENT_BADGE[item.status].variant} size="sm" dot>
+                    {APPOINTMENT_BADGE[item.status].label}
+                  </Badge>
+                ),
+              },
+              {
+                header: 'Actions',
+                cell: item => (
+                  <div className="flex items-center gap-1.5">
+                    {item.status === 'booked' && (
+                      <Button variant="accent" size="sm" onClick={() => updateAppointmentStatus(item.id, 'checked_in', 'reception')}>
+                        Mark arrival
+                      </Button>
+                    )}
+                    {item.status === 'checked_in' && (
+                      <Button variant="outline" size="sm" onClick={() => updateAppointmentStatus(item.id, 'in_consultation', 'reception')}>
+                        Call to room
+                      </Button>
+                    )}
+                    {item.status !== 'completed' && item.status !== 'cancelled' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
+                        onClick={() => updateAppointmentStatus(item.id, 'cancelled', 'reception', 'Cancelled at desk')}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                ),
+              },
+            ]}
+          />
+        )}
 
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Consultations Completed</span>
-          <div className="text-2xl font-bold text-[#91BB40] mt-1">{queueStats.completedCount}</div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">Signed off by doctor</span>
-        </Card>
-
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Daily Patient Intake</span>
-          <div className="text-2xl font-bold text-[#243447] mt-1">
-            {queueStats.remainingCapacity !== null ? queueStats.remainingCapacity : 'Open'}
-          </div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">
-            {settings.maxDailyCapacity ? `Cap: ${settings.maxDailyCapacity}` : 'Unlimited Daily Intake'}
-          </span>
-        </Card>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E1E8ED] pb-2">
-        <button
-          onClick={() => setActiveTab('queue')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            activeTab === 'queue' ? 'bg-[#3DA9DF] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Today's OPD Queue ({todayAppointments.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('search')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            activeTab === 'search' ? 'bg-[#3DA9DF] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Patient Directory &amp; History
-        </button>
-        <button
-          onClick={() => setActiveTab('upload')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            activeTab === 'upload' ? 'bg-[#3DA9DF] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Upload Scanned Document / Rx
-        </button>
-      </div>
-
-      {/* TAB 1: TODAY OPD QUEUE */}
-      {activeTab === 'queue' && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between w-full">
-              <h2 className="text-base font-bold text-[#243447]">
-                Live OPD Token Worklist &bull; {today}
-              </h2>
-              <span className="text-xs text-[#667085]">
-                {settings.maxDailyCapacity 
-                  ? `Shared Capacity: ${todayAppointments.length} / ${settings.maxDailyCapacity}`
-                  : `Shared Queue: ${todayAppointments.length} Patients (Unlimited Intake)`}
-              </span>
+        {activeTab === 'search' && (
+          <>
+            <div className="border-b border-line p-4 sm:px-6">
+              <div className="relative max-w-xl">
+                <label htmlFor="patient-search" className="sr-only">Search patients</label>
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                <input
+                  id="patient-search"
+                  type="search"
+                  placeholder="Search by patient ID, name or phone"
+                  value={patientSearchQuery}
+                  onChange={e => setPatientSearchQuery(e.target.value)}
+                  className="field-control pl-10"
+                />
+              </div>
             </div>
-          </CardHeader>
-
-          <CardBody className="p-0">
             <Table
-              data={todayAppointments}
-              keyExtractor={(item) => item.id}
-              emptyMessage="No patients scheduled for today's OPD."
+              caption="Patient directory"
+              data={searchedPatients}
+              keyExtractor={item => item.id}
+              emptyMessage="No patients match your search"
+              emptyHint="Try a patient ID such as SH-2026-00001, a name or a phone number."
               columns={[
                 {
-                  header: 'Token #',
-                  cell: (item) => (
-                    <span className="px-2.5 py-1 rounded-md bg-[#243447] text-white font-mono font-bold text-xs">
-                      #{item.tokenNumber}
-                    </span>
-                  ),
-                },
-                {
-                  header: 'Patient Details',
-                  cell: (item) => (
-                    <div>
-                      <div className="font-bold text-[#243447]">{item.patientName}</div>
-                      <div className="text-[11px] text-[#667085] font-mono">
-                        {item.patientId} &bull; +91 {item.patientPhone}
+                  header: 'Patient',
+                  cell: item => (
+                    <div className="flex items-center gap-3">
+                      <Avatar name={item.fullName} size="sm" />
+                      <div>
+                        <p className="font-semibold text-ink-900">{item.fullName}</p>
+                        <p className="font-mono text-xs text-brand-700">{item.patientId}</p>
                       </div>
                     </div>
                   ),
                 },
+                { header: 'Phone', cell: item => <span className="tabular-nums">+91 {item.phone}</span> },
                 {
-                  header: 'Queue Type',
-                  cell: (item) => (
-                    <Badge variant={item.queueType === 'online' ? 'medical-blue' : 'neutral'} size="sm">
-                      {item.queueType === 'online' ? 'Online' : 'Walk-In'}
-                    </Badge>
-                  ),
-                },
-                {
-                  header: 'Consulting Doctor',
-                  cell: (item) => (
-                    <span className="text-xs font-semibold text-[#243447]">
-                      {item.doctorName}
+                  header: 'Details',
+                  cell: item => (
+                    <span className="capitalize text-ink-500">
+                      {[item.gender, item.age ? `${item.age} yrs` : null, item.bloodGroup].filter(Boolean).join(' · ')}
                     </span>
                   ),
                 },
+                { header: 'Address', cell: item => <span className="text-ink-500">{item.address || 'Prayagraj'}</span> },
                 {
-                  header: 'Status',
-                  cell: (item) => {
-                    const variant = 
-                      item.status === 'completed' ? 'success' :
-                      item.status === 'in_consultation' ? 'medical-blue' :
-                      item.status === 'checked_in' ? 'lime-green' :
-                      item.status === 'cancelled' ? 'danger' : 'warning';
-
-                    return (
-                      <Badge variant={variant} size="sm" dot>
-                        {item.status.replace('_', ' ').toUpperCase()}
-                      </Badge>
-                    );
-                  },
-                },
-                {
-                  header: 'Reception Actions',
-                  cell: (item) => (
-                    <div className="flex items-center gap-1.5">
-                      {item.status === 'booked' && (
-                        <Button
-                          variant="accent"
-                          size="sm"
-                          onClick={() => updateAppointmentStatus(item.id, 'checked_in', 'reception')}
-                        >
-                          Mark Arrival
-                        </Button>
-                      )}
-                      {item.status === 'checked_in' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateAppointmentStatus(item.id, 'in_consultation', 'reception')}
-                        >
-                          Call to Room
-                        </Button>
-                      )}
-                      {item.status !== 'completed' && item.status !== 'cancelled' && (
-                        <button
-                          onClick={() => updateAppointmentStatus(item.id, 'cancelled', 'reception', 'Cancelled at desk')}
-                          className="text-[11px] text-red-600 hover:underline px-2 cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  ),
-                },
-              ]}
-            />
-          </CardBody>
-        </Card>
-      )}
-
-      {/* TAB 2: PATIENT DIRECTORY & SEARCH */}
-      {activeTab === 'search' && (
-        <Card className="space-y-4">
-          <CardHeader>
-            <div className="w-full space-y-3">
-              <h2 className="text-base font-bold text-[#243447]">
-                Authorised Patient Registry Search
-              </h2>
-              <div className="relative">
-                <Search className="w-4 h-4 text-[#667085] absolute left-3 top-3 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search by Patient ID (e.g. SH-2026-00001), Full Name, or Phone..."
-                  value={patientSearchQuery}
-                  onChange={(e) => setPatientSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-[#CBD5E1] text-xs focus:ring-2 focus:ring-[#3DA9DF]"
-                />
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardBody className="p-0">
-            <Table
-              data={searchedPatients}
-              keyExtractor={(item) => item.id}
-              emptyMessage="No patients match your search criteria."
-              columns={[
-                {
-                  header: 'Patient ID',
-                  cell: (item) => (
-                    <span className="font-mono font-bold text-[#3DA9DF] text-xs">
-                      {item.patientId}
-                    </span>
-                  ),
-                },
-                {
-                  header: 'Full Name',
-                  cell: (item) => (
-                    <div className="font-semibold text-[#243447]">{item.fullName}</div>
-                  ),
-                },
-                {
-                  header: 'Phone Number',
-                  cell: (item) => <span>+91 {item.phone}</span>,
-                },
-                {
-                  header: 'Demographics',
-                  cell: (item) => (
-                    <span className="capitalize text-xs text-[#667085]">
-                      {item.gender} {item.age ? `&bull; ${item.age} yrs` : ''} {item.bloodGroup ? `&bull; ${item.bloodGroup}` : ''}
-                    </span>
-                  ),
-                },
-                {
-                  header: 'Address',
-                  cell: (item) => <span className="text-xs text-[#667085]">{item.address || 'Prayagraj'}</span>,
-                },
-                {
-                  header: 'Action',
-                  cell: (item) => (
+                  header: '',
+                  cell: item => (
                     <Button
-                      variant="outline"
+                      variant="soft"
                       size="sm"
+                      leftIcon={<CalendarPlus className="h-4 w-4" />}
                       onClick={() => {
                         setWalkInName(item.fullName);
                         setWalkInPhone(item.phone);
@@ -446,187 +280,148 @@ export const ReceptionDashboard: React.FC = () => {
                         setWalkInModalOpen(true);
                       }}
                     >
-                      Book OPD
+                      Issue token
                     </Button>
                   ),
                 },
               ]}
             />
-          </CardBody>
-        </Card>
-      )}
+          </>
+        )}
 
-      {/* TAB 3: UPLOAD SCANNED PRESCRIPTIONS */}
-      {activeTab === 'upload' && (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <div>
-              <h2 className="text-base font-bold text-[#243447]">
-                Scan &amp; Attach Clinical Prescription
-              </h2>
-              <p className="text-xs text-[#667085] mt-0.5">
-                Upload scanned handwritten doctor notes or external reports directly to the patient's record.
-              </p>
+        {activeTab === 'upload' && (
+          <div className="max-w-2xl p-5 sm:p-6">
+            <h2 className="text-[15px] font-semibold text-ink-900">Attach a scanned prescription</h2>
+            <p className="mt-1 text-[13px] text-ink-500">Scans go to the doctor’s verification queue before patients can see them.</p>
+
+            <div className="mt-5 space-y-3">
+              {uploadSuccess && <Alert type="success" title="Upload complete">{uploadSuccess}</Alert>}
+              {uploadError && <Alert type="error" title="Upload not completed">{uploadError}</Alert>}
             </div>
-          </CardHeader>
 
-          <CardBody>
-            {uploadSuccess && (
-              <Alert type="success" title="Upload Completed">
-                {uploadSuccess}
-              </Alert>
-            )}
-
-            {uploadError && (
-              <Alert type="error" title="Upload Notice">
-                {uploadError}
-              </Alert>
-            )}
-
-            <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs mt-3">
-              <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Target Patient ID (e.g. SH-2026-00001) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="SH-2026-00001"
-                  value={uploadPatientId}
-                  onChange={(e) => setUploadPatientId(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg border border-[#CBD5E1] uppercase font-mono"
-                  required
-                />
+            <form onSubmit={handleUploadSubmit} className="mt-5 space-y-5">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="up-pid" className="field-label">Patient ID</label>
+                  <input
+                    id="up-pid"
+                    placeholder="SH-2026-00001"
+                    value={uploadPatientId}
+                    onChange={e => setUploadPatientId(e.target.value.toUpperCase())}
+                    className="field-control font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="up-title" className="field-label">Document title</label>
+                  <input id="up-title" value={uploadDocTitle} onChange={e => setUploadDocTitle(e.target.value)} className="field-control" required />
+                </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Document Title / Description <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={uploadDocTitle}
-                  onChange={(e) => setUploadDocTitle(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg border border-[#CBD5E1]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Select Scanned PDF / Image File <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="file"
-                  accept="application/pdf,image/png,image/jpeg"
-                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  className="w-full p-2 border border-[#CBD5E1] rounded-lg bg-[#F8FAFC]"
-                  required
-                />
-                <span className="text-[11px] text-[#667085] mt-1 block">
-                  Maximum file size: 10 MB. Supported formats: PDF, PNG, JPG.
-                </span>
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  isLoading={uploading}
-                  leftIcon={<Upload className="w-4 h-4" />}
+                <p className="field-label" id="up-file-label">File</p>
+                <div
+                  onDragOver={e => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    const f = e.dataTransfer.files?.[0];
+                    if (f) setUploadFile(f);
+                  }}
+                  className={cn(
+                    'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-colors',
+                    dragOver ? 'border-brand-500 bg-brand-50' : 'border-line-strong bg-ink-50/40'
+                  )}
                 >
-                  Upload &amp; Route to Doctor Queue
-                </Button>
+                  {uploadFile ? (
+                    <div className="flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left ring-1 ring-line">
+                      <FileUp className="h-5 w-5 shrink-0 text-brand-600" aria-hidden="true" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-ink-900">{uploadFile.name}</p>
+                        <p className="text-xs text-ink-500">{(uploadFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setUploadFile(null)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-50 hover:text-ink-900 cursor-pointer"
+                        aria-label="Remove file"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <UploadCloud className="h-8 w-8 text-brand-500" aria-hidden="true" />
+                      <p className="mt-3 text-sm font-medium text-ink-800">Drag a file here, or</p>
+                      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInput.current?.click()}>
+                        Choose file
+                      </Button>
+                      <p className="mt-3 text-xs text-ink-500">PDF, PNG or JPG · up to 10 MB</p>
+                    </>
+                  )}
+                  <input
+                    ref={fileInput}
+                    type="file"
+                    accept="application/pdf,image/png,image/jpeg"
+                    onChange={e => setUploadFile(e.target.files?.[0] || null)}
+                    className="sr-only"
+                    aria-labelledby="up-file-label"
+                  />
+                </div>
               </div>
+
+              <Button type="submit" isLoading={uploading} loadingText="Uploading…" leftIcon={<Upload className="h-4 w-4" />}>
+                Upload & send to doctor
+              </Button>
             </form>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* WALK-IN REGISTRATION MODAL */}
-      <Modal
-        isOpen={walkInModalOpen}
-        onClose={() => setWalkInModalOpen(false)}
-        title="Register Walk-In Patient"
-        description="Assign a daily token number on the shared OPD capacity."
-      >
-        <form onSubmit={handleWalkInSubmit} className="space-y-4 text-xs">
-          {walkInError && (
-            <Alert type="error" title="Registration Notice">
-              {walkInError}
-            </Alert>
-          )}
-
-          <div>
-            <label className="block font-semibold text-[#243447] mb-1">
-              Patient Full Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Sunil Yadav"
-              value={walkInName}
-              onChange={(e) => setWalkInName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-              required
-            />
           </div>
+        )}
+      </Panel>
 
+      <Modal isOpen={walkInModalOpen} onClose={() => setWalkInModalOpen(false)} title="Register walk-in patient" description="Assigns the next token in today’s shared queue.">
+        <form onSubmit={handleWalkInSubmit} className="space-y-4">
+          {walkInError && <Alert type="error">{walkInError}</Alert>}
+          <div>
+            <label htmlFor="m-name" className="field-label">Patient full name</label>
+            <input id="m-name" placeholder="e.g. Sunil Yadav" value={walkInName} onChange={e => setWalkInName(e.target.value)} className="field-control" required />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-[#243447] mb-1">
-                Mobile Number <span className="text-red-500">*</span>
-              </label>
+              <label htmlFor="m-phone" className="field-label">Mobile number</label>
               <input
+                id="m-phone"
                 type="tel"
+                inputMode="numeric"
                 maxLength={10}
                 placeholder="10 digits"
                 value={walkInPhone}
-                onChange={(e) => setWalkInPhone(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
+                onChange={e => setWalkInPhone(e.target.value.replace(/\D/g, ''))}
+                className="field-control"
                 required
               />
             </div>
             <div>
-              <label className="block font-semibold text-[#243447] mb-1">
-                Age (Years) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={120}
-                value={walkInAge}
-                onChange={(e) => setWalkInAge(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                required
-              />
+              <label htmlFor="m-age" className="field-label">Age (years)</label>
+              <input id="m-age" type="number" min={0} max={120} value={walkInAge} onChange={e => setWalkInAge(e.target.value)} className="field-control" required />
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-[#243447] mb-1">
-                Gender <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={walkInGender}
-                onChange={(e) => setWalkInGender(e.target.value as 'male' | 'female' | 'other')}
-                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white"
-              >
+              <label htmlFor="m-gender" className="field-label">Sex</label>
+              <select id="m-gender" value={walkInGender} onChange={e => setWalkInGender(e.target.value as 'male' | 'female' | 'other')} className="field-control">
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
               </select>
             </div>
             <div>
-              <label className="block font-semibold text-[#243447] mb-1">
-                Consulting Doctor <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={walkInDoctorId}
-                onChange={(e) => setWalkInDoctorId(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white"
-              >
-                {doctors.map((d) => (
+              <label htmlFor="m-doctor" className="field-label">Doctor</label>
+              <select id="m-doctor" value={walkInDoctorId} onChange={e => setWalkInDoctorId(e.target.value)} className="field-control">
+                {doctors.map(d => (
                   <option key={d.id} value={d.id}>
                     {d.fullName}
                   </option>
@@ -634,27 +429,17 @@ export const ReceptionDashboard: React.FC = () => {
               </select>
             </div>
           </div>
-
           <div>
-            <label className="block font-semibold text-[#243447] mb-1">
-              Chief Complaints / Reason
+            <label htmlFor="m-notes" className="field-label">
+              Reason for visit <span className="font-normal text-ink-400">(optional)</span>
             </label>
-            <input
-              type="text"
-              placeholder="e.g. Abdominal discomfort, knee pain..."
-              value={walkInNotes}
-              onChange={(e) => setWalkInNotes(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-            />
+            <input id="m-notes" placeholder="e.g. Abdominal discomfort" value={walkInNotes} onChange={e => setWalkInNotes(e.target.value)} className="field-control" />
           </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#E1E8ED]">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setWalkInModalOpen(false)}>
+          <div className="flex justify-end gap-2 border-t border-line pt-4">
+            <Button variant="ghost" type="button" onClick={() => setWalkInModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
-              Register &amp; Issue Token
-            </Button>
+            <Button type="submit">Register & issue token</Button>
           </div>
         </form>
       </Modal>

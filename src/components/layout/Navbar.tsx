@@ -1,438 +1,393 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Menu, 
-  X, 
-  Heart, 
-  PhoneCall, 
-  Clock, 
-  User, 
-  ShieldAlert, 
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  CalendarCheck,
+  ChevronDown,
   ChevronRight,
-  Building2,
-  Stethoscope,
-  Activity,
-  Milestone,
-  Building,
-  Images,
-  MessageSquareQuote,
-  Microscope,
-  Calendar,
-  FileText,
-  Lock,
-  Phone
+  Clock,
+  LayoutDashboard,
+  MapPin,
+  Menu,
+  PhoneCall,
+  ShieldCheck,
+  UserRound,
+  X,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
+import { homePathForRole } from '../../lib/access';
+import { phoneDisplay, phoneHref, to12h } from '../../lib/contact';
+import { cn } from '../../lib/cn';
+import { LinkButton } from '../common/Button';
+import { BrandMark } from '../site/BrandMark';
 
 export interface PrimaryNavItem {
   label: string;
   path: string;
-  icon: React.ReactNode;
+}
+
+/** The 10 primary sections, in the approved order (see navigation test). */
+export const primaryNavItems: PrimaryNavItem[] = [
+  { label: 'Home', path: '/' },
+  { label: 'About', path: '/about' },
+  { label: 'Doctor', path: '/doctors' },
+  { label: 'Services', path: '/services' },
+  { label: 'Journey', path: '/journey' },
+  { label: 'Facilities', path: '/facilities' },
+  { label: 'Gallery', path: '/gallery' },
+  { label: 'Testimonials', path: '/testimonials' },
+  { label: 'Contact', path: '/contact' },
+  { label: 'Pathology', path: '/pathology-lab' },
+];
+
+const careLinks = [
+  { label: 'Pediatric care', path: '/pediatric-care' },
+  { label: 'Newborn & infant care', path: '/newborn-care' },
+  { label: 'Hospital news', path: '/news' },
+];
+
+const patientLinks = [
+  { label: 'My appointments', path: '/patient/appointments' },
+  { label: 'Lab reports', path: '/patient/reports' },
+  { label: 'Prescriptions', path: '/patient/prescriptions' },
+];
+
+/** On lg (1024–1279px) these four move into the "More" menu; on xl all 10 show. */
+const OVERFLOW_FROM = 6;
+
+function isActive(pathname: string, path: string) {
+  if (path === '/') return pathname === '/';
+  if (path === '/pathology-lab') return pathname === '/pathology-lab' || pathname === '/pathology';
+  if (path === '/services') return pathname === '/services' || pathname === '/departments';
+  return pathname.startsWith(path);
 }
 
 export const Navbar: React.FC = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const reduce = useReducedMotion();
   const { isAuthenticated, role, user } = useAuth();
   const { settings } = useHospital();
+  const moreRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close mobile drawer on route change
   useEffect(() => {
-    setMobileMenuOpen(false);
+    setMobileOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
-  // Prevent background scrolling when mobile menu is open
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [mobileMenuOpen]);
+  }, [mobileOpen]);
 
-  /**
-   * EXACT 10 Primary Navigation Items in Strict Order:
-   * 1. Home
-   * 2. About
-   * 3. Doctor
-   * 4. Services
-   * 5. Journey
-   * 6. Facilities
-   * 7. Gallery
-   * 8. Testimonials
-   * 9. Contact
-   * 10. Pathology
-   */
-  const primaryNavItems: PrimaryNavItem[] = [
-    { label: 'Home', path: '/', icon: <Heart className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'About', path: '/about', icon: <Building2 className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Doctor', path: '/doctors', icon: <Stethoscope className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Services', path: '/services', icon: <Activity className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Journey', path: '/journey', icon: <Milestone className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Facilities', path: '/facilities', icon: <Building className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Gallery', path: '/gallery', icon: <Images className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Testimonials', path: '/testimonials', icon: <MessageSquareQuote className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Contact', path: '/contact', icon: <PhoneCall className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Pathology', path: '/pathology-lab', icon: <Microscope className="w-4 h-4 text-[#91BB40]" /> },
-  ];
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMoreOpen(false);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [moreOpen]);
 
-  /**
-   * Secondary utility items accessible via hamburger menu on mobile
-   */
-  const secondaryUtilityItems = [
-    { label: 'Pediatric Care Wing', path: '/pediatric-care', icon: <Heart className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Newborn & Infant Clinic', path: '/newborn-care', icon: <Heart className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Patient Dashboard', path: '/patient/dashboard', icon: <User className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'My Appointments & Tokens', path: '/patient/appointments', icon: <Calendar className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Pathology Lab Reports', path: '/patient/reports', icon: <FileText className="w-4 h-4 text-[#91BB40]" /> },
-    { label: 'Prescriptions & Records', path: '/patient/prescriptions', icon: <FileText className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Hospital News & Advisories', path: '/news', icon: <Building2 className="w-4 h-4 text-[#3DA9DF]" /> },
-    { label: 'Privacy & DPDP Policy', path: '/privacy-policy', icon: <Lock className="w-4 h-4 text-[#647785]" /> },
-    { label: 'Terms & Conditions', path: '/terms-and-conditions', icon: <Lock className="w-4 h-4 text-[#647785]" /> },
-  ];
+  // Move focus into the drawer on open and back to the menu button on close.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const id = window.setTimeout(() => closeButtonRef.current?.focus(), 50);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false);
+    document.addEventListener('keydown', onKey);
+    const trigger = menuButtonRef.current;
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener('keydown', onKey);
+      trigger?.focus();
+    };
+  }, [mobileOpen]);
 
-  const isCurrentActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
-    if (path === '/pathology-lab') {
-      return location.pathname === '/pathology-lab' || location.pathname === '/pathology';
-    }
-    if (path === '/doctors') {
-      return location.pathname === '/doctors' || location.pathname === '/doctor';
-    }
-    return location.pathname.startsWith(path);
-  };
+  const account =
+    isAuthenticated && role === 'patient'
+      ? { label: user?.fullName?.split(' ')[0] || 'My portal', to: '/patient/dashboard', icon: <UserRound className="w-3.5 h-3.5" /> }
+      : isAuthenticated
+        ? { label: 'Staff workspace', to: homePathForRole(role), icon: <LayoutDashboard className="w-3.5 h-3.5" /> }
+        : { label: 'Patient login', to: '/patient/login', icon: <UserRound className="w-3.5 h-3.5" /> };
 
-  const phoneRaw = settings.phone.split(' ')[0] || '+915322900000';
+  const overflowActive = primaryNavItems.slice(OVERFLOW_FROM).some(i => isActive(location.pathname, i.path));
+
+  const navLinkClass = (active: boolean) =>
+    cn(
+      'relative px-2 py-2 text-[14px] font-medium rounded-lg transition-colors whitespace-nowrap',
+      active ? 'text-ink-900' : 'text-ink-600 hover:text-ink-900'
+    );
+
+  const Indicator = () => (
+    <motion.span
+      layoutId="nav-active"
+      className="absolute left-2 right-2 -bottom-[15px] h-[2px] rounded-full bg-brand-500"
+      transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 40 }}
+    />
+  );
 
   return (
-    <header className="sticky top-0 z-40 bg-white transition-all duration-200">
-      
-      {/* Top Clinical & Timings Ribbon */}
-      <div className="bg-[#193247] text-white text-[11px] py-1.5 px-4 hidden lg:block border-b border-white/10 tracking-wide">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-[#EBF6FC] font-medium">
-              <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              Pediatric &amp; General OPD: {settings.opdStartTime} AM &bull; Same-Day Online Cutoff: {settings.onlineCutoffTime} AM
+    <header className="sticky top-0 z-50">
+      {/* Utility bar */}
+      <div className="hidden lg:block bg-ink-800 text-[12.5px] text-white/70 whitespace-nowrap">
+        <div className="container-page xl:max-w-[1360px] flex h-9 items-center justify-between">
+          <div className="flex items-center gap-5">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-brand-300" aria-hidden="true" />
+              OPD from <strong className="font-semibold text-white">{to12h(settings.opdStartTime)}</strong>, Mon–Sat
             </span>
-            <span className="text-white/20">|</span>
-            <span className="text-white/70">
-              Civil Lines, Prayagraj &bull; Child-Friendly Campus
+            <span className="h-3 w-px bg-white/15" aria-hidden="true" />
+            <span>
+              Same-day online booking closes <strong className="font-semibold text-white">{to12h(settings.onlineCutoffTime)}</strong>
+            </span>
+            <span className="hidden xl:block h-3 w-px bg-white/15" aria-hidden="true" />
+            <span className="hidden xl:inline-flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-leaf-400" aria-hidden="true" />
+              Civil Lines, Prayagraj
             </span>
           </div>
-
-          <div className="flex items-center gap-4">
-            <a 
-              href={`tel:${phoneRaw}`} 
-              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5 text-[#91BB40]" />
-              <span>Reception: <strong>{phoneRaw}</strong></span>
+          <div className="flex items-center gap-5">
+            <a href={phoneHref(settings.phone)} className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
+              <PhoneCall className="w-3.5 h-3.5 text-leaf-400" aria-hidden="true" />
+              Reception <span className="font-semibold text-white">{phoneDisplay(settings.phone)}</span>
             </a>
-            <span className="text-white/20">|</span>
-            <Link 
-              to="/staff/login" 
-              className="text-white/70 hover:text-[#3DA9DF] transition-colors flex items-center gap-1 text-[11px]"
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Staff Portal</span>
+            <Link to={account.to} className="hidden xl:inline-flex items-center gap-1.5 hover:text-white transition-colors">
+              {account.icon}
+              {account.label}
+            </Link>
+            <Link to="/staff/login" className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
+              <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+              Staff portal
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Primary Navigation Bar */}
-      <div 
-        className={`w-full bg-white transition-all duration-200 border-b border-[#E5ECEF] ${
-          scrolled ? 'shadow-xs py-2 sm:py-2.5' : 'py-2.5 sm:py-3.5'
-        }`}
+      {/* Main bar */}
+      <div
+        className={cn(
+          'border-b transition-[background-color,border-color,box-shadow] duration-200',
+          scrolled ? 'bg-white/92 backdrop-blur-md border-line shadow-[0_6px_20px_-12px_rgba(25,50,71,0.18)]' : 'bg-white border-transparent'
+        )}
       >
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center gap-2 lg:gap-4">
-            
-            {/* 1. Left Logo: Satya Hospital & Pathology */}
-            <Link 
-              to="/" 
-              className="flex items-center gap-2.5 group focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#3DA9DF] rounded-xl shrink-0"
-              aria-label="Satya Hospital Home"
-            >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-[#3DA9DF] to-[#2B92C4] flex items-center justify-center text-white shadow-xs shadow-[#3DA9DF]/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
-                <Heart className="w-5 h-5 stroke-[2.3] text-white" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm sm:text-base lg:text-[17px] font-extrabold tracking-tight text-[#193247] leading-tight group-hover:text-[#3DA9DF] transition-colors whitespace-nowrap">
-                    Satya Hospital
-                  </span>
-                  <span className="text-[9px] font-bold text-[#486812] px-1.5 py-0.2 rounded-full bg-[#F3F8EC] border border-[#D5E8BA] hidden xl:inline-block">
-                    &amp; Pathology
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-[11px] font-medium text-[#647785] tracking-tight flex items-center gap-1 leading-tight">
-                  <span className="hidden sm:inline">Pediatric &amp; Family Care</span>
-                  <span className="w-1 h-1 rounded-full bg-[#CBD7DD] hidden sm:inline-block"></span>
-                  <span className="text-[#3DA9DF] font-semibold">Prayagraj</span>
-                </span>
-              </div>
-            </Link>
+        <div className="container-page xl:max-w-[1360px] flex h-16 lg:h-[72px] items-center justify-between gap-4">
+          <BrandMark compact className="lg:hidden" />
+          <BrandMark className="hidden lg:inline-flex" />
 
-            {/* 2. Desktop Navigation: ALL 10 Items Visible in Strict Order */}
-            <nav 
-              className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 2xl:gap-2 overflow-x-auto scrollbar-none py-1"
-              aria-label="Primary Navigation"
-            >
-              {primaryNavItems.map((item) => {
-                const active = isCurrentActive(item.path);
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.path}
-                    className={`relative px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-xs xl:text-[13px] font-semibold tracking-normal whitespace-nowrap transition-colors ${
-                      active
-                        ? 'text-[#3DA9DF] bg-[#EBF6FC] font-bold'
-                        : 'text-[#193247] hover:text-[#3DA9DF] hover:bg-[#F8FAFC]'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    {active && (
-                      <motion.span 
-                        layoutId="activeNavIndicator"
-                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#3DA9DF] rounded-full"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
+          {/* Desktop navigation */}
+          <nav aria-label="Primary" className="hidden lg:flex items-center gap-0.5">
+            {primaryNavItems.map((item, i) => {
+              const active = isActive(location.pathname, item.path);
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={cn(navLinkClass(active), i >= OVERFLOW_FROM && 'hidden xl:inline-flex')}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  {item.label}
+                  {active && <Indicator />}
+                </NavLink>
+              );
+            })}
 
-            {/* 3. Right Utility Section: Patient Portal & Mobile Menu Toggle */}
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Desktop Portal Access Button */}
-              {isAuthenticated && role === 'patient' ? (
-                <Link to="/patient/dashboard" className="hidden sm:block">
-                  <Button variant="outline" size="sm" leftIcon={<User className="w-3.5 h-3.5 text-[#3DA9DF]" />} className="text-xs">
-                    Portal: {user?.fullName?.split(' ')[0] || 'Patient'}
-                  </Button>
-                </Link>
-              ) : isAuthenticated && role !== 'patient' ? (
-                <Link to={`/${role}`} className="hidden sm:block">
-                  <Button variant="outline" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5 text-[#3DA9DF]" />} className="text-xs">
-                    {role.toUpperCase()}
-                  </Button>
-                </Link>
-              ) : (
-                <Link to="/patient/login" className="hidden sm:block">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    leftIcon={<User className="w-3.5 h-3.5 text-[#3DA9DF]" />} 
-                    className="text-xs font-semibold text-[#193247] hover:text-[#3DA9DF] hover:border-[#3DA9DF]"
-                  >
-                    Patient Login
-                  </Button>
-                </Link>
-              )}
-
-              {/* Call desk shortcut on tablets/mobile */}
-              <a 
-                href={`tel:${phoneRaw}`}
-                className="p-2 rounded-lg bg-[#EBF6FC] text-[#3DA9DF] hover:bg-[#D4EDF9] transition-colors lg:hidden"
-                aria-label={`Call Hospital at ${phoneRaw}`}
-              >
-                <PhoneCall className="w-4 h-4" />
-              </a>
-
-              {/* Mobile / Tablet Hamburger Button */}
+            {/* "More" only on lg; on xl every item is already visible */}
+            <div ref={moreRef} className="relative xl:hidden">
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-[#193247] hover:bg-[#EBF6FC] hover:text-[#3DA9DF] rounded-lg transition-colors cursor-pointer lg:hidden focus:outline-hidden focus:ring-2 focus:ring-[#3DA9DF]"
-                aria-label="Toggle navigation drawer"
-                aria-expanded={mobileMenuOpen}
+                onClick={() => setMoreOpen(o => !o)}
+                aria-expanded={moreOpen}
+                aria-haspopup="true"
+                className={cn(navLinkClass(overflowActive), 'inline-flex items-center gap-1 cursor-pointer')}
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                More
+                <ChevronDown className={cn('w-4 h-4 transition-transform', moreOpen && 'rotate-180')} aria-hidden="true" />
+                {overflowActive && <Indicator />}
               </button>
+              <AnimatePresence>
+                {moreOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute right-0 top-full mt-3 w-60 rounded-2xl border border-line bg-white p-2 shadow-float"
+                  >
+                    {primaryNavItems.slice(OVERFLOW_FROM).map(item => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={cn(
+                          'flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                          isActive(location.pathname, item.path) ? 'bg-brand-50 text-brand-800' : 'text-ink-700 hover:bg-ink-50'
+                        )}
+                      >
+                        {item.label}
+                        <ChevronRight className="w-4 h-4 text-ink-300" aria-hidden="true" />
+                      </Link>
+                    ))}
+                    <div className="my-2 h-px bg-line" />
+                    {careLinks.map(item => (
+                      <Link key={item.path} to={item.path} className="block rounded-xl px-3 py-2 text-[13px] text-ink-500 hover:bg-ink-50 hover:text-ink-900">
+                        {item.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+          </nav>
 
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            <LinkButton to="/book-appointment" size="sm" className="hidden sm:inline-flex h-10 px-4" leftIcon={<CalendarCheck className="w-4 h-4" />}>
+              Book appointment
+            </LinkButton>
+            <a
+              href={phoneHref(settings.phone)}
+              className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+              aria-label={`Call reception ${phoneDisplay(settings.phone)}`}
+            >
+              <PhoneCall className="w-[18px] h-[18px]" />
+            </a>
+            <button
+              ref={menuButtonRef}
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full text-ink-800 hover:bg-ink-50 transition-colors cursor-pointer"
+              aria-label="Open menu"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+            >
+              <Menu className="w-[22px] h-[22px]" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile & Tablet Full Navigation Drawer */}
+      {/* Mobile drawer */}
       <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className="lg:hidden border-b border-[#CBD7DD] bg-white px-4 pt-3 pb-8 space-y-4 shadow-xl max-h-[calc(100vh-4rem)] overflow-y-auto"
-          >
-            {/* Quick Operational Status Banner */}
-            <div className="py-2.5 px-3 bg-[#EBF6FC] border border-[#BCE1F5] rounded-xl text-xs text-[#193247] flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-bold text-[#1E78A4]">
-                <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                OPD: {settings.opdStartTime} AM Daily
-              </span>
-              <span className="text-[11px] font-medium text-[#647785]">Cutoff: {settings.onlineCutoffTime} AM</span>
-            </div>
-
-            {/* Section 1: ALL 10 PRIMARY LINKS IN EXACT ORDER */}
-            <div className="space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#647785] px-2 py-1">
-                Hospital Sections (10)
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                {primaryNavItems.map((item, idx) => {
-                  const active = isCurrentActive(item.path);
-                  return (
-                    <Link
-                      key={item.label}
-                      to={item.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                        active
-                          ? 'bg-[#EBF6FC] text-[#3DA9DF] font-bold border border-[#BCE1F5]'
-                          : 'text-[#193247] hover:bg-[#F8FAFC]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-[10px] font-bold text-[#647785] w-4 text-center">
-                          {idx + 1}.
-                        </span>
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#CBD7DD]" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Section 2: Patient Portal & Utility Options */}
-            <div className="pt-2 border-t border-[#E5ECEF] space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#647785] px-2 py-1">
-                Patient Account &amp; Records
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                {secondaryUtilityItems.map((item) => {
-                  const active = location.pathname === item.path;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        active
-                          ? 'bg-[#F3F8EC] text-[#486812] font-semibold'
-                          : 'text-[#647785] hover:text-[#193247] hover:bg-[#F8FAFC]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {item.icon}
-                        <span className="truncate">{item.label}</span>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#CBD7DD]" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Section 3: Bottom Action Buttons */}
-            <div className="pt-2 border-t border-[#E5ECEF] space-y-2">
-              <Link 
-                to="/book-appointment" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="block w-full"
-              >
-                <Button 
-                  variant="primary" 
-                  size="md" 
-                  className="w-full font-bold justify-center shadow-xs" 
-                  leftIcon={<Calendar className="w-4 h-4" />}
+        {mobileOpen && (
+          <div className="lg:hidden fixed inset-0 z-50" id="mobile-menu">
+            <motion.div
+              className="absolute inset-0 bg-ink-950/40 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site menu"
+              initial={reduce ? { opacity: 0 } : { x: '100%' }}
+              animate={reduce ? { opacity: 1 } : { x: 0 }}
+              exit={reduce ? { opacity: 0 } : { x: '100%' }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute right-0 top-0 flex h-[100dvh] w-[88%] max-w-sm flex-col bg-white shadow-float"
+            >
+              <div className="flex h-16 items-center justify-between border-b border-line px-5">
+                <BrandMark compact />
+                <button
+                  ref={closeButtonRef}
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-ink-50 cursor-pointer"
+                  aria-label="Close menu"
                 >
-                  Book OPD Appointment Slot
-                </Button>
-              </Link>
-
-              <div className="grid grid-cols-2 gap-2">
-                <a href={`tel:${phoneRaw}`} className="block w-full">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-center text-xs" 
-                    leftIcon={<PhoneCall className="w-3.5 h-3.5 text-[#3DA9DF]" />}
-                  >
-                    Call Reception
-                  </Button>
-                </a>
-
-                {isAuthenticated ? (
-                  <Link 
-                    to="/patient/dashboard" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full"
-                  >
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full justify-center text-xs" 
-                      leftIcon={<User className="w-3.5 h-3.5 text-[#3DA9DF]" />}
-                    >
-                      Dashboard
-                    </Button>
-                  </Link>
-                ) : (
-                  <Link 
-                    to="/patient/login" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full"
-                  >
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full justify-center text-xs" 
-                      leftIcon={<User className="w-3.5 h-3.5 text-[#3DA9DF]" />}
-                    >
-                      Patient Login
-                    </Button>
-                  </Link>
-                )}
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div className="pt-1 text-center">
-                <Link 
-                  to="/staff/login" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[11px] text-[#647785] hover:text-[#3DA9DF] underline"
-                >
-                  Authorized Staff &amp; Doctors Portal &rarr;
-                </Link>
-              </div>
-            </div>
+              <div className="flex-1 overflow-y-auto px-3 py-4">
+                <nav aria-label="Primary mobile">
+                  <ul>
+                    {primaryNavItems.map(item => {
+                      const active = isActive(location.pathname, item.path);
+                      return (
+                        <li key={item.path}>
+                          <Link
+                            to={item.path}
+                            aria-current={active ? 'page' : undefined}
+                            className={cn(
+                              'flex min-h-12 items-center justify-between rounded-xl px-3 text-[15px] font-medium transition-colors',
+                              active ? 'bg-brand-50 text-brand-800' : 'text-ink-800 hover:bg-ink-50'
+                            )}
+                          >
+                            {item.label}
+                            {active ? (
+                              <span className="h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden="true" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-ink-300" aria-hidden="true" />
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </nav>
 
-          </motion.div>
+                <p className="mt-6 mb-1 px-3 text-xs font-semibold text-ink-400">Care for children</p>
+                {careLinks.map(item => (
+                  <Link key={item.path} to={item.path} className="flex min-h-11 items-center rounded-xl px-3 text-sm text-ink-600 hover:bg-ink-50">
+                    {item.label}
+                  </Link>
+                ))}
+
+                <p className="mt-5 mb-1 px-3 text-xs font-semibold text-ink-400">Patient portal</p>
+                {patientLinks.map(item => (
+                  <Link key={item.path} to={item.path} className="flex min-h-11 items-center rounded-xl px-3 text-sm text-ink-600 hover:bg-ink-50">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="border-t border-line p-4 space-y-2.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <LinkButton to="/book-appointment" size="lg" className="w-full" leftIcon={<CalendarCheck className="w-[18px] h-[18px]" />}>
+                  Book appointment
+                </LinkButton>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <a
+                    href={phoneHref(settings.phone)}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line-strong text-sm font-semibold text-ink-800"
+                  >
+                    <PhoneCall className="w-4 h-4 text-brand-600" /> Call
+                  </a>
+                  <Link
+                    to={account.to}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line-strong text-sm font-semibold text-ink-800"
+                  >
+                    {account.icon} <span className="truncate">{account.label}</span>
+                  </Link>
+                </div>
+                <p className="pt-1 text-center text-xs text-ink-500">
+                  OPD from {to12h(settings.opdStartTime)} · <Link to="/staff/login" className="underline underline-offset-2">Staff portal</Link>
+                </p>
+              </div>
+            </motion.aside>
+          </div>
         )}
       </AnimatePresence>
-
     </header>
   );
 };

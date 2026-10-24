@@ -1,111 +1,87 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Calendar, Clock, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { LottiePlayer } from './LottiePlayer';
-import { LottieAssets } from '../../assets/lottie';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ArrowRight, CalendarCheck, PhoneCall } from 'lucide-react';
+import { useHospital } from '../../context/HospitalContext';
+import { phoneHref, to12h } from '../../lib/contact';
 
+const HIDDEN_ON = ['/book-appointment', '/patient/login', '/staff/login'];
+
+/**
+ * Quiet booking shortcut that appears once the visitor scrolls past the first
+ * screen: a pill on tablet/desktop, a two-button action bar on phones.
+ */
 export const FloatingAppointmentWidget: React.FC = () => {
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const { settings } = useHospital();
+  const reduce = useReducedMotion();
+  const [visible, setVisible] = useState(false);
 
-  // Hide the floating widget on the actual booking page or full-screen staff/auth dashboards if preferred
-  const isBookingPage = location.pathname === '/book-appointment';
-  const isStaffDashboard = location.pathname.startsWith('/admin') || 
-                           location.pathname.startsWith('/reception') || 
-                           location.pathname.startsWith('/doctor') || 
-                           location.pathname.startsWith('/pathology-dashboard');
+  useEffect(() => {
+    // Show after the first screen; step aside once the footer (which has its own CTAs) is in view.
+    const onScroll = () => {
+      const footerTop = document.querySelector('footer')?.getBoundingClientRect().top ?? Infinity;
+      setVisible(window.scrollY > 480 && footerTop > window.innerHeight - 40);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [pathname]);
 
-  if (isBookingPage || isStaffDashboard) {
-    return null;
-  }
+  if (HIDDEN_ON.includes(pathname)) return null;
+
+  const motionProps = {
+    initial: reduce ? { opacity: 0 } : { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    exit: reduce ? { opacity: 0 } : { opacity: 0, y: 16 },
+    transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] as const },
+  };
 
   return (
-    <aside 
-      aria-label="Quick OPD Appointment Booking"
-      className="fixed right-4 bottom-5 sm:right-6 sm:bottom-7 z-40 select-none print:hidden"
-      style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
-    >
-      <Link
-        to="/book-appointment"
-        className="group block relative focus:outline-hidden focus-visible:ring-3 focus-visible:ring-[#3DA9DF] focus-visible:ring-offset-2 rounded-full"
-        title="Book OPD Consultation Token at Satya Hospital"
-      >
-        {/* Holographic Glowing Ambient Aura */}
-        <div 
-          aria-hidden="true"
-          className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#3DA9DF] via-[#91BB40] to-[#3DA9DF] opacity-40 blur-md group-hover:opacity-75 transition-opacity duration-300 animate-pulse"
-        />
-
-        {/* Outer Iridescent Gradient Border Container */}
-        <div className="relative p-[1.5px] rounded-full bg-gradient-to-r from-[#3DA9DF] via-[#91BB40] to-[#3DA9DF] shadow-[0_8px_30px_rgba(61,169,223,0.30)] group-hover:shadow-[0_12px_40px_rgba(61,169,223,0.45)] transition-all duration-300">
-          
-          {/* Glass Card Surface */}
-          <div className="relative rounded-full bg-white/95 backdrop-blur-md px-3.5 py-2.5 sm:px-4.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 border border-white/60">
-            
-            {/* Shimmer Light Sweep Effect */}
-            <div 
-              aria-hidden="true"
-              className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
+    <AnimatePresence>
+      {visible && (
+        <>
+          {/* Tablet / desktop pill */}
+          <motion.div {...motionProps} className="fixed bottom-6 right-6 z-40 hidden sm:block print:hidden">
+            <Link
+              to="/book-appointment"
+              className="group flex items-center gap-3 rounded-full bg-white py-2 pl-2 pr-4 shadow-float ring-1 ring-ink-900/5 transition-shadow hover:shadow-lift"
             >
-              <motion.div
-                initial={{ x: '-150%' }}
-                animate={{ x: '250%' }}
-                transition={{
-                  repeat: Infinity,
-                  repeatDelay: 4.5,
-                  duration: 1.8,
-                  ease: 'easeInOut',
-                }}
-                className="w-1/3 h-full bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"
-              />
-            </div>
-
-            {/* Calendar Micro-Animation with Live Queue Status Indicator */}
-            <div className="relative shrink-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-[#CBD7DD] flex items-center justify-center shadow-2xs group-hover:border-[#3DA9DF] group-hover:scale-105 transition-all duration-200 overflow-hidden">
-                <LottiePlayer
-                  animationData={LottieAssets.appointmentCalendar}
-                  width={28}
-                  height={28}
-                  loop={true}
-                  autoplay={true}
-                  triggerOnHover={false}
-                  triggerOnView={true}
-                  ariaLabel="Appointment Schedule Indicator"
-                  fallback={<Calendar className="w-4 h-4 text-[#168C8C] stroke-[2.2]" />}
-                />
-              </div>
-              {/* Green Active Queue Pulse Indicator */}
-              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#91BB40] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#91BB40] border border-white"></span>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-700 text-white">
+                <CalendarCheck className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
-            </div>
-
-            {/* Typography Content */}
-            <div className="flex flex-col text-left">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-extrabold text-[#193247] tracking-tight group-hover:text-[#3DA9DF] transition-colors leading-tight">
-                  Book Appointment
-                </span>
-                <span className="text-[10px] font-bold text-[#486812] bg-[#F3F8EC] px-1.5 py-0.5 rounded-full border border-[#D5E8BA] hidden md:inline-block leading-none">
-                  OPD Token
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-[11px] text-[#647785] font-medium flex items-center gap-1 leading-tight mt-0.5">
-                <Clock className="w-3 h-3 text-[#3DA9DF] shrink-0" />
-                <span>Sequential Queue &bull; 09:30 AM</span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-sm font-semibold text-ink-900">Book appointment</span>
+                <span className="text-xs text-ink-500">OPD from {to12h(settings.opdStartTime)}</span>
               </span>
-            </div>
+              <ArrowRight className="h-4 w-4 text-ink-400 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
+          </motion.div>
 
-            {/* Subtle Right Arrow */}
-            <div className="w-6 h-6 rounded-full bg-[#EBF6FC] text-[#3DA9DF] hidden sm:flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform duration-200">
-              <ArrowRight className="w-3.5 h-3.5 stroke-[2.4]" />
+          {/* Phone action bar */}
+          <motion.div
+            {...motionProps}
+            className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 pt-3 backdrop-blur-md sm:hidden print:hidden pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
+            <div className="grid grid-cols-[auto_1fr] gap-2.5">
+              <a
+                href={phoneHref(settings.phone)}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-line-strong px-5 text-sm font-semibold text-ink-800"
+              >
+                <PhoneCall className="h-4 w-4 text-brand-600" aria-hidden="true" />
+                Call
+              </a>
+              <Link
+                to="/book-appointment"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-700 text-sm font-semibold text-white"
+              >
+                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                Book appointment
+              </Link>
             </div>
-
-          </div>
-        </div>
-      </Link>
-    </aside>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };

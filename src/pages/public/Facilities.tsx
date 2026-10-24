@@ -1,29 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Building, 
-  Stethoscope, 
-  Microscope, 
-  Activity, 
-  Syringe, 
-  HeartPulse, 
-  ShieldCheck, 
-  CheckCircle2, 
-  ArrowRight, 
-  Calendar,
-  Layers,
-  Sparkles,
-  Bed,
-  FileCheck,
-  Clock,
-  Baby,
-  Heart
-} from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
-import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
+import { Baby, Bed, CheckCircle2, Clock, MapPin, Microscope, Stethoscope, Syringe } from 'lucide-react';
+import { StaggerContainer, StaggerItem } from '../../components/motion';
+import { PageHero, Section } from '../../components/site/Section';
+import { CtaBand } from '../../components/site/CtaBand';
+import { cn } from '../../lib/cn';
 
 export interface HospitalFacility {
   id: string;
@@ -35,8 +16,6 @@ export interface HospitalFacility {
   description: string;
   features: string[];
   icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
 }
 
 export const hospitalFacilities: HospitalFacility[] = [
@@ -53,9 +32,7 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Child-appropriate diagnostic equipment (stethoscopes, otoscopes, scales)',
       'Direct link to the unified sequential token queue'
     ],
-    icon: <Baby className="w-6 h-6" />,
-    iconBg: 'bg-[#F3F8EC]',
-    iconColor: 'text-[#91BB40]',
+    icon: <Baby className="h-5 w-5" />,
   },
   {
     id: 'fac-opd-chambers',
@@ -70,9 +47,7 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Digital diagnostic wall sets (Ophthalmoscope / Otoscope)',
       'Workstation connection to hospital management software'
     ],
-    icon: <Stethoscope className="w-6 h-6" />,
-    iconBg: 'bg-[#EBF6FC]',
-    iconColor: 'text-[#3DA9DF]',
+    icon: <Stethoscope className="h-5 w-5" />,
   },
   {
     id: 'fac-path-lab',
@@ -87,9 +62,7 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Micro-sampling needle kits for gentle pediatric phlebotomy',
       'Mandatory two-step sign-off by Senior Pathologist'
     ],
-    icon: <Microscope className="w-6 h-6" />,
-    iconBg: 'bg-[#F3F8EC]',
-    iconColor: 'text-[#91BB40]',
+    icon: <Microscope className="h-5 w-5" />,
   },
   {
     id: 'fac-daycare',
@@ -104,9 +77,7 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Multi-parameter monitors for continuous vitals tracking',
       'Dedicated nursing station with oxygen delivery points'
     ],
-    icon: <Bed className="w-6 h-6" />,
-    iconBg: 'bg-[#FFF0E7]',
-    iconColor: 'text-[#9A3412]',
+    icon: <Bed className="h-5 w-5" />,
   },
   {
     id: 'fac-minor-ot',
@@ -121,9 +92,7 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Local anaesthesia delivery station and cardiac monitoring',
       'Strict infection control and biomedical waste disposal protocols'
     ],
-    icon: <Syringe className="w-6 h-6" />,
-    iconBg: 'bg-[#EBF6FC]',
-    iconColor: 'text-[#3DA9DF]',
+    icon: <Syringe className="h-5 w-5" />,
   },
   {
     id: 'fac-reception-kiosk',
@@ -138,129 +107,102 @@ export const hospitalFacilities: HospitalFacility[] = [
       'Stroller and ramp accessibility from parking to consultation rooms',
       'Instant verification and printed token slips'
     ],
-    icon: <Clock className="w-6 h-6" />,
-    iconBg: 'bg-[#EBF6FC]',
-    iconColor: 'text-[#3DA9DF]',
+    icon: <Clock className="h-5 w-5" />,
   },
 ];
 
+const categories = [
+  { id: 'all', label: 'All facilities' },
+  { id: 'pediatric', label: 'Pediatric wing' },
+  { id: 'opd', label: 'OPD & clinics' },
+  { id: 'lab', label: 'Laboratory' },
+  { id: 'daycare', label: 'Day care & minor OT' },
+  { id: 'tech', label: 'Reception & queue' },
+] as const;
+
+type CategoryId = (typeof categories)[number]['id'];
+
 export const Facilities: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<'all' | 'pediatric' | 'opd' | 'lab' | 'daycare' | 'tech'>('all');
-
-  const filteredFacilities = activeCategory === 'all'
-    ? hospitalFacilities
-    : hospitalFacilities.filter(f => f.category === activeCategory);
-
-  const categories = [
-    { id: 'all', label: 'All Facilities' },
-    { id: 'pediatric', label: 'Pediatric Wing' },
-    { id: 'opd', label: 'OPD & Clinics' },
-    { id: 'lab', label: 'Diagnostic Lab' },
-    { id: 'daycare', label: 'Day Care & Minor OT' },
-    { id: 'tech', label: 'Reception & Queue' },
-  ];
+  const [active, setActive] = useState<CategoryId>('all');
+  const list = active === 'all' ? hospitalFacilities : hospitalFacilities.filter(f => f.category === active);
 
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        {/* Header */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-              <Building className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Hospital Infrastructure &amp; Amenities &bull; Prayagraj</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-              Clinical Facilities &amp; Care Standards
-            </h1>
-            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-              Satya Hospital &amp; Pathology provides structured, child-friendly facilities designed for clinical hygiene, diagnostic accuracy, and family comfort during morning outpatient visits.
-            </p>
-          </div>
-        </ScrollReveal>
+    <>
+      <PageHero
+        crumbs={[{ label: 'Facilities' }]}
+        eyebrow="Facilities & amenities"
+        title="Spaces designed for hygiene, accuracy and comfort"
+        description="Child-friendly consultation rooms, an automated laboratory and calm waiting areas for families during morning OPD."
+        image={{ src: '/images/satya-hospital-building.jpg', alt: 'Satya Hospital building and entrance', position: '55% 45%' }}
+      />
 
-        {/* Category Filter Tabs */}
-        <ScrollReveal direction="up" delay={0.06} distance={12}>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {categories.map((cat) => (
+      <Section size="md">
+        <div role="tablist" aria-label="Facility categories" className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
+          {categories.map(c => {
+            const on = c.id === active;
+            return (
               <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  activeCategory === cat.id
-                    ? 'bg-[#3DA9DF] text-white shadow-xs'
-                    : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-                }`}
+                key={c.id}
+                role="tab"
+                aria-selected={on}
+                onClick={() => setActive(c.id)}
+                className={cn(
+                  'relative h-10 shrink-0 rounded-full px-4 text-sm font-medium transition-colors cursor-pointer',
+                  on ? 'text-white' : 'border border-line bg-white text-ink-700 hover:border-ink-300'
+                )}
               >
-                {cat.label}
+                {on && <motion.span layoutId="fac-pill" className="absolute inset-0 rounded-full bg-ink-800" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                <span className="relative">{c.label}</span>
               </button>
-            ))}
-          </div>
-        </ScrollReveal>
+            );
+          })}
+        </div>
 
-        {/* Facilities Grid */}
-        <StaggerContainer staggerDelay={0.07} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {filteredFacilities.map((fac) => (
-            <StaggerItem key={fac.id} hoverLift className="h-full">
-              <div
-                className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group h-full"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-xl ${fac.iconBg} ${fac.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform font-bold`}>
-                        {fac.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-base sm:text-lg font-bold text-[#193247]">
-                          {fac.title}
-                        </h3>
-                        <span className="text-[11px] font-bold text-[#3DA9DF]">
-                          {fac.location}
-                        </span>
-                      </div>
-                    </div>
-                    <Badge variant="medical-blue" size="sm">
-                      {fac.badge}
-                    </Badge>
-                  </div>
-
-                  <p className="text-xs text-[#647785] leading-relaxed">
-                    {fac.description}
-                  </p>
-
-                  <div className="p-3.5 bg-[#FCFDFB] rounded-xl border border-[#E5ECEF] text-xs space-y-2">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#647785]">
-                      Key Infrastructure Features:
-                    </div>
-                    <ul className="space-y-1.5">
-                      {fac.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-[#193247]">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40] shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-[#E5ECEF] mt-4 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-[#647785] flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                    <span>{fac.timing}</span>
+        <StaggerContainer key={active} className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2" staggerDelay={0.05}>
+          {list.map((f, i) => (
+            <StaggerItem key={f.id} distance={10} className="h-full">
+              <article className="flex h-full flex-col rounded-3xl border border-line bg-white p-7 shadow-soft">
+                <div className="flex items-start gap-4">
+                  <span
+                    className={cn(
+                      'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset',
+                      i % 2 ? 'bg-leaf-50 text-leaf-700 ring-leaf-200/70' : 'bg-brand-50 text-brand-700 ring-brand-100'
+                    )}
+                    aria-hidden="true"
+                  >
+                    {f.icon}
                   </span>
-                  <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1">
-                    <span>Book Consultation</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-leaf-700">{f.badge}</p>
+                    <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink-900">{f.title}</h2>
+                  </div>
                 </div>
-              </div>
+                <p className="mt-5 text-[15px] leading-relaxed text-ink-600">{f.description}</p>
+                <ul className="mt-5 space-y-2.5">
+                  {f.features.map(ft => (
+                    <li key={ft} className="flex items-start gap-2.5 text-sm text-ink-700">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                      {ft}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 mt-auto flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-5 text-[13px] text-ink-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                    {f.location}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                    {f.timing}
+                  </span>
+                </div>
+              </article>
             </StaggerItem>
           ))}
         </StaggerContainer>
+      </Section>
 
-      </div>
-    </div>
+      <CtaBand />
+    </>
   );
 };

@@ -33,15 +33,15 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-[50vh] flex items-center justify-center p-6 text-center bg-[#FCFDFB]">
-          <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-[#CBD7DD] shadow-sm space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-8 h-8 text-[#168C8C]" />
+        <div className="min-h-[50vh] flex items-center justify-center p-6 text-center bg-canvas">
+          <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-line shadow-sm space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-leaf-50 text-leaf-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-8 h-8 text-leaf-700" />
             </div>
-            <h2 className="text-xl font-bold text-[#193247]">
+            <h2 className="text-xl font-bold text-ink-900">
               {this.props.fallbackTitle || 'Something interrupted this page'}
             </h2>
-            <p className="text-xs text-[#647785] leading-relaxed">
+            <p className="text-xs text-ink-500 leading-relaxed">
               We encountered a temporary rendering issue. All hospital records and appointments remain completely safe.
             </p>
             <div className="pt-2">

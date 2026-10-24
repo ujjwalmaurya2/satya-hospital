@@ -13,7 +13,9 @@ import {
   Save,
   UserPlus
 } from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
+import { Avatar, PageHeader, Panel, StatCard, Tabs } from '../../components/dashboard/Dashboard';
+import { to12h } from '../../lib/contact';
+import { cn } from '../../lib/cn';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Alert } from '../../components/common/Alert';
@@ -24,6 +26,8 @@ import { auditLogger } from '../../lib/audit';
 import { getSupabaseStatus, checkSupabaseHealth, SupabaseHealthStatus } from '../../lib/supabase';
 import { demoAccounts } from '../../data/mockData';
 import { UserRole } from '../../types';
+
+type AdminTab = 'overview' | 'settings' | 'staff' | 'audit' | 'system';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -54,7 +58,7 @@ export const AdminDashboard: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Active sub-tab
-  const [adminTab, setAdminTab] = useState<'overview' | 'settings' | 'staff' | 'audit' | 'system'>('overview');
+  const [adminTab, setAdminTab] = useState<AdminTab>('overview');
   
   // Supabase live health state
   const [supabaseHealth, setSupabaseHealth] = useState<SupabaseHealthStatus | null>(null);
@@ -102,569 +106,336 @@ export const AdminDashboard: React.FC = () => {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const scope: Record<UserRole, string> = {
+    admin: 'Settings, audit logs and every desk',
+    doctor: 'Consultations and prescription sign-off',
+    reception: 'Queue, walk-ins and scan uploads',
+    pathology: 'Report upload, verification and publishing',
+    patient: 'Own records only',
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#243447]">
-            Hospital Super Administration Panel
-          </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Operational rules governance, staff permissions, and immutable audit logs.
-          </p>
-        </div>
+      <PageHeader eyebrow="Administration" title="Hospital overview" description="Operational rules, staff access, audit trail and integrations." />
 
-        <div className="flex items-center gap-2">
-          <Badge variant="medical-blue" size="md">
-            Super Administrator Session
-          </Badge>
-        </div>
-      </div>
+      <Panel flush>
+        <Tabs
+          label="Administration sections"
+          layoutId="admin-tab"
+          value={adminTab}
+          onChange={setAdminTab}
+          className="px-3 sm:px-4"
+          items={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'settings', label: 'OPD rules' },
+            { id: 'staff', label: 'Staff & roles' },
+            { id: 'audit', label: 'Audit log', count: auditLogs.length },
+            { id: 'system', label: 'Integrations' },
+          ]}
+        />
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E1E8ED] pb-2 overflow-x-auto scrollbar-none">
-        <button
-          onClick={() => setAdminTab('overview')}
-          className={`px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            adminTab === 'overview' ? 'bg-[#243447] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Operational Overview
-        </button>
-        <button
-          onClick={() => setAdminTab('settings')}
-          className={`px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            adminTab === 'settings' ? 'bg-[#243447] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          OPD &amp; Timing Rules
-        </button>
-        <button
-          onClick={() => setAdminTab('staff')}
-          className={`px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            adminTab === 'staff' ? 'bg-[#243447] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Staff &amp; Access Roles ({demoAccounts.length})
-        </button>
-        <button
-          onClick={() => setAdminTab('audit')}
-          className={`px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            adminTab === 'audit' ? 'bg-[#243447] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Audit Logs ({auditLogs.length})
-        </button>
-        <button
-          onClick={() => setAdminTab('system')}
-          className={`px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer ${
-            adminTab === 'system' ? 'bg-[#243447] text-white' : 'text-[#667085] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Integration Readiness
-        </button>
-      </div>
+        {adminTab === 'overview' && (
+          <div className="space-y-6 p-5 sm:p-6">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <StatCard label="Registered patients" value={patientProfiles.length} hint="Unique patient IDs" icon={<Users className="h-4 w-4" />} tone="brand" />
+              <StatCard
+                label="Today’s OPD"
+                value={queueStats.totalBooked}
+                hint={settings.maxDailyCapacity ? `Cap ${settings.maxDailyCapacity} per day` : 'No daily cap'}
+                icon={<Activity className="h-4 w-4" />}
+                tone="leaf"
+              />
+              <StatCard
+                label="Lab reports"
+                value={pathologyReports.length}
+                hint={`${pathologyReports.filter(r => r.status === 'published').length} published`}
+                icon={<ClipboardList className="h-4 w-4" />}
+              />
+              <StatCard label="Audit entries" value={auditLogs.length} hint="This browser session" icon={<ShieldAlert className="h-4 w-4" />} />
+            </div>
 
-      {/* TAB 1: OPERATIONAL OVERVIEW */}
-      {adminTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card className="p-4 border-[#CBD5E1]">
-              <span className="text-xs text-[#667085] font-medium block">Authorised Patients</span>
-              <div className="text-2xl font-bold text-[#243447] mt-1">{patientProfiles.length}</div>
-              <span className="text-[11px] text-[#3DA9DF] block mt-0.5">Unique Patient IDs</span>
-            </Card>
-
-            <Card className="p-4 border-[#CBD5E1]">
-              <span className="text-xs text-[#667085] font-medium block">Today's Total OPD Load</span>
-              <div className="text-2xl font-bold text-[#243447] mt-1">{queueStats.totalBooked}</div>
-              <span className="text-[11px] text-[#91BB40] font-semibold block mt-0.5">
-                {settings.maxDailyCapacity ? `Cap: ${settings.maxDailyCapacity} max/day` : 'Unlimited Daily Intake'}
-              </span>
-            </Card>
-
-            <Card className="p-4 border-[#CBD5E1]">
-              <span className="text-xs text-[#667085] font-medium block">Total Diagnostic Reports</span>
-              <div className="text-2xl font-bold text-[#243447] mt-1">{pathologyReports.length}</div>
-              <span className="text-[11px] text-[#667085] block mt-0.5">
-                {pathologyReports.filter(r => r.status === 'published').length} published
-              </span>
-            </Card>
-
-            <Card className="p-4 border-[#CBD5E1]">
-              <span className="text-xs text-[#667085] font-medium block">Audit Trail Entries</span>
-              <div className="text-2xl font-bold text-[#243447] mt-1">{auditLogs.length}</div>
-              <span className="text-[11px] text-[#3DA9DF] block mt-0.5">Tamper-evident logs</span>
-            </Card>
+            <div>
+              <h2 className="text-[15px] font-semibold text-ink-900">Active rules</h2>
+              <dl className="mt-3 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
+                {[
+                  ['OPD begins', `${to12h(settings.opdStartTime)} daily`],
+                  ['Same-day online cutoff', `${to12h(settings.onlineCutoffTime)} IST`],
+                  ['Daily capacity', settings.maxDailyCapacity ? `${settings.maxDailyCapacity} patients` : 'Unlimited'],
+                ].map(([k, v]) => (
+                  <div key={k} className="bg-white p-5">
+                    <dt className="text-[13px] text-ink-500">{k}</dt>
+                    <dd className="mt-1 text-lg font-semibold text-ink-900">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
+        )}
 
-          <Card>
-            <CardHeader>
-              <h2 className="text-sm font-bold text-[#243447]">Active Operational Rules Summary</h2>
-            </CardHeader>
-            <CardBody className="space-y-3 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 bg-[#F8FAFC] rounded-lg border border-[#E1E8ED]">
-                  <span className="text-[#667085] block">OPD Commencement:</span>
-                  <strong className="text-sm text-[#243447]">{settings.opdStartTime} AM Daily</strong>
-                </div>
-                <div className="p-3 bg-[#F8FAFC] rounded-lg border border-[#E1E8ED]">
-                  <span className="text-[#667085] block">Same-Day Online Cutoff:</span>
-                  <strong className="text-sm text-red-600">{settings.onlineCutoffTime} AM IST</strong>
-                </div>
-                <div className="p-3 bg-[#F8FAFC] rounded-lg border border-[#E1E8ED]">
-                  <span className="text-[#667085] block">Shared Daily Capacity:</span>
-                  <strong className="text-sm text-[#3DA9DF]">
-                    {settings.maxDailyCapacity ? `${settings.maxDailyCapacity} Patients Max` : 'Unlimited Intake (No Ceiling)'}
-                  </strong>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
-      )}
-
-      {/* TAB 2: OPD & TIMINGS SETTINGS */}
-      {adminTab === 'settings' && (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <h2 className="text-base font-bold text-[#243447]">
-              Configure Hospital Scheduling &amp; Capacity
-            </h2>
-          </CardHeader>
-
-          <CardBody>
+        {adminTab === 'settings' && (
+          <form onSubmit={handleSaveSettings} className="max-w-3xl space-y-6 p-5 sm:p-6">
             {saveSuccess && (
-              <Alert type="success" title="Rules Applied">
-                Hospital operational settings updated and synchronized across all portals.
+              <Alert type="success" title="Settings saved">
+                Hospital settings are updated across the portals.
               </Alert>
             )}
 
-            <form onSubmit={handleSaveSettings} className="space-y-4 text-xs mt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <fieldset className="space-y-4">
+              <legend className="text-[15px] font-semibold text-ink-900">Timings</legend>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block font-semibold text-[#243447] mb-1">
-                    OPD Daily Start Time
-                  </label>
-                  <input
-                    type="time"
-                    value={opdStartTime}
-                    onChange={(e) => setOpdStartTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                    required
-                  />
-                  <span className="text-[11px] text-[#667085] mt-1 block">Default: 09:30 AM</span>
+                  <label htmlFor="s-opd" className="field-label">OPD start time</label>
+                  <input id="s-opd" type="time" value={opdStartTime} onChange={e => setOpdStartTime(e.target.value)} className="field-control" required />
+                  <p className="field-hint">Default 09:30 AM</p>
                 </div>
-
                 <div>
-                  <label className="block font-semibold text-[#243447] mb-1">
-                    Same-Day Online Booking Cutoff
-                  </label>
-                  <input
-                    type="time"
-                    value={onlineCutoffTime}
-                    onChange={(e) => setOnlineCutoffTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                    required
-                  />
-                  <span className="text-[11px] text-[#667085] mt-1 block">Default: 09:00 AM IST</span>
+                  <label htmlFor="s-cutoff" className="field-label">Same-day online cutoff</label>
+                  <input id="s-cutoff" type="time" value={onlineCutoffTime} onChange={e => setOnlineCutoffTime(e.target.value)} className="field-control" required />
+                  <p className="field-hint">Default 09:00 AM IST</p>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold text-[#243447] mb-1">
-                    Online Booking Advance Window (Days)
-                  </label>
+                  <label htmlFor="s-window" className="field-label">Advance booking window (days)</label>
                   <input
+                    id="s-window"
                     type="number"
                     min={1}
                     max={14}
                     value={onlineBookingWindowDays}
-                    onChange={(e) => setOnlineBookingWindowDays(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
+                    onChange={e => setOnlineBookingWindowDays(e.target.value)}
+                    className="field-control"
                     required
                   />
-                  <span className="text-[11px] text-[#667085] mt-1 block">
-                    Default: 1 calendar day before appointment date.
-                  </span>
+                  <p className="field-hint">Default 1 day before the visit</p>
                 </div>
-
                 <div>
-                  <label className="block font-semibold text-[#243447] mb-1">
-                    Maximum Daily Capacity (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Leave blank for Unlimited"
-                    value={maxDailyCapacity}
-                    onChange={(e) => setMaxDailyCapacity(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                  />
-                  <span className="text-[11px] text-[#667085] mt-1 block">
-                    Default is unlimited (no fixed daily ceiling).
-                  </span>
+                  <label htmlFor="s-cap" className="field-label">Maximum daily capacity</label>
+                  <input id="s-cap" placeholder="Leave blank for unlimited" value={maxDailyCapacity} onChange={e => setMaxDailyCapacity(e.target.value)} className="field-control" />
+                  <p className="field-hint">Default is unlimited</p>
                 </div>
               </div>
+            </fieldset>
 
-              <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Operating Days of Week
-                </label>
-                <div className="grid grid-cols-3 sm:grid-cols-7 gap-2 pt-1">
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                    <label key={day} className="flex items-center gap-1.5 text-xs text-[#243447] cursor-pointer">
+            <fieldset>
+              <legend className="field-label">Operating days</legend>
+              <div className="flex flex-wrap gap-2">
+                {days.map(day => {
+                  const on = operatingDays.includes(day);
+                  return (
+                    <label
+                      key={day}
+                      className={cn(
+                        'inline-flex h-10 min-w-14 cursor-pointer items-center justify-center rounded-xl border px-3 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500',
+                        on ? 'border-brand-500 bg-brand-50 text-brand-800' : 'border-line text-ink-500 hover:border-ink-300'
+                      )}
+                    >
                       <input
                         type="checkbox"
-                        checked={operatingDays.includes(day)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setOperatingDays([...operatingDays, day]);
-                          } else {
-                            setOperatingDays(operatingDays.filter(d => d !== day));
-                          }
-                        }}
-                        className="rounded border-[#CBD5E1] text-[#3DA9DF]"
+                        className="sr-only"
+                        checked={on}
+                        onChange={e => setOperatingDays(e.target.checked ? [...operatingDays, day] : operatingDays.filter(d => d !== day))}
                       />
-                      <span>{day.substring(0, 3)}</span>
+                      {day.slice(0, 3)}
                     </label>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
+            </fieldset>
 
-              <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Scheduled Hospital Holidays (Comma-separated YYYY-MM-DD)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 2026-11-04, 2026-12-25"
-                  value={holidaysText}
-                  onChange={(e) => setHolidaysText(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                />
-                <span className="text-[11px] text-[#667085] mt-1 block">
-                  Dates when OPD booking and clinics are suspended for scheduled holidays.
-                </span>
-              </div>
-
-              <div className="p-4 rounded-xl border border-[#E1E8ED] bg-[#F8FAFC] space-y-3">
-                <div className="font-semibold text-[#243447]">
-                  Consultation Fee &amp; Payment Gateway (Pending Approval)
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[#667085] mb-1">
-                      OPD Consultation Fee (₹ INR)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 300 (or leave blank for free)"
-                      value={consultationFee}
-                      onChange={(e) => setConsultationFee(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white"
-                    />
-                    <span className="text-[10px] text-[#667085] mt-1 block">
-                      Keep unconfigured until hospital board approval.
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 pt-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isOnlinePaymentEnabled}
-                        onChange={(e) => setIsOnlinePaymentEnabled(e.target.checked)}
-                        className="rounded border-[#CBD5E1] text-[#3DA9DF]"
-                      />
-                      <span className="font-medium text-[#243447]">Enable Live Razorpay Payments</span>
-                    </label>
-                    <span className="text-[10px] text-amber-700 block">
-                      Disabled by default until hospital approves fee &amp; refund policy.
-                    </span>
-
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isPolicyApprovedByHospital}
-                        onChange={(e) => setIsPolicyApprovedByHospital(e.target.checked)}
-                        className="rounded border-[#CBD5E1] text-[#3DA9DF]"
-                      />
-                      <span className="font-medium text-[#243447]">Hospital Board Policy Approval</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Emergency Desk Hotline
-                </label>
-                <input
-                  type="text"
-                  value={emergencyPhone}
-                  onChange={(e) => setEmergencyPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#243447] mb-1">
-                  Public Portal Notice Banner
-                </label>
-                <textarea
-                  rows={2}
-                  value={noticeBanner}
-                  onChange={(e) => setNoticeBanner(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
-                />
-              </div>
-
-              <div className="pt-2">
-                <Button type="submit" variant="primary" size="md" leftIcon={<Save className="w-4 h-4" />}>
-                  Save &amp; Publish Hospital Configuration
-                </Button>
-              </div>
-            </form>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* TAB 3: STAFF & ROLES */}
-      {adminTab === 'staff' && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <h2 className="text-base font-bold text-[#243447]">Staff Access Directory</h2>
-                <p className="text-xs text-[#667085]">Role-based access enforced via database RLS.</p>
-              </div>
-              <Button variant="outline" size="sm" leftIcon={<UserPlus className="w-4 h-4" />}>
-                Invite Staff Account
-              </Button>
+            <div>
+              <label htmlFor="s-holidays" className="field-label">Hospital holidays</label>
+              <input id="s-holidays" placeholder="e.g. 2026-11-04, 2026-12-25" value={holidaysText} onChange={e => setHolidaysText(e.target.value)} className="field-control" />
+              <p className="field-hint">Comma-separated dates (YYYY-MM-DD) when OPD booking is closed.</p>
             </div>
-          </CardHeader>
 
-          <CardBody className="p-0">
+            <fieldset className="rounded-2xl border border-line bg-ink-50/50 p-5">
+              <legend className="px-1 text-sm font-semibold text-ink-900">Fees & payments</legend>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="s-fee" className="field-label">OPD consultation fee (₹)</label>
+                  <input id="s-fee" type="number" placeholder="Leave blank until approved" value={consultationFee} onChange={e => setConsultationFee(e.target.value)} className="field-control" />
+                  <p className="field-hint">Keep blank until the hospital board approves.</p>
+                </div>
+                <div className="space-y-3 sm:pt-7">
+                  <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink-800">
+                    <input type="checkbox" checked={isOnlinePaymentEnabled} onChange={e => setIsOnlinePaymentEnabled(e.target.checked)} className="mt-0.5 h-4 w-4 accent-brand-700" />
+                    <span>
+                      Enable live Razorpay payments
+                      <span className="block text-xs text-warning-700">Keep off until the fee and refund policy are approved.</span>
+                    </span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-800">
+                    <input type="checkbox" checked={isPolicyApprovedByHospital} onChange={e => setIsPolicyApprovedByHospital(e.target.checked)} className="h-4 w-4 accent-brand-700" />
+                    Hospital board policy approved
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="s-emergency" className="field-label">Emergency hotline</label>
+                <input id="s-emergency" value={emergencyPhone} onChange={e => setEmergencyPhone(e.target.value)} className="field-control" required />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="s-notice" className="field-label">Public notice banner</label>
+                <textarea id="s-notice" rows={2} value={noticeBanner} onChange={e => setNoticeBanner(e.target.value)} className="field-control resize-y" />
+              </div>
+            </div>
+
+            <Button type="submit" leftIcon={<Save className="h-4 w-4" />}>
+              Save settings
+            </Button>
+          </form>
+        )}
+
+        {adminTab === 'staff' && (
+          <>
+            <div className="flex flex-col gap-3 border-b border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <p className="text-[13px] text-ink-500">Access is enforced by database row-level security.</p>
+              <p className="inline-flex items-center gap-2 text-[13px] text-ink-600">
+                <UserPlus className="h-4 w-4 text-brand-600" aria-hidden="true" />
+                New staff are added in Supabase Auth, then given a role (see supabase/README.md).
+              </p>
+            </div>
             <Table
+              caption="Staff accounts"
               data={demoAccounts}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               columns={[
                 {
-                  header: 'Staff Member',
-                  cell: (item) => (
-                    <div>
-                      <div className="font-bold text-[#243447]">{item.fullName}</div>
-                      <div className="text-[11px] text-[#667085]">{item.email}</div>
+                  header: 'Staff member',
+                  cell: item => (
+                    <div className="flex items-center gap-3">
+                      <Avatar name={item.fullName} size="sm" />
+                      <div>
+                        <p className="font-semibold text-ink-900">{item.fullName}</p>
+                        <p className="text-xs text-ink-500">{item.email}</p>
+                      </div>
                     </div>
                   ),
                 },
                 {
-                  header: 'Assigned Role',
-                  cell: (item) => (
-                    <Badge variant={item.role === 'admin' ? 'medical-blue' : item.role === 'doctor' ? 'lime-green' : 'neutral'} size="sm">
-                      {item.role.toUpperCase()}
+                  header: 'Role',
+                  cell: item => (
+                    <Badge variant={item.role === 'admin' ? 'medical-blue' : item.role === 'doctor' ? 'lime-green' : 'neutral'} size="sm" className="capitalize">
+                      {item.role}
                     </Badge>
                   ),
                 },
                 {
-                  header: 'Account Status',
-                  cell: (item) => (
-                    <span className="text-xs text-[#91BB40] font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Active &bull; Audited
+                  header: 'Status',
+                  cell: () => (
+                    <span className="inline-flex items-center gap-1.5 text-[13px] text-leaf-700">
+                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Active
                     </span>
                   ),
                 },
-                {
-                  header: 'Permissions Scope',
-                  cell: (item) => (
-                    <span className="text-xs text-[#667085]">
-                      {item.role === 'admin' ? 'Full operational settings & audits' :
-                       item.role === 'doctor' ? 'Clinical visits & prescription sign-off' :
-                       item.role === 'reception' ? 'Queue management & walk-ins' :
-                       item.role === 'pathology' ? 'PDF report upload & publishing' : 'Patient portal only'}
-                    </span>
-                  ),
-                },
+                { header: 'Access', cell: item => <span className="text-[13px] text-ink-500">{scope[item.role]}</span> },
               ]}
             />
-          </CardBody>
-        </Card>
-      )}
+          </>
+        )}
 
-      {/* TAB 4: AUDIT LOGS */}
-      {adminTab === 'audit' && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <h2 className="text-base font-bold text-[#243447]">Traceable Audit Logs</h2>
-                <p className="text-xs text-[#667085]">Immutable security trace of all clinical and administrative actions.</p>
+        {adminTab === 'audit' && (
+          <Table
+            caption="Audit log"
+            data={auditLogs}
+            keyExtractor={item => item.id}
+            emptyMessage="No audit events yet"
+            emptyHint="Sign-ins, bookings and report actions will be recorded here."
+            columns={[
+              {
+                header: 'Time',
+                cell: item => (
+                  <span className="font-mono text-xs text-ink-500">
+                    {new Date(item.createdAt).toLocaleDateString('en-IN')} · {new Date(item.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                ),
+              },
+              {
+                header: 'Actor',
+                cell: item => (
+                  <div>
+                    <p className="text-[13px] font-semibold text-ink-900">{item.actorName}</p>
+                    <p className="text-xs capitalize text-ink-500">{item.actorRole}</p>
+                  </div>
+                ),
+              },
+              { header: 'Action', cell: item => <span className="font-mono text-xs font-medium text-brand-700">{item.actionType}</span> },
+              { header: 'Details', className: 'whitespace-normal', cell: item => <span className="block max-w-md text-[13px] text-ink-700">{item.description}</span> },
+            ]}
+          />
+        )}
+
+        {adminTab === 'system' && (
+          <div className="grid grid-cols-1 gap-5 p-5 sm:p-6 lg:grid-cols-2">
+            <section className="rounded-2xl border border-line p-5">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="flex items-center gap-2 font-semibold text-ink-900">
+                  <Database className="h-4 w-4 text-brand-600" aria-hidden="true" /> Supabase database & auth
+                </h2>
+                <Badge variant={supabaseStatus.configured ? 'lime-green' : 'warning'} size="sm">
+                  {supabaseStatus.configured ? 'Configured' : 'Local fallback'}
+                </Badge>
               </div>
-              <Badge variant="neutral" size="sm">
-                {auditLogs.length} Events Logged
-              </Badge>
-            </div>
-          </CardHeader>
-
-          <CardBody className="p-0">
-            <Table
-              data={auditLogs}
-              keyExtractor={(item) => item.id}
-              emptyMessage="No audit logs recorded yet."
-              columns={[
-                {
-                  header: 'Timestamp',
-                  cell: (item) => (
-                    <span className="font-mono text-[11px] text-[#667085] whitespace-nowrap">
-                      {new Date(item.createdAt).toLocaleTimeString()} &bull; {new Date(item.createdAt).toLocaleDateString()}
-                    </span>
-                  ),
-                },
-                {
-                  header: 'Actor',
-                  cell: (item) => (
-                    <div>
-                      <div className="font-semibold text-xs text-[#243447]">{item.actorName}</div>
-                      <Badge variant="neutral" size="sm">{item.actorRole.toUpperCase()}</Badge>
-                    </div>
-                  ),
-                },
-                {
-                  header: 'Action Type',
-                  cell: (item) => (
-                    <span className="font-mono text-xs text-[#3DA9DF] font-semibold">
-                      {item.actionType}
-                    </span>
-                  ),
-                },
-                {
-                  header: 'Description',
-                  cell: (item) => (
-                    <span className="text-xs text-[#243447] max-w-sm truncate block">
-                      {item.description}
-                    </span>
-                  ),
-                },
-              ]}
-            />
-          </CardBody>
-        </Card>
-      )}
-
-      {/* TAB 5: SYSTEM & INTEGRATION READINESS */}
-      {adminTab === 'system' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <h2 className="text-base font-bold text-[#243447]">
-                Backend &amp; Storage Boundaries Status
-              </h2>
-            </CardHeader>
-
-            <CardBody className="space-y-4 text-xs">
-              <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E1E8ED] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Database className="w-4 h-4 text-[#3DA9DF]" />
-                    <span className="font-bold text-[#243447]">Supabase PostgreSQL &amp; Auth</span>
-                  </div>
-                  <Badge variant={supabaseStatus.configured ? 'lime-green' : 'warning'} size="sm">
-                    {supabaseStatus.configured ? 'Configured in Environment' : 'Local Fallback Active'}
-                  </Badge>
-                </div>
-                <p className="text-[#667085]">
-                  Endpoint URL: <strong className="font-mono text-[11px] text-[#193247]">{supabaseStatus.url}</strong>
-                </p>
-                {supabaseStatus.missingVariables.length > 0 && (
-                  <p className="text-amber-800 text-[11px]">
-                    Missing environment variables: {supabaseStatus.missingVariables.join(', ')}
-                  </p>
-                )}
-
-                <div className="pt-2 flex flex-wrap items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={handleCheckSupabaseHealth}
-                    isLoading={isCheckingHealth}
-                  >
-                    Test Live Database Health
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs text-[#3DA9DF]"
-                    onClick={() => setShowMigrationSql(!showMigrationSql)}
-                  >
-                    {showMigrationSql ? 'Hide Migration SQL' : 'View Migration SQL Instructions'}
-                  </Button>
-                </div>
-
-                {supabaseHealth && (
-                  <div className={`p-3 rounded-xl border text-xs space-y-2 mt-2 ${
-                    supabaseHealth.reachable 
-                      ? supabaseHealth.tablesDetected.length > 0 
-                        ? 'bg-[#F3F8EC] border-[#D5E8BA] text-[#486812]'
-                        : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
-                      : 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
-                  }`}>
-                    <div className="flex items-center justify-between font-bold">
-                      <span>Live Diagnostic Result:</span>
-                      <span className="text-[10px] text-[#647785]">Checked {new Date(supabaseHealth.lastChecked).toLocaleTimeString()}</span>
-                    </div>
-                    {supabaseHealth.errorMessage && (
-                      <p className="text-xs">{supabaseHealth.errorMessage}</p>
-                    )}
-                    {supabaseHealth.tablesDetected.length > 0 && (
-                      <div>
-                        <strong>Tables Detected ({supabaseHealth.tablesDetected.length}):</strong> {supabaseHealth.tablesDetected.join(', ')}
-                      </div>
-                    )}
-                    {supabaseHealth.tablesMissing.length > 0 && (
-                      <div className="text-[11px]">
-                        <strong>Pending Tables:</strong> {supabaseHealth.tablesMissing.join(', ')}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {showMigrationSql && (
-                  <div className="p-3 bg-white rounded-xl border border-[#CBD7DD] space-y-2 text-xs">
-                    <div className="font-bold text-[#193247]">Supabase SQL Migration Instructions:</div>
-                    <p className="text-[#647785] text-[11px] leading-relaxed">
-                      To initialize or verify all tables in Supabase, open your Supabase Dashboard &rarr; <strong>SQL Editor</strong>, and execute the migration file located at:
-                      <code className="block mt-1 p-2 bg-[#F8FAFC] rounded border font-mono text-[10px] text-[#193247]">
-                        supabase/migrations/20261022000001_satya_hospital_schema.sql<br />
-                        supabase/migrations/20261023000002_gallery_and_testimonials.sql
-                      </code>
+              <p className="mt-3 break-all font-mono text-xs text-ink-600">{supabaseStatus.url}</p>
+              {supabaseStatus.missingVariables.length > 0 && <p className="mt-2 text-[13px] text-warning-700">Missing: {supabaseStatus.missingVariables.join(', ')}</p>}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={handleCheckSupabaseHealth} isLoading={isCheckingHealth} loadingText="Checking…">
+                  Test connection
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowMigrationSql(!showMigrationSql)}>
+                  {showMigrationSql ? 'Hide migration steps' : 'Migration steps'}
+                </Button>
+              </div>
+              {supabaseHealth && (
+                <div
+                  className={cn(
+                    'mt-4 rounded-xl border p-4 text-[13px]',
+                    supabaseHealth.reachable
+                      ? supabaseHealth.tablesDetected.length > 0
+                        ? 'border-leaf-200 bg-leaf-50 text-leaf-800'
+                        : 'border-warning-200 bg-warning-50 text-warning-700'
+                      : 'border-danger-200 bg-danger-50 text-danger-700'
+                  )}
+                  role="status"
+                >
+                  <p className="font-semibold">Checked {new Date(supabaseHealth.lastChecked).toLocaleTimeString('en-IN')}</p>
+                  {supabaseHealth.errorMessage && <p className="mt-1">{supabaseHealth.errorMessage}</p>}
+                  {supabaseHealth.tablesDetected.length > 0 && (
+                    <p className="mt-1">
+                      <strong>{supabaseHealth.tablesDetected.length} tables found:</strong> {supabaseHealth.tablesDetected.join(', ')}
                     </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E1E8ED] space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Cloud className="w-4 h-4 text-[#91BB40]" />
-                    <span className="font-bold text-[#243447]">Cloudflare R2 / PDF Storage Boundary</span>
-                  </div>
-                  <Badge variant="lime-green" size="sm">
-                    Boundary Ready (Private Bucket Guard)
-                  </Badge>
+                  )}
+                  {supabaseHealth.tablesMissing.length > 0 && <p className="mt-1">Missing: {supabaseHealth.tablesMissing.join(', ')}</p>}
                 </div>
-                <p className="text-[#667085]">
-                  Short-lived signed URLs, 10 MB file ceiling, PDF MIME-type verification, and role guards are active.
-                </p>
+              )}
+              {showMigrationSql && (
+                <div className="mt-4 rounded-xl bg-ink-50 p-4 text-[13px] text-ink-700">
+                  Run these in the Supabase SQL Editor, in order:
+                  <code className="mt-2 block space-y-1 font-mono text-xs text-ink-900">
+                    <span className="block">supabase/complete_satya_hospital_setup.sql</span>
+                    <span className="block">supabase/migrations/20261024000003_staff_queue_desk.sql</span>
+                  </code>
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-line p-5">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="flex items-center gap-2 font-semibold text-ink-900">
+                  <Cloud className="h-4 w-4 text-leaf-600" aria-hidden="true" /> PDF storage boundary
+                </h2>
+                <Badge variant="lime-green" size="sm">Private bucket guard</Badge>
               </div>
-            </CardBody>
-          </Card>
-        </div>
-      )}
+              <p className="mt-3 text-[13px] leading-relaxed text-ink-600">
+                Short-lived signed URLs, a 10 MB file limit, PDF type checks and role guards are in place for report access.
+              </p>
+            </section>
+          </div>
+        )}
+      </Panel>
     </div>
   );
 };

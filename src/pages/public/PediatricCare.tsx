@@ -1,232 +1,121 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Baby, 
-  Heart, 
-  Calendar, 
-  Clock, 
-  ShieldCheck, 
-  Sparkles, 
-  CheckCircle2, 
-  PhoneCall, 
-  FileText, 
-  Activity, 
-  ArrowRight,
-  Info
-} from 'lucide-react';
-import { Button } from '../../components/common/Button';
-import { Card } from '../../components/common/Card';
-import { Badge } from '../../components/common/Badge';
+import { Activity, Baby, CalendarCheck, CheckCircle2, Clock, FileText, Heart, Info, PhoneCall, ShieldCheck, Wind } from 'lucide-react';
+import { AnchorButton, LinkButton } from '../../components/common/Button';
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
+import { IconTile, PageHero, Section, SectionHeading } from '../../components/site/Section';
+import { CtaBand } from '../../components/site/CtaBand';
 import { useHospital } from '../../context/HospitalContext';
+import { phoneHref, to12h } from '../../lib/contact';
+
+const services = [
+  { title: 'General pediatric consultation', text: 'Diagnosis and management of common childhood illness — seasonal fever, viral infections, cough and cold, and tummy complaints.', icon: <Baby className="h-5 w-5" />, tag: 'Daily OPD' },
+  { title: 'Growth & development', text: 'Systematic tracking of height, weight and BMI percentiles and developmental milestones.', icon: <Activity className="h-5 w-5" />, tag: 'Preventive' },
+  { title: 'Vaccination guidance', text: 'National and standard immunisation schedules, record keeping and safe administration.', icon: <ShieldCheck className="h-5 w-5" />, tag: 'Immunisation' },
+  { title: 'Nutrition & diet', text: 'Practical advice for toddlers and growing children — fussy eating, deficiencies and healthy habits.', icon: <Heart className="h-5 w-5" />, tag: 'Counselling' },
+  { title: 'Respiratory & allergy care', text: 'Gentle outpatient management of wheezing, childhood asthma and allergic rhinitis.', icon: <Wind className="h-5 w-5" />, tag: 'Clinical OPD' },
+  { title: 'Laboratory coordination', text: 'Blood counts and urine analysis in our own laboratory, with reports verified by the pathologist.', icon: <FileText className="h-5 w-5" />, tag: 'In-house lab' },
+];
+
+const prep = [
+  ['Carry previous records', 'Past prescriptions, the vaccination card and any recent lab reports.'],
+  ['Note the symptoms', 'When the fever began, medicines and doses already given, and changes in diet.'],
+  ['Bring a comfort toy', 'A favourite blanket or toy helps young children feel secure in the examination room.'],
+  ['Know the queue', 'Online tokens and walk-ins are called in one sequence, so arriving early does not skip the order.'],
+];
 
 export const PediatricCare: React.FC = () => {
   const { settings } = useHospital();
 
-  const clinicalServices = [
-    {
-      title: 'General Pediatric Outpatient Consultation',
-      description: 'Diagnosis and clinical management of common childhood illnesses including seasonal fever, viral infections, cough, colds, and pediatric gastrointestinal complaints.',
-      icon: <Baby className="w-5 h-5 text-[#3DA9DF]" />,
-      badge: 'Daily OPD',
-      accentBg: 'bg-[#EBF6FC]'
-    },
-    {
-      title: 'Growth & Developmental Monitoring',
-      description: 'Systematic tracking of physical growth percentiles (height, weight, BMI) and developmental milestones to ensure age-appropriate progression.',
-      icon: <Activity className="w-5 h-5 text-[#3DA9DF]" />,
-      badge: 'Preventive Care',
-      accentBg: 'bg-[#EBF6FC]'
-    },
-    {
-      title: 'Vaccination & Immunization Guidance',
-      description: 'Guidance on national and standard pediatric vaccination schedules, vaccine record maintenance, and safe administration protocols.',
-      icon: <ShieldCheck className="w-5 h-5 text-[#91BB40]" />,
-      badge: 'Immunization Roster',
-      accentBg: 'bg-[#F3F8EC]'
-    },
-    {
-      title: 'Childhood Nutrition & Dietary Advice',
-      description: 'Evidence-based nutritional counseling for toddlers and growing children, tackling fussy eating, nutritional deficiencies, and healthy growth habits.',
-      icon: <Heart className="w-5 h-5 text-[#3DA9DF]" />,
-      badge: 'Parent Counseling',
-      accentBg: 'bg-[#EBF6FC]'
-    },
-    {
-      title: 'Respiratory & Seasonal Allergy Care',
-      description: 'Clinical evaluation and gentle outpatient management of pediatric asthma, childhood wheezing, and allergic rhinitis in a dust-free clinic setting.',
-      icon: <Sparkles className="w-5 h-5 text-[#91BB40]" />,
-      badge: 'Clinical OPD',
-      accentBg: 'bg-[#F3F8EC]'
-    },
-    {
-      title: 'Laboratory Diagnostic Coordination',
-      description: 'Seamless integration with in-house Satya Pathology Lab for pediatric blood counts, urine analysis, and rapid reports verified by MD Pathologist.',
-      icon: <FileText className="w-5 h-5 text-[#91BB40]" />,
-      badge: 'In-House Lab',
-      accentBg: 'bg-[#F3F8EC]'
-    }
-  ];
-
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        {/* Header Breadcrumb / Pill */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="space-y-4 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold border border-[#BCE1F5]">
-              <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Pediatric &amp; Adolescent Healthcare &bull; Satya Hospital Prayagraj</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-              Child-Centred Healthcare Designed with Empathy &amp; Medical Rigor
-            </h1>
-            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-              Satya Hospital provides dedicated outpatient pediatric care where your child's comfort comes first. Our consulting doctors take the time to listen to parents, conduct gentle examinations, and provide clear clinical guidance.
-            </p>
-          </div>
+    <>
+      <PageHero
+        crumbs={[{ label: 'Services', to: '/services' }, { label: 'Pediatric care' }]}
+        eyebrow="Pediatric & adolescent care"
+        title="Child-centred care, with empathy and medical rigour"
+        description="Outpatient pediatric care where your child’s comfort comes first. Our doctors take time to listen, examine gently and give clear guidance."
+        image={{ src: '/images/pediatric-hero.jpg', alt: 'A pediatrician examining a smiling child seated beside his mother', position: '62% center' }}
+        actions={
+          <>
+            <LinkButton to="/book-appointment" leftIcon={<CalendarCheck className="h-4 w-4" />}>
+              Book a consultation
+            </LinkButton>
+            <AnchorButton href={phoneHref(settings.phone)} variant="outline" leftIcon={<PhoneCall className="h-4 w-4 text-brand-600" />}>
+              Call reception
+            </AnchorButton>
+          </>
+        }
+      >
+        <p className="mt-8 inline-flex items-center gap-2 text-sm text-ink-600">
+          <Clock className="h-4 w-4 text-brand-600" aria-hidden="true" />
+          OPD from <strong className="font-semibold text-ink-900">{to12h(settings.opdStartTime)}</strong> · same-day online booking closes{' '}
+          <strong className="font-semibold text-ink-900">{to12h(settings.onlineCutoffTime)}</strong>
+        </p>
+      </PageHero>
+
+      <Section size="lg">
+        <ScrollReveal distance={14}>
+          <SectionHeading eyebrow="What we offer" title="Pediatric services" description="Available during scheduled outpatient hours." />
         </ScrollReveal>
-
-        {/* Operating Notice Strip */}
-        <ScrollReveal direction="up" delay={0.06} distance={14}>
-          <div className="bg-[#EBF6FC]/60 border border-[#BCE1F5] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#3DA9DF] shadow-xs shrink-0">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#193247]">
-                  Pediatric OPD Timings: {settings.opdStartTime} AM Onwards
-                </p>
-                <p className="text-[11px] text-[#647785]">
-                  Online queue opens 1 calendar day before appointment date. Online bookings close at {settings.onlineCutoffTime} AM on consultation day.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link to="/book-appointment">
-                <Button variant="primary" size="sm">
-                  Book Consultation
-                </Button>
-              </Link>
-              <a href="tel:+915322900000">
-                <Button variant="outline" size="sm" leftIcon={<PhoneCall className="w-3.5 h-3.5" />}>
-                  Call Desk
-                </Button>
-              </a>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* Clinical Services Grid */}
-        <div className="space-y-6">
-          <ScrollReveal direction="up" distance={14}>
-            <div>
-              <h2 className="text-2xl font-bold text-[#193247]">Specialized Pediatric Services</h2>
-              <p className="text-xs text-[#647785] mt-1">
-                Verified clinical consultations available during scheduled outpatient hours.
-              </p>
-            </div>
-          </ScrollReveal>
-
-          <StaggerContainer staggerDelay={0.06} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clinicalServices.map((service, idx) => (
-              <StaggerItem key={idx} hoverLift className="h-full">
-                <Card className="p-6 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md h-full">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-xl ${service.accentBg} flex items-center justify-center shadow-2xs`}>
-                        {service.icon}
-                      </div>
-                      <Badge variant={idx % 2 === 0 ? 'medical-blue' : 'lime-green'} size="sm">
-                        {service.badge}
-                      </Badge>
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-[#193247]">{service.title}</h3>
-                      <p className="text-xs text-[#647785] mt-2 leading-relaxed">
-                        {service.description}
-                      </p>
-                    </div>
+        <StaggerContainer className="mt-12 grid grid-cols-1 gap-x-12 gap-y-2 md:grid-cols-2" staggerDelay={0.05}>
+          {services.map((s, i) => (
+            <StaggerItem key={s.title} distance={10}>
+              <div className="flex gap-5 border-t border-line py-7">
+                <IconTile tone={i % 2 ? 'leaf' : 'brand'}>{s.icon}</IconTile>
+                <div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h3 className="heading-3">{s.title}</h3>
+                    <span className="text-xs font-medium text-ink-400">{s.tag}</span>
                   </div>
-
-                  <div className="pt-5 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-[#3DA9DF] flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Qualified Physician Care
-                    </span>
-                    <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1">
-                      Book <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </div>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-
-        {/* Parent Guidance & Consultation Etiquette */}
-        <ScrollReveal direction="up" distance={18}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 sm:p-10 border border-[#E5ECEF] shadow-sm">
-            <div className="space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#3DA9DF]">
-                Parent-Friendly Healthcare Guidance
-              </span>
-              <h3 className="text-2xl font-bold text-[#193247]">
-                Preparing for Your Child's Consultation
-              </h3>
-              <p className="text-xs sm:text-sm text-[#647785] leading-relaxed">
-                We know visiting a doctor can cause apprehension for both children and parents. Here are simple steps to help make the visit calm and effective:
-              </p>
-              <ul className="space-y-2.5 text-xs text-[#193247]">
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                  <span><strong>Carry Previous Records:</strong> Bring past prescriptions, vaccination cards, and any recent lab reports.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
-                  <span><strong>Note Down Symptoms:</strong> Record fever onset times, medication doses already given, and dietary changes.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                  <span><strong>Bring a Comfort Toy:</strong> A small favorite blanket or toy helps young children feel secure in the examination room.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
-                  <span><strong>Shared Queue Transparency:</strong> Online tokens and walk-in registrations are sequenced on the same live roster.</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-[#F3F8EC]/70 border border-[#D5E8BA] rounded-2xl p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white text-[#91BB40] flex items-center justify-center font-bold shadow-xs">
-                  <Info className="w-5 h-5" />
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-ink-500">{s.text}</p>
                 </div>
-                <h4 className="text-sm font-bold text-[#193247]">
-                  Clinical Verification &amp; Safety Note
-                </h4>
               </div>
-              <p className="text-xs text-[#647785] leading-relaxed">
-                Satya Hospital provides outpatient consultation services and coordinated diagnostic tests. Doctor availability follows the hospital's registered clinical roster.
-              </p>
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <Link to="/doctors" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Doctor Profiles
-                  </Button>
-                </Link>
-                <Link to="/book-appointment" className="flex-1">
-                  <Button variant="primary" size="sm" className="w-full">
-                    Book OPD Token
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </Section>
 
-      </div>
-    </div>
+      <Section size="lg" tone="tint">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+          <ScrollReveal className="lg:col-span-7" distance={14}>
+            <p className="eyebrow">For parents</p>
+            <h2 className="display-2 mt-3">Preparing for your child’s consultation</h2>
+            <p className="lead mt-4">A doctor’s visit can feel daunting for children and parents. These steps help keep it calm and useful.</p>
+            <ul className="mt-9 space-y-6">
+              {prep.map(([t, d]) => (
+                <li key={t} className="flex gap-4">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-leaf-600" aria-hidden="true" />
+                  <div>
+                    <p className="font-semibold text-ink-900">{t}</p>
+                    <p className="mt-0.5 text-[15px] text-ink-600">{d}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </ScrollReveal>
+          <ScrollReveal className="lg:col-span-5" distance={14} delay={0.06}>
+            <aside className="rounded-3xl bg-white p-7 shadow-card ring-1 ring-line">
+              <IconTile tone="leaf">
+                <Info className="h-5 w-5" />
+              </IconTile>
+              <h3 className="heading-3 mt-5">A note on availability</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink-600">
+                Satya Hospital provides outpatient consultations and coordinated diagnostic tests. Doctor availability follows the hospital’s
+                clinical roster.
+              </p>
+              <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
+                <LinkButton to="/doctors" variant="outline" className="flex-1">
+                  Doctor profiles
+                </LinkButton>
+                <LinkButton to="/book-appointment" className="flex-1">
+                  Book a token
+                </LinkButton>
+              </div>
+            </aside>
+          </ScrollReveal>
+        </div>
+      </Section>
+
+      <CtaBand />
+    </>
   );
 };

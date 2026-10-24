@@ -1,5 +1,5 @@
 import React, { HTMLAttributes } from 'react';
-import clsx from 'clsx';
+import { cn } from '../../lib/cn';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -14,49 +14,37 @@ export const Card: React.FC<CardProps> = ({
   bordered = true,
   hoverable = false,
   ...props
-}) => {
-  return (
-    <div
-      className={clsx(
-        'bg-white rounded-xl',
-        bordered && 'border border-[#E1E8ED]',
-        'shadow-[0_2px_4px_rgba(36,52,71,0.04)]',
-        hoverable && 'hover:shadow-[0_8px_16px_rgba(36,52,71,0.08)] hover:border-[#CBD5E1] transition-all duration-200',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-
-export const CardHeader: React.FC<HTMLAttributes<HTMLDivElement>> = ({
-  children,
-  className = '',
-  ...props
 }) => (
-  <div className={clsx('px-6 py-4 border-b border-[#E1E8ED] flex items-center justify-between', className)} {...props}>
+  <div
+    className={cn(
+      'bg-white rounded-2xl shadow-soft',
+      bordered && 'border border-line',
+      hoverable && 'transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-lift',
+      className
+    )}
+    {...props}
+  >
     {children}
   </div>
 );
 
-export const CardBody: React.FC<HTMLAttributes<HTMLDivElement>> = ({
-  children,
-  className = '',
-  ...props
-}) => (
-  <div className={clsx('p-6', className)} {...props}>
+export const CardHeader: React.FC<HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
+  <div className={cn('px-5 sm:px-6 py-4 border-b border-line flex items-center justify-between gap-3', className)} {...props}>
     {children}
   </div>
 );
 
-export const CardFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
-  children,
-  className = '',
-  ...props
-}) => (
-  <div className={clsx('px-6 py-4 border-t border-[#E1E8ED] bg-[#F8FAFC] rounded-b-xl flex items-center justify-between', className)} {...props}>
+export const CardBody: React.FC<HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
+  <div className={cn('p-5 sm:p-6', className)} {...props}>
+    {children}
+  </div>
+);
+
+export const CardFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
+  <div
+    className={cn('px-5 sm:px-6 py-4 border-t border-line bg-ink-50/50 rounded-b-2xl flex items-center justify-between gap-3', className)}
+    {...props}
+  >
     {children}
   </div>
 );

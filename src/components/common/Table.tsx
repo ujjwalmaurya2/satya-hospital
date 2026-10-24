@@ -1,6 +1,6 @@
 import React from 'react';
-import clsx from 'clsx';
 import { Inbox } from 'lucide-react';
+import { cn } from '../../lib/cn';
 
 interface Column<T> {
   header: string;
@@ -14,7 +14,10 @@ interface TableProps<T> {
   data: T[];
   keyExtractor: (item: T) => string;
   emptyMessage?: string;
+  emptyHint?: string;
   className?: string;
+  /** Visually hidden caption for screen readers. */
+  caption?: string;
 }
 
 export function Table<T>({
@@ -22,43 +25,44 @@ export function Table<T>({
   data,
   keyExtractor,
   emptyMessage = 'No records found.',
+  emptyHint = 'New entries will appear here once registered.',
   className = '',
+  caption,
 }: TableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-white rounded-xl border border-[#E1E8ED]">
-        <div className="w-12 h-12 rounded-full bg-[#F4F8FA] flex items-center justify-center text-[#667085] mb-3">
-          <Inbox className="w-6 h-6" />
+      <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
+        <div className="w-11 h-11 rounded-2xl bg-ink-50 ring-1 ring-line flex items-center justify-center text-ink-400 mb-3">
+          <Inbox className="w-5 h-5" aria-hidden="true" />
         </div>
-        <p className="text-sm font-medium text-[#243447]">{emptyMessage}</p>
-        <p className="text-xs text-[#667085] mt-1">New entries will appear here once registered.</p>
+        <p className="text-sm font-semibold text-ink-800">{emptyMessage}</p>
+        <p className="text-[13px] text-ink-500 mt-1 max-w-sm">{emptyHint}</p>
       </div>
     );
   }
 
   return (
-    <div className={clsx('w-full overflow-x-auto rounded-xl border border-[#E1E8ED] bg-white shadow-xs', className)}>
-      <table className="w-full text-left text-sm text-[#243447]">
-        <thead className="bg-[#F8FAFC] text-xs font-semibold text-[#667085] uppercase tracking-wider border-b border-[#E1E8ED]">
+    <div className={cn('w-full overflow-x-auto', className)}>
+      <table className="w-full text-left text-sm text-ink-800">
+        {caption && <caption className="sr-only">{caption}</caption>}
+        <thead className="border-b border-line bg-ink-50/60">
           <tr>
             {columns.map((col, index) => (
-              <th key={index} scope="col" className={clsx('px-5 py-3.5 whitespace-nowrap', col.className)}>
+              <th
+                key={index}
+                scope="col"
+                className={cn('px-5 py-3 text-xs font-semibold text-ink-500 whitespace-nowrap first:pl-6 last:pr-6', col.className)}
+              >
                 {col.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#E1E8ED]">
-          {data.map((item, rowIdx) => (
-            <tr
-              key={keyExtractor(item)}
-              className={clsx(
-                'transition-colors hover:bg-[#F8FAFC]',
-                rowIdx % 2 === 0 ? 'bg-white' : 'bg-[#FAFCFD]'
-              )}
-            >
+        <tbody className="divide-y divide-line">
+          {data.map((item) => (
+            <tr key={keyExtractor(item)} className="transition-colors hover:bg-brand-50/40">
               {columns.map((col, colIdx) => (
-                <td key={colIdx} className={clsx('px-5 py-3.5 whitespace-nowrap text-sm', col.className)}>
+                <td key={colIdx} className={cn('px-5 py-4 whitespace-nowrap align-middle first:pl-6 last:pr-6', col.className)}>
                   {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey] ?? '') : null}
                 </td>
               ))}

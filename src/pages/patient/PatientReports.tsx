@@ -1,147 +1,108 @@
 import React, { useState } from 'react';
-import { Microscope, Download, ShieldCheck, AlertCircle, FileCheck, Search } from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
+import { Clock, Download, Info, Microscope, Search } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Alert } from '../../components/common/Alert';
 import { EmptyState } from '../../components/common/EmptyState';
+import { PageHeader, Panel, REPORT_BADGE } from '../../components/dashboard/Dashboard';
+import { InlineNote, prettyDate, usePatientDocumentOpener } from '../../components/patient/PatientUI';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
-import { getAuthorizedSignedDocumentUrl } from '../../lib/storage';
 
 export const PatientReports: React.FC = () => {
   const { patientProfile } = useAuth();
   const { pathologyReports } = useHospital();
+  const docs = usePatientDocumentOpener();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Show only reports linked to this patient
-  const myReports = pathologyReports.filter(
-    r => r.patientProfileId === patientProfile?.id || r.patientId === patientProfile?.patientId
-  );
-
-  const filteredReports = myReports.filter(
-    r => r.testName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-         r.labAccessionNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleDownload = (storageKey: string, testName: string) => {
-    const res = getAuthorizedSignedDocumentUrl(
-      storageKey, 
-      'patient', 
-      patientProfile?.patientId, 
-      patientProfile?.patientId
-    );
-    if (res.success && res.url) {
-      window.open(res.url, '_blank');
-    } else {
-      alert(res.error || 'Unable to open pathology report.');
-    }
-  };
+  const myReports = pathologyReports.filter(r => r.patientProfileId === patientProfile?.id || r.patientId === patientProfile?.patientId);
+  const q = searchQuery.toLowerCase();
+  const filtered = myReports.filter(r => r.testName.toLowerCase().includes(q) || r.labAccessionNumber.toLowerCase().includes(q));
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#193247]">
-            Diagnostic Pathology Reports
-          </h1>
-          <p className="text-xs text-[#647785] mt-0.5">
-            Certified laboratory reports verified by Satya Hospital pathologists.
-          </p>
-        </div>
+      <PageHeader
+        title="Lab reports"
+        description="Pathology reports verified by Satya Hospital pathologists."
+        actions={
+          <div className="relative w-full sm:w-64">
+            <label htmlFor="report-search" className="sr-only">Search reports</label>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <input id="report-search" type="search" placeholder="Test or accession" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="field-control pl-10" />
+          </div>
+        }
+      />
 
-        {/* Search */}
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-[#647785] absolute left-3 top-2.5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search test or accession..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-sky-100 text-xs bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#3DA9DF]"
+      <InlineNote icon={<Info className="h-4 w-4 text-brand-600" />}>
+        Please review results with your doctor. Reference ranges need clinical context to be interpreted correctly.
+      </InlineNote>
+
+      {docs.error && <Alert type="error">{docs.error}</Alert>}
+
+      <Panel flush>
+        {filtered.length === 0 ? (
+          <EmptyState
+            title={myReports.length === 0 ? 'No reports yet' : 'No reports match your search'}
+            description={
+              myReports.length === 0
+                ? 'Once your sample is processed and verified by the pathologist, the signed PDF will appear here.'
+                : 'Try a different test name or accession number.'
+            }
+            actionLabel={myReports.length === 0 ? 'View test catalogue' : undefined}
+            actionLink="/pathology-lab"
+            icon={<Microscope className="h-6 w-6" />}
           />
-        </div>
-      </div>
-
-      {/* Clinical Disclaimer */}
-      <div className="bg-[#EBF6FC]/60 border border-[#BCE1F5] p-4 rounded-2xl text-xs text-[#193247] flex items-start gap-2.5 shadow-xs">
-        <AlertCircle className="w-4 h-4 text-[#3DA9DF] shrink-0 mt-0.5" />
-        <div>
-          <strong className="block mb-0.5 text-[#193247]">Clinical Review Notice:</strong>
-          Diagnostic laboratory values should always be interpreted by your consulting physician in conjunction with clinical symptoms. Self-interpreting reference values without clinical context is not advised.
-        </div>
-      </div>
-
-      <Card className="rounded-2xl border-sky-100 shadow-xs">
-        <CardBody className="p-0 divide-y divide-slate-100">
-          {filteredReports.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                title="No Lab Reports Available"
-                description="There are currently no published pathology reports for this patient record. Once samples are verified by our senior pathologist, your digital signed PDF will appear here immediately."
-                actionLabel="Explore Test Catalog"
-                actionLink="/pathology-lab"
-              />
-            </div>
-          ) : (
-            filteredReports.map((report) => {
-              const isPublished = report.status === 'published';
-              const isSuperseded = report.status === 'superseded';
-
+        ) : (
+          <ul className="divide-y divide-line">
+            {filtered.map(report => {
+              const published = report.status === 'published';
+              const badge = REPORT_BADGE[report.status];
               return (
-                <div key={report.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-[#FCFDFB] transition-colors">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={isPublished ? 'teal' : isSuperseded ? 'warning' : 'neutral'} size="sm" dot>
-                        {report.status.replace('_', ' ').toUpperCase()}
+                <li key={report.id} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
+                  <span
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset ${
+                      published ? 'bg-leaf-50 text-leaf-700 ring-leaf-200/70' : 'bg-ink-50 text-ink-400 ring-line'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    <Microscope className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-ink-900">{report.testName}</p>
+                      <Badge variant={badge.variant} size="sm" dot>
+                        {badge.label}
                       </Badge>
-                      <span className="text-sm font-bold text-[#193247]">
-                        {report.testName}
-                      </span>
                       {report.versionNumber > 1 && (
                         <Badge variant="neutral" size="sm">
                           Version {report.versionNumber}
                         </Badge>
                       )}
                     </div>
-
-                    <div className="text-xs text-[#647785] flex flex-wrap items-center gap-2">
-                      <span>Lab Accession: <strong className="text-[#193247]">{report.labAccessionNumber}</strong></span>
-                      <span>&bull; Date: {report.reportDate}</span>
-                      {report.verifierName && (
-                        <span>&bull; Certified By: <strong className="text-[#193247]">{report.verifierName}</strong></span>
-                      )}
-                    </div>
-
-                    {report.correctionReason && (
-                      <div className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">
-                        Correction Note: {report.correctionReason}
-                      </div>
-                    )}
+                    <p className="mt-1 text-[13px] text-ink-500">
+                      {prettyDate(report.reportDate)} · <span className="font-mono text-xs">{report.labAccessionNumber}</span>
+                      {report.verifierName ? ` · signed by ${report.verifierName}` : ''}
+                    </p>
+                    {report.correctionReason && <p className="mt-1.5 text-[13px] text-warning-700">Correction note: {report.correctionReason}</p>}
                   </div>
-
                   <div className="shrink-0">
-                    {isPublished ? (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleDownload(report.storageKey, report.testName)}
-                        leftIcon={<Download className="w-3.5 h-3.5" />}
-                      >
+                    {published ? (
+                      <Button size="sm" leftIcon={<Download className="h-4 w-4" />} onClick={() => docs.open(report.storageKey)}>
                         Download PDF
                       </Button>
                     ) : (
-                      <span className="text-xs text-[#647785] italic">
-                        Under Laboratory Verification
+                      <span className="inline-flex items-center gap-1.5 text-[13px] text-ink-500">
+                        <Clock className="h-4 w-4" aria-hidden="true" />
+                        {report.status === 'superseded' ? 'Replaced by a newer version' : 'Being verified'}
                       </span>
                     )}
                   </div>
-                </div>
+                </li>
               );
-            })
-          )}
-        </CardBody>
-      </Card>
+            })}
+          </ul>
+        )}
+      </Panel>
     </div>
   );
 };

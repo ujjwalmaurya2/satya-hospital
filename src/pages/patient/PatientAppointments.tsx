@@ -1,26 +1,29 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, Clock, AlertTriangle, PlusCircle, CheckCircle2 } from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
-import { Alert } from '../../components/common/Alert';
+import { CalendarCheck, CalendarDays } from 'lucide-react';
+import { Button, LinkButton } from '../../components/common/Button';
 import { Modal } from '../../components/common/Modal';
 import { EmptyState } from '../../components/common/EmptyState';
+import { PageHeader, Panel, Segmented } from '../../components/dashboard/Dashboard';
+import { AppointmentItem, prettyDate } from '../../components/patient/PatientUI';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
 import { Appointment } from '../../types';
 
+type View = 'upcoming' | 'past';
+
 export const PatientAppointments: React.FC = () => {
   const { patientProfile } = useAuth();
-  const { appointments, updateAppointmentStatus, settings } = useHospital();
+  const { appointments, updateAppointmentStatus } = useHospital();
 
   const [cancelModalApt, setCancelModalApt] = useState<Appointment | null>(null);
-  const [cancelReason, setCancelReason] = useState<string>('');
+  const [cancelReason, setCancelReason] = useState('');
+  const [view, setView] = useState<View>('upcoming');
 
-  const myAppointments = appointments.filter(
-    a => a.patientProfileId === patientProfile?.id || a.patientId === patientProfile?.patientId
-  );
+  const myAppointments = appointments.filter(a => a.patientProfileId === patientProfile?.id || a.patientId === patientProfile?.patientId);
+  const isUpcoming = (a: Appointment) => a.status === 'booked' || a.status === 'checked_in' || a.status === 'in_consultation';
+  const upcoming = myAppointments.filter(isUpcoming);
+  const past = myAppointments.filter(a => !isUpcoming(a));
+  const list = view === 'upcoming' ? upcoming : past;
 
   const handleConfirmCancel = () => {
     if (!cancelModalApt) return;
@@ -31,112 +34,77 @@ export const PatientAppointments: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#243447]">
-            My Outpatient Appointments
-          </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
-            View your token status, queue positions, and past consultation history.
-          </p>
-        </div>
-        <Link to="/book-appointment">
-          <Button variant="accent" size="sm" leftIcon={<PlusCircle className="w-4 h-4" />}>
-            Book New Token
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Appointments"
+        description="Your tokens, their status and past consultations."
+        actions={
+          <LinkButton to="/book-appointment" size="sm" leftIcon={<CalendarCheck className="h-4 w-4" />}>
+            Book new token
+          </LinkButton>
+        }
+      />
 
-      <Card>
-        <CardBody className="p-0 divide-y divide-[#E1E8ED]">
-          {myAppointments.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                title="No Scheduled Appointments"
-                description="You currently have no active or previous OPD appointments on record. You can reserve a daily consultation token online with no upfront fee."
-                actionLabel="Book OPD Consultation Token"
-                actionLink="/book-appointment"
-              />
-            </div>
-          ) : (
-            myAppointments.map((apt) => {
-              const isCancellable = apt.status === 'booked';
-              return (
-                <div key={apt.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-[#F8FAFC]">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={apt.status === 'completed' ? 'success' : apt.status === 'cancelled' ? 'danger' : 'medical-blue'} size="sm" dot>
-                        {apt.status.replace('_', ' ').toUpperCase()}
-                      </Badge>
-                      <span className="text-sm font-bold text-[#243447]">
-                        Token #{apt.tokenNumber}
-                      </span>
-                      <span className="text-xs text-[#667085] font-mono">
-                        ({apt.appointmentCode})
-                      </span>
-                    </div>
-
-                    <div className="text-xs text-[#243447] font-semibold">
-                      Date: {apt.appointmentDate} &bull; Doctor: {apt.doctorName}
-                    </div>
-
-                    <div className="text-xs text-[#667085] flex flex-wrap items-center gap-3">
-                      <span>Queue Type: <strong>{apt.queueType === 'online' ? 'Online Reservation' : 'Reception Walk-in'}</strong></span>
-                      {apt.notes && <span>&bull; Note: {apt.notes}</span>}
-                      {apt.cancellationReason && (
-                        <span className="text-red-600 font-medium">&bull; Reason: {apt.cancellationReason}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {isCancellable && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                        onClick={() => setCancelModalApt(apt)}
-                      >
-                        Cancel Token
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </CardBody>
-      </Card>
-
-      {/* Cancellation Modal */}
-      <Modal
-        isOpen={Boolean(cancelModalApt)}
-        onClose={() => setCancelModalApt(null)}
-        title="Cancel OPD Appointment Token"
-        description="Are you sure you wish to cancel this appointment?"
+      <Panel
+        flush
+        title={
+          <Segmented
+            label="Appointment view"
+            layoutId="appt-view"
+            value={view}
+            onChange={setView}
+            items={[
+              { id: 'upcoming', label: 'Upcoming', count: upcoming.length },
+              { id: 'past', label: 'Past', count: past.length },
+            ]}
+          />
+        }
       >
-        <div className="space-y-4 text-xs">
-          <p className="text-[#243447]">
-            Cancelling Token <strong>#{cancelModalApt?.tokenNumber}</strong> for date <strong>{cancelModalApt?.appointmentDate}</strong> will release the token back to the shared hospital capacity.
+        {list.length === 0 ? (
+          <EmptyState
+            title={view === 'upcoming' ? 'No upcoming appointments' : 'No past appointments'}
+            description={view === 'upcoming' ? 'Reserve a consultation token online — there is no upfront fee.' : 'Completed and cancelled visits will be listed here.'}
+            actionLabel={view === 'upcoming' ? 'Book a token' : undefined}
+            actionLink="/book-appointment"
+            icon={<CalendarDays className="h-6 w-6" />}
+          />
+        ) : (
+          <div className="divide-y divide-line">
+            {list.map(a => (
+              <AppointmentItem
+                key={a.id}
+                appt={a}
+                action={
+                  a.status === 'booked' ? (
+                    <Button variant="ghost" size="sm" className="text-danger-700 hover:bg-danger-50 hover:text-danger-700" onClick={() => setCancelModalApt(a)}>
+                      Cancel token
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ))}
+          </div>
+        )}
+      </Panel>
+
+      <Modal isOpen={Boolean(cancelModalApt)} onClose={() => setCancelModalApt(null)} title="Cancel this appointment?" description="You can book again later if needed.">
+        <div className="space-y-5">
+          <p className="text-sm text-ink-700">
+            Token <strong className="font-semibold text-ink-900">#{cancelModalApt?.tokenNumber}</strong> on{' '}
+            <strong className="font-semibold text-ink-900">{cancelModalApt ? prettyDate(cancelModalApt.appointmentDate) : ''}</strong> will be cancelled. Token
+            numbers are never reissued, so the queue order of other patients is unchanged.
           </p>
           <div>
-            <label className="block text-xs font-semibold text-[#243447] mb-1">
-              Cancellation Reason (Optional)
+            <label htmlFor="cancel-reason" className="field-label">
+              Reason <span className="font-normal text-ink-400">(optional)</span>
             </label>
-            <input
-              type="text"
-              placeholder="e.g. Schedule conflict, feeling better..."
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] text-xs focus:ring-2 focus:ring-[#3DA9DF]"
-            />
+            <input id="cancel-reason" placeholder="e.g. Schedule conflict, feeling better" value={cancelReason} onChange={e => setCancelReason(e.target.value)} className="field-control" />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => setCancelModalApt(null)}>
-              Keep Appointment
+          <div className="flex justify-end gap-2 border-t border-line pt-4">
+            <Button variant="ghost" onClick={() => setCancelModalApt(null)}>
+              Keep appointment
             </Button>
-            <Button variant="danger" size="sm" onClick={handleConfirmCancel}>
-              Confirm Cancellation
+            <Button variant="danger" onClick={handleConfirmCancel}>
+              Cancel appointment
             </Button>
           </div>
         </div>

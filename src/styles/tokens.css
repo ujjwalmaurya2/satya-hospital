@@ -1,84 +1,207 @@
 @import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
 
+/* ============================================================================
+   SATYA HOSPITAL & PATHOLOGY — DESIGN TOKENS
+   Approved palette (unchanged): Medical Teal #3DA9DF · Wellness Leaf #91BB40 ·
+   Slate Navy #193247 · Muted Slate #647785 · Warm White #FCFDFB ·
+   Ice Blue #EBF6FC · Soft Mint #F3F8EC · Border #E5ECEF.
+
+   Contrast note: white text on #3DA9DF is ~2.7:1 and on #91BB40 ~2.4:1, both
+   below WCAG AA. Solid buttons therefore use the in-palette deeper shades
+   brand-700 (#1E78A4, ~4.9:1) and leaf-700 (#5F8526, ~4.6:1); #3DA9DF and
+   #91BB40 stay the signature accent colours for icons, highlights, rules,
+   focus rings and large display type.
+   ========================================================================== */
+
+@theme {
+  --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Medical Teal */
+  --color-brand-50: #F3FAFE;
+  --color-brand-100: #EBF6FC;
+  --color-brand-200: #BCE1F5;
+  --color-brand-300: #8ACBEE;
+  --color-brand-400: #5BB8E6;
+  --color-brand-500: #3DA9DF;
+  --color-brand-600: #2B92C4;
+  --color-brand-700: #1E78A4;
+  --color-brand-800: #1A6286;
+  --color-brand-900: #174F6C;
+
+  /* Wellness Leaf */
+  --color-leaf-50: #F9FCF5;
+  --color-leaf-100: #F3F8EC;
+  --color-leaf-200: #D5E8BA;
+  --color-leaf-300: #BAD68D;
+  --color-leaf-400: #A3C862;
+  --color-leaf-500: #91BB40;
+  --color-leaf-600: #7EA631;
+  --color-leaf-700: #5F8526;
+  --color-leaf-800: #486812;
+  --color-leaf-900: #3A5412;
+
+  /* Slate Navy ink */
+  --color-ink-950: #0E1E2C;
+  --color-ink-900: #112332;
+  --color-ink-800: #193247;
+  --color-ink-700: #2A4559;
+  --color-ink-600: #445E71;
+  --color-ink-500: #647785;
+  --color-ink-400: #8E9CA8;
+  --color-ink-300: #B9C5CD;
+  --color-ink-200: #D6DFE4;
+  --color-ink-100: #E5ECEF;
+  --color-ink-50: #F3F6F8;
+
+  /* Surfaces */
+  --color-canvas: #FCFDFB;
+  --color-surface: #FFFFFF;
+  --color-line: #E5ECEF;
+  --color-line-strong: #CBD7DD;
+
+  /* Semantic status */
+  --color-success-50: #F3F8EC;
+  --color-success-600: #5F8526;
+  --color-success-700: #486812;
+  --color-warning-50: #FFF8EB;
+  --color-warning-200: #FCE3B0;
+  --color-warning-600: #B45309;
+  --color-warning-700: #92400E;
+  --color-danger-50: #FEF2F2;
+  --color-danger-200: #FECACA;
+  --color-danger-600: #DC2626;
+  --color-danger-700: #B91C1C;
+
+  /* Elevation — soft, navy-tinted, used sparingly */
+  --shadow-soft: 0 1px 2px rgba(25, 50, 71, 0.04), 0 1px 1px rgba(25, 50, 71, 0.02);
+  --shadow-card: 0 1px 2px rgba(25, 50, 71, 0.04), 0 4px 16px -4px rgba(25, 50, 71, 0.06);
+  --shadow-lift: 0 2px 4px rgba(25, 50, 71, 0.04), 0 16px 40px -12px rgba(25, 50, 71, 0.14);
+  --shadow-float: 0 8px 24px -6px rgba(25, 50, 71, 0.18), 0 2px 6px rgba(25, 50, 71, 0.06);
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-rise: rise 0.7s var(--ease-out-soft) both;
+  --animate-fade: fade 0.6s ease-out both;
+  --animate-scale-in: scale-in 0.18s var(--ease-out-soft) both;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* Legacy variables kept for any code still referencing them */
 :root {
-  /* Satya Hospital & Pathology Official Brand Palette */
-  /* Primary Medical Blue: PANTONE 16-4526 TPG Swim Cap (#3DA9DF) */
   --sh-medical-blue: #3DA9DF;
-  --sh-medical-blue-hover: #2B92C4;
-  --sh-medical-blue-active: #1E78A4;
-  --sh-medical-blue-light: #EBF6FC;
-  --sh-medical-blue-subtle: #F4F9FD;
-  --sh-medical-blue-border: #BCE1F5;
-
-  /* Accent Lime Green: PANTONE 16-0229 TPG Titanite (#91BB40) */
   --sh-lime-green: #91BB40;
-  --sh-lime-green-hover: #7EA631;
-  --sh-lime-green-active: #6B8F27;
-  --sh-lime-green-light: #F3F8EC;
-  --sh-lime-green-subtle: #F9FCF5;
-  --sh-lime-green-border: #D5E8BA;
-  --sh-lime-green-text: #486812;
-
-  /* Color system aliases */
-  --sh-primary-teal: #3DA9DF;
-  --sh-primary-teal-hover: #2B92C4;
-  --sh-primary-teal-active: #1E78A4;
-  --sh-primary-teal-light: #EBF6FC;
-  --sh-primary-teal-subtle: #F4F9FD;
-
-  --sh-sky-blue: #EBF6FC;
-  --sh-sky-blue-hover: #D4EDF9;
-  --sh-sky-blue-text: #1E78A4;
-  --sh-soft-mint: #F3F8EC;
-  --sh-soft-mint-border: #D5E8BA;
-  --sh-gentle-peach: #FFF0E7;
-  --sh-gentle-peach-border: #FCD5C1;
-  --sh-gentle-peach-text: #9A3412;
-
-  /* Canvas & Backgrounds */
-  --sh-white: #FFFFFF;
-  --sh-canvas: #FCFDFB; /* Warm White */
-  --sh-canvas-subtle: #F8FAFC;
-  --sh-border: #E5ECEF;
-  --sh-border-strong: #CBD7DD;
-
-  /* Typography Colors */
   --sh-navy-text: #193247;
-  --sh-navy-headings: #112332;
   --sh-muted-text: #647785;
-  --sh-subtle-text: #8E9CA8;
-
-  /* Status Tokens */
-  --sh-status-success: #91BB40;
-  --sh-status-success-bg: #F3F8EC;
-  --sh-status-warning: #B45309;
-  --sh-status-warning-bg: #FEF3C7;
-  --sh-status-danger: #B91C1C;
-  --sh-status-danger-bg: #FEE2E2;
-  --sh-status-info: #3DA9DF;
-  --sh-status-info-bg: #EBF6FC;
-
-  /* Shadows - Soft, Warm & Diffused */
-  --sh-shadow-sm: 0 1px 2px 0 rgba(25, 50, 71, 0.04);
-  --sh-shadow-md: 0 4px 6px -1px rgba(25, 50, 71, 0.06), 0 2px 4px -2px rgba(25, 50, 71, 0.03);
-  --sh-shadow-lg: 0 10px 20px -3px rgba(25, 50, 71, 0.07), 0 4px 6px -4px rgba(25, 50, 71, 0.03);
+  --sh-canvas: #FCFDFB;
+  --sh-border: #E5ECEF;
 }
 
-body {
-  background-color: var(--sh-canvas);
-  color: var(--sh-navy-text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas text-ink-800 font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Headings inherit colour so they read correctly on dark surfaces too. */
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: rgb(61 169 223 / 0.18);
+    color: var(--color-ink-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
+  }
 }
 
-/* Accessible focus ring */
-:focus-visible {
-  outline: 2px solid var(--sh-medical-blue);
-  outline-offset: 2px;
+@layer components {
+  /* Page-width container */
+  .container-page {
+    @apply mx-auto w-full max-w-[1240px] px-5 sm:px-8 lg:px-10;
+  }
+
+  /* Small uppercase-free section label with a leaf rule */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[13px] font-semibold text-brand-700;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply h-px w-6 bg-leaf-500;
+  }
+
+  .display-1 {
+    @apply text-ink-900 text-[2.375rem] leading-[1.08] font-bold tracking-[-0.028em] sm:text-5xl lg:text-[3.6rem];
+  }
+  .display-2 {
+    @apply text-ink-900 text-[1.875rem] leading-[1.15] font-bold tracking-[-0.022em] sm:text-[2.25rem] lg:text-[2.6rem];
+  }
+  .heading-3 {
+    @apply text-lg leading-snug font-semibold tracking-[-0.01em] text-ink-900;
+  }
+  .lead {
+    @apply text-base leading-relaxed text-ink-600 sm:text-[1.0625rem];
+  }
+
+  /* Form controls */
+  .field-label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink-800;
+  }
+  .field-control {
+    @apply block w-full rounded-xl border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink-900 shadow-soft placeholder:text-ink-400 transition-[border-color,box-shadow] duration-150 hover:border-ink-300 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 focus:outline-none disabled:cursor-not-allowed disabled:bg-ink-50 disabled:text-ink-400;
+  }
+  .field-hint {
+    @apply mt-1.5 text-xs text-ink-500;
+  }
+  .field-error {
+    @apply mt-1.5 text-xs font-medium text-danger-700;
+  }
+
+  /* Text link */
+  .link {
+    @apply font-semibold text-brand-700 underline-offset-4 decoration-brand-300 hover:underline;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-/* Reduced motion preference support */
+/* Reduced motion: keep layout, drop movement */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
@@ -86,4 +209,70 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Long-form legal / policy content. Unlayered so it wins over inline utilities
+   left in older page markup. */
+.legal-prose {
+  border-radius: 1.5rem;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  color: var(--color-ink-700);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.legal-prose > section + section,
+.legal-prose > * + * {
+  margin-top: 2.25rem;
+}
+.legal-prose h2 {
+  color: var(--color-ink-900);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+}
+.legal-prose h3 {
+  color: var(--color-ink-900);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+.legal-prose p,
+.legal-prose li {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--color-ink-700);
+}
+.legal-prose p + p {
+  margin-top: 0.75rem;
+}
+.legal-prose ul {
+  margin-top: 0.75rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.legal-prose li + li {
+  margin-top: 0.4rem;
+}
+.legal-prose li::marker {
+  color: var(--color-leaf-500);
+}
+.legal-prose strong {
+  color: var(--color-ink-900);
+  font-weight: 600;
+}
+.legal-prose code {
+  font-size: 0.875em;
+  background: var(--color-ink-50);
+  border-radius: 0.375rem;
+  padding: 0.1em 0.4em;
+  color: var(--color-brand-800);
+}
+.legal-prose a {
+  color: var(--color-brand-700);
+  font-weight: 600;
+  text-underline-offset: 3px;
 }

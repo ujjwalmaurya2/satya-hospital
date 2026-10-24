@@ -1,48 +1,34 @@
 import React, { useState } from 'react';
-import { 
-  Microscope, 
-  Upload, 
-  Search, 
-  CheckCircle2, 
-  AlertCircle, 
-  Eye, 
-  Download, 
-  ShieldCheck, 
-  FileText,
-  Clock,
-  RotateCcw
-} from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
+import { CheckCircle2, Clock, Eye, FileCheck2, History, RotateCcw, Search, ShieldCheck, Upload } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { Alert } from '../../components/common/Alert';
-import { Table } from '../../components/common/Table';
+import { EmptyState } from '../../components/common/EmptyState';
+import { FileDrop } from '../../components/common/FileDrop';
+import { PageHeader, Panel, REPORT_BADGE, Segmented, StatCard } from '../../components/dashboard/Dashboard';
 import { useHospital } from '../../context/HospitalContext';
 import { useAuth } from '../../context/AuthContext';
 import { uploadDocumentToSecureStorage, getAuthorizedSignedDocumentUrl } from '../../lib/storage';
 import { generateAccessionNumber, getHospitalTodayDate } from '../../lib/tokens';
-import { PathologyReport, PathologyReportStatus } from '../../types';
+import { cn } from '../../lib/cn';
+import { PathologyReport } from '../../types';
+
+type StatusFilter = 'all' | 'pending_verification' | 'published' | 'superseded';
 
 export const PathologyDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { 
-    pathologyReports, 
-    pathologyTests, 
-    patientProfiles, 
-    uploadPathologyReport, 
-    verifyAndPublishPathologyReport,
-    supersedePathologyReport,
-    searchPatients 
-  } = useHospital();
+  const { pathologyReports, pathologyTests, patientProfiles, uploadPathologyReport, verifyAndPublishPathologyReport, supersedePathologyReport, searchPatients } =
+    useHospital();
 
   const today = getHospitalTodayDate();
 
-  // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // Upload Modal State
+  // Upload modal
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [patientSearch, setPatientSearch] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('');
@@ -52,54 +38,38 @@ export const PathologyDashboard: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Correction / Supersede Modal State
+  // Correction / supersede modal
   const [supersedeModalReport, setSupersedeModalReport] = useState<PathologyReport | null>(null);
   const [correctionReason, setCorrectionReason] = useState('');
   const [correctedFile, setCorrectedFile] = useState<File | null>(null);
+  const [supersedeError, setSupersedeError] = useState<string | null>(null);
 
-  // Filtered reports
+  const q = searchQuery.toLowerCase();
   const filteredReports = pathologyReports.filter(r => {
-    const matchesSearch = 
-      r.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.labAccessionNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.testName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSearch =
+      r.patientName.toLowerCase().includes(q) || r.patientId.toLowerCase().includes(q) || r.labAccessionNumber.toLowerCase().includes(q) || r.testName.toLowerCase().includes(q);
+    return matchesSearch && (statusFilter === 'all' || r.status === statusFilter);
   });
+  const count = (s: StatusFilter) => (s === 'all' ? pathologyReports.length : pathologyReports.filter(r => r.status === s).length);
 
   const matchingPatients = searchPatients(patientSearch);
 
-  // Handle PDF Upload
   const handleUploadReport = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploadError(null);
-
-    if (!selectedPatientId) {
-      setUploadError('Please select and confirm a matched patient record.');
-      return;
-    }
-    if (!reportFile) {
-      setUploadError('Please choose a valid pathology report PDF file.');
-      return;
-    }
+    if (!selectedPatientId) return setUploadError('Select the matching patient record first.');
+    if (!reportFile) return setUploadError('Choose the report PDF.');
 
     const patient = patientProfiles.find(p => p.patientId === selectedPatientId);
-    if (!patient) {
-      setUploadError('Patient not found in authoritative records.');
-      return;
-    }
+    if (!patient) return setUploadError('Patient not found in hospital records.');
 
     setIsUploading(true);
-
     try {
       const uploadRes = await uploadDocumentToSecureStorage(reportFile, 'reports', patient.patientId);
       if (!uploadRes.success || !uploadRes.storageKey) {
-        setUploadError(uploadRes.error || 'Failed to store report in secure storage.');
-        setIsUploading(false);
+        setUploadError(uploadRes.error || 'Could not store the report. Please try again.');
         return;
       }
-
       uploadPathologyReport({
         patientProfileId: patient.id,
         patientId: patient.patientId,
@@ -117,445 +87,297 @@ export const PathologyDashboard: React.FC = () => {
         uploaderName: user?.fullName || 'Pathologist Staff',
         uploadedAt: new Date().toISOString(),
       });
-
       setUploadModalOpen(false);
       setReportFile(null);
       setSelectedPatientId('');
       setPatientSearch('');
       setCustomAccession(generateAccessionNumber((Date.now() + 1) % 1000));
+      setActionSuccess(`Report for ${patient.fullName} saved and waiting for verification.`);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown upload error.';
-      setUploadError(msg);
+      setUploadError(err instanceof Error ? err.message : 'Unknown upload error. Please try again.');
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Handle Verification & Publish
   const handleVerifyAndPublish = (report: PathologyReport) => {
+    setActionError(null);
+    setActionSuccess(null);
     const success = verifyAndPublishPathologyReport(report.id, user?.fullName || 'Senior Pathologist');
-    if (!success) {
-      alert('Unable to publish report. Please ensure patient linkage is valid.');
-    }
+    if (success) setActionSuccess(`${report.testName} for ${report.patientName} is now published to the patient portal.`);
+    else setActionError('Unable to publish this report. Check that it is linked to a valid patient.');
   };
 
-  // Handle Supersede & Versioning
   const handleSupersedeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supersedeModalReport || !correctedFile || !correctionReason.trim()) return;
-
+    setSupersedeError(null);
+    if (!supersedeModalReport || !correctedFile || !correctionReason.trim()) {
+      setSupersedeError('Add a correction reason and the corrected PDF.');
+      return;
+    }
     setIsUploading(true);
     try {
-      const uploadRes = await uploadDocumentToSecureStorage(
-        correctedFile, 
-        'reports', 
-        supersedeModalReport.patientId
-      );
-
+      const uploadRes = await uploadDocumentToSecureStorage(correctedFile, 'reports', supersedeModalReport.patientId);
       if (!uploadRes.success || !uploadRes.storageKey) {
-        alert(uploadRes.error || 'Failed to upload corrected report.');
-        setIsUploading(false);
+        setSupersedeError(uploadRes.error || 'Failed to upload the corrected report. Please try again.');
         return;
       }
-
-      supersedePathologyReport(
-        supersedeModalReport.id,
-        correctionReason.trim(),
-        {
-          storageKey: uploadRes.storageKey,
-          fileName: uploadRes.fileName || correctedFile.name,
-          fileSize: uploadRes.fileSize || correctedFile.size,
-          checksum: uploadRes.checksum,
-        }
-      );
-
+      supersedePathologyReport(supersedeModalReport.id, correctionReason.trim(), {
+        storageKey: uploadRes.storageKey,
+        fileName: uploadRes.fileName || correctedFile.name,
+        fileSize: uploadRes.fileSize || correctedFile.size,
+        checksum: uploadRes.checksum,
+      });
+      setActionSuccess(`Version ${supersedeModalReport.versionNumber + 1} created for ${supersedeModalReport.patientName}.`);
       setSupersedeModalReport(null);
       setCorrectionReason('');
       setCorrectedFile(null);
-    } catch (err: unknown) {
-      alert('Failed to supersede report.');
+    } catch {
+      setSupersedeError('Failed to supersede the report. Please try again.');
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Preview PDF in new tab
   const handlePreviewPdf = (storageKey: string) => {
+    setActionError(null);
     const res = getAuthorizedSignedDocumentUrl(storageKey, 'pathology');
-    if (res.success && res.url) {
-      window.open(res.url, '_blank');
-    } else {
-      alert(res.error || 'Unable to open PDF preview.');
-    }
+    if (res.success && res.url) window.open(res.url, '_blank', 'noopener');
+    else setActionError(res.error || 'Unable to open the PDF preview.');
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#243447]">
-            Pathology Laboratory Workspace
-          </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
-            PDF report ingestion, patient matching, two-step pathologist certification, and versioning.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => setUploadModalOpen(true)}
-            leftIcon={<Upload className="w-4 h-4" />}
-          >
-            Upload Diagnostic PDF
+      <PageHeader
+        eyebrow="Pathology laboratory"
+        title="Report worklist"
+        description="Upload PDFs, match patients, verify and publish — with full version history."
+        actions={
+          <Button onClick={() => setUploadModalOpen(true)} leftIcon={<Upload className="h-4 w-4" />}>
+            Upload report
           </Button>
-        </div>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="All reports" value={pathologyReports.length} hint="Including earlier versions" icon={<FileCheck2 className="h-4 w-4" />} />
+        <StatCard label="Awaiting verification" value={count('pending_verification')} hint="Needs pathologist sign-off" tone="warning" icon={<Clock className="h-4 w-4" />} />
+        <StatCard label="Published" value={count('published')} hint="Visible in patient portal" tone="leaf" icon={<ShieldCheck className="h-4 w-4" />} />
+        <StatCard label="Superseded" value={count('superseded')} hint="Kept in audit history" icon={<History className="h-4 w-4" />} />
       </div>
 
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Total Reports Processed</span>
-          <div className="text-2xl font-bold text-[#243447] mt-1">{pathologyReports.length}</div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">All versions recorded</span>
-        </Card>
+      {actionError && <Alert type="error">{actionError}</Alert>}
+      {actionSuccess && <Alert type="success">{actionSuccess}</Alert>}
 
-        <Card className="p-4 border-amber-300 bg-amber-50/30">
-          <span className="text-xs text-amber-900 font-medium block">Pending Verification</span>
-          <div className="text-2xl font-bold text-amber-700 mt-1">
-            {pathologyReports.filter(r => r.status === 'pending_verification').length}
+      <Panel
+        flush
+        title="Reports"
+        actions={
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Segmented
+              label="Filter by status"
+              layoutId="lab-filter"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              items={[
+                { id: 'all', label: 'All', count: count('all') },
+                { id: 'pending_verification', label: 'Pending', count: count('pending_verification') },
+                { id: 'published', label: 'Published', count: count('published') },
+                { id: 'superseded', label: 'Superseded', count: count('superseded') },
+              ]}
+            />
+            <div className="relative sm:w-60">
+              <label htmlFor="lab-search" className="sr-only">Search reports</label>
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+              <input
+                id="lab-search"
+                type="search"
+                placeholder="Patient, accession, test"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="field-control h-9 py-0 pl-9 text-[13px]"
+              />
+            </div>
           </div>
-          <span className="text-[11px] text-amber-800 block mt-0.5">Awaiting Pathologist Sign-off</span>
-        </Card>
-
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Published to Patients</span>
-          <div className="text-2xl font-bold text-[#91BB40] mt-1">
-            {pathologyReports.filter(r => r.status === 'published').length}
-          </div>
-          <span className="text-[11px] text-[#91BB40] block mt-0.5">Available in Portal</span>
-        </Card>
-
-        <Card className="p-4 border-[#CBD5E1]">
-          <span className="text-xs text-[#667085] font-medium block">Corrected / Superseded</span>
-          <div className="text-2xl font-bold text-[#667085] mt-1">
-            {pathologyReports.filter(r => r.status === 'superseded').length}
-          </div>
-          <span className="text-[11px] text-[#667085] block mt-0.5">Preserved in audit history</span>
-        </Card>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-          {['all', 'pending_verification', 'published', 'superseded'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-                statusFilter === st
-                  ? 'bg-[#3DA9DF] text-white'
-                  : 'bg-white border border-[#E1E8ED] text-[#243447] hover:bg-[#F8FAFC]'
-              }`}
-            >
-              {st === 'all' ? 'All Reports' : st.replace('_', ' ').toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search patient, accession, test..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-2 rounded-lg border border-[#CBD5E1] text-xs bg-white"
+        }
+      >
+        {filteredReports.length === 0 ? (
+          <EmptyState
+            title="No reports match"
+            description={pathologyReports.length === 0 ? 'Uploaded reports will appear here.' : 'Try a different search or status filter.'}
+            icon={<FileCheck2 className="h-6 w-6" />}
           />
-        </div>
-      </div>
-
-      {/* Main Reports Worklist Table */}
-      <Card>
-        <CardBody className="p-0">
-          <Table
-            data={filteredReports}
-            keyExtractor={(item) => item.id}
-            emptyMessage="No pathology reports match your criteria."
-            columns={[
-              {
-                header: 'Accession / Code',
-                cell: (item) => (
-                  <div>
-                    <div className="font-mono font-bold text-[#243447] text-xs">
-                      {item.labAccessionNumber}
-                    </div>
-                    <div className="text-[11px] text-[#667085] font-mono">
-                      {item.reportCode} {item.versionNumber > 1 ? `(V${item.versionNumber})` : ''}
-                    </div>
+        ) : (
+          <ul className="divide-y divide-line">
+            {filteredReports.map(item => {
+              const badge = REPORT_BADGE[item.status];
+              const pending = item.status === 'pending_verification';
+              return (
+                <li key={item.id} className={cn('grid gap-3 px-5 py-4 sm:px-6 lg:grid-cols-[1.1fr_1.2fr_1fr_auto] lg:items-center lg:gap-6', pending && 'bg-warning-50/40')}>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-ink-900">{item.patientName}</p>
+                    <p className="font-mono text-xs text-brand-700">{item.patientId}</p>
                   </div>
-                ),
-              },
-              {
-                header: 'Patient Details',
-                cell: (item) => (
-                  <div>
-                    <div className="font-bold text-[#243447]">{item.patientName}</div>
-                    <div className="text-[11px] text-[#3DA9DF] font-mono">{item.patientId}</div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-ink-800">{item.testName}</p>
+                    <p className="font-mono text-xs text-ink-500">
+                      {item.labAccessionNumber} · {item.reportCode}
+                      {item.versionNumber > 1 ? ` · v${item.versionNumber}` : ''} · {item.reportDate}
+                    </p>
                   </div>
-                ),
-              },
-              {
-                header: 'Investigation / Test',
-                cell: (item) => (
-                  <div>
-                    <span className="font-semibold text-xs text-[#243447]">{item.testName}</span>
-                    <span className="block text-[11px] text-[#667085]">{item.reportDate}</span>
-                  </div>
-                ),
-              },
-              {
-                header: 'Status',
-                cell: (item) => {
-                  const variant = 
-                    item.status === 'published' ? 'lime-green' :
-                    item.status === 'pending_verification' ? 'warning' :
-                    item.status === 'superseded' ? 'neutral' : 'danger';
-
-                  return (
-                    <Badge variant={variant} size="sm" dot>
-                      {item.status.replace('_', ' ').toUpperCase()}
+                  <div className="flex flex-col items-start gap-1">
+                    <Badge variant={badge.variant} size="sm" dot>
+                      {badge.label}
                     </Badge>
-                  );
-                },
-              },
-              {
-                header: 'Sign-Off Signatory',
-                cell: (item) => (
-                  <div className="text-xs text-[#667085]">
                     {item.verifierName ? (
-                      <span className="text-[#91BB40] font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        {item.verifierName}
+                      <span className="inline-flex items-center gap-1 text-xs text-leaf-700">
+                        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> {item.verifierName}
                       </span>
                     ) : (
-                      <span className="text-amber-700 font-medium">Pending Sign-off</span>
+                      <span className="text-xs text-ink-400">Not yet signed off</span>
                     )}
                   </div>
-                ),
-              },
-              {
-                header: 'Actions',
-                cell: (item) => (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePreviewPdf(item.storageKey)}
-                      title="Preview PDF"
-                    >
-                      <Eye className="w-4 h-4 text-[#3DA9DF]" />
+                  <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                    <Button variant="ghost" size="sm" leftIcon={<Eye className="h-4 w-4" />} onClick={() => handlePreviewPdf(item.storageKey)}>
+                      Preview
                     </Button>
-
-                    {item.status === 'pending_verification' && (
-                      <Button
-                        variant="accent"
-                        size="sm"
-                        onClick={() => handleVerifyAndPublish(item)}
-                        leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
-                      >
-                        Publish to Patient
+                    {pending && (
+                      <Button variant="accent" size="sm" leftIcon={<CheckCircle2 className="h-4 w-4" />} onClick={() => handleVerifyAndPublish(item)}>
+                        Verify & publish
                       </Button>
                     )}
-
                     {item.status === 'published' && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setSupersedeModalReport(item)}
-                        leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-                        title="Upload corrected version"
+                        leftIcon={<RotateCcw className="h-4 w-4" />}
+                        onClick={() => {
+                          setSupersedeError(null);
+                          setSupersedeModalReport(item);
+                        }}
                       >
-                        Correct (V{item.versionNumber + 1})
+                        Correct (v{item.versionNumber + 1})
                       </Button>
                     )}
                   </div>
-                ),
-              },
-            ]}
-          />
-        </CardBody>
-      </Card>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Panel>
 
-      {/* UPLOAD REPORT MODAL */}
-      <Modal
-        isOpen={uploadModalOpen}
-        onClose={() => setUploadModalOpen(false)}
-        title="Upload Diagnostic PDF Report"
-        description="Match report with patient, inspect PDF, and queue for verification."
-        maxWidth="lg"
-      >
-        <form onSubmit={handleUploadReport} className="space-y-4 text-xs">
+      {/* Upload */}
+      <Modal isOpen={uploadModalOpen} onClose={() => setUploadModalOpen(false)} title="Upload report PDF" description="Match the patient, attach the PDF and queue it for verification." maxWidth="lg">
+        <form onSubmit={handleUploadReport} className="space-y-5">
           {uploadError && (
-            <Alert type="error" title="Upload Validation Error">
+            <Alert type="error" title="Upload not completed">
               {uploadError}
             </Alert>
           )}
 
-          {/* Patient Search & Match */}
           <div>
-            <label className="block font-semibold text-[#243447] mb-1">
-              Step 1: Match with Registered Patient <span className="text-red-500">*</span>
-            </label>
-            <div className="relative mb-2">
-              <Search className="w-4 h-4 text-[#667085] absolute left-3 top-2.5 pointer-events-none" />
+            <label htmlFor="up-patient-search" className="field-label">1 · Match patient</label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
               <input
-                type="text"
-                placeholder="Search patient by ID (e.g. SH-2026-00001), name or phone..."
+                id="up-patient-search"
+                type="search"
+                placeholder="Patient ID, name or phone"
                 value={patientSearch}
-                onChange={(e) => setPatientSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#CBD5E1]"
+                onChange={e => setPatientSearch(e.target.value)}
+                className="field-control pl-10"
               />
             </div>
-
-            {/* Match Candidate Radio List */}
-            <div className="max-h-36 overflow-y-auto border border-[#E1E8ED] rounded-lg p-2 space-y-1.5 bg-[#F8FAFC]">
+            <div role="radiogroup" aria-label="Matching patients" className="mt-2 max-h-44 space-y-1 overflow-y-auto rounded-xl border border-line bg-ink-50/50 p-1.5">
               {matchingPatients.length === 0 ? (
-                <div className="text-center py-2 text-[#667085]">No matching patient found.</div>
+                <p className="py-3 text-center text-[13px] text-ink-500">No matching patient found.</p>
               ) : (
-                matchingPatients.map((p) => (
-                  <label
-                    key={p.id}
-                    className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
-                      selectedPatientId === p.patientId ? 'bg-[#EBF6FC] border border-[#3DA9DF]' : 'hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="matched_patient"
-                        checked={selectedPatientId === p.patientId}
-                        onChange={() => setSelectedPatientId(p.patientId)}
-                        className="text-[#3DA9DF]"
-                      />
-                      <span className="font-bold text-[#243447]">{p.fullName}</span>
-                      <span className="font-mono text-[#3DA9DF]">({p.patientId})</span>
-                    </div>
-                    <span className="text-[#667085]">+91 {p.phone}</span>
-                  </label>
-                ))
+                matchingPatients.map(p => {
+                  const on = selectedPatientId === p.patientId;
+                  return (
+                    <label
+                      key={p.id}
+                      className={cn(
+                        'flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                        on ? 'bg-white ring-2 ring-brand-500' : 'hover:bg-white'
+                      )}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input type="radio" name="matched_patient" checked={on} onChange={() => setSelectedPatientId(p.patientId)} className="accent-brand-700" />
+                        <span className="font-medium text-ink-900">{p.fullName}</span>
+                        <span className="font-mono text-xs text-brand-700">{p.patientId}</span>
+                      </span>
+                      <span className="text-xs text-ink-500">+91 {p.phone}</span>
+                    </label>
+                  );
+                })
               )}
             </div>
           </div>
 
-          {/* Test & Accession */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block font-semibold text-[#243447] mb-1">
-                Investigation / Test Name <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={selectedTestName}
-                onChange={(e) => setSelectedTestName(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white"
-              >
-                {pathologyTests.map((t) => (
+              <label htmlFor="up-test" className="field-label">2 · Test</label>
+              <select id="up-test" value={selectedTestName} onChange={e => setSelectedTestName(e.target.value)} className="field-control">
+                {pathologyTests.map(t => (
                   <option key={t.id} value={t.name}>
                     {t.name}
                   </option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="block font-semibold text-[#243447] mb-1">
-                Lab Accession Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={customAccession}
-                onChange={(e) => setCustomAccession(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] font-mono"
-                required
-              />
+              <label htmlFor="up-acc" className="field-label">Accession number</label>
+              <input id="up-acc" value={customAccession} onChange={e => setCustomAccession(e.target.value)} className="field-control font-mono" required />
             </div>
           </div>
 
-          {/* File Picker */}
-          <div>
-            <label className="block font-semibold text-[#243447] mb-1">
-              Select Signed PDF Document <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setReportFile(e.target.files?.[0] || null)}
-              className="w-full p-2 border border-[#CBD5E1] rounded-lg bg-[#F8FAFC]"
-              required
-            />
-            <span className="text-[11px] text-[#667085] mt-1 block">
-              Only authentic PDF files up to 10 MB are permitted. Untrusted types will be rejected.
-            </span>
-          </div>
+          <FileDrop label="3 · Signed report PDF" file={reportFile} onChange={setReportFile} accept="application/pdf" hint="PDF only · up to 10 MB" />
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#E1E8ED]">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setUploadModalOpen(false)}>
+          <div className="flex justify-end gap-2 border-t border-line pt-4">
+            <Button variant="ghost" type="button" onClick={() => setUploadModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit" isLoading={isUploading}>
-              Save as Pending Verification
+            <Button type="submit" isLoading={isUploading} loadingText="Uploading…">
+              {uploadError ? 'Try again' : 'Save for verification'}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* SUPERSEDE / CORRECTION MODAL */}
+      {/* Supersede */}
       <Modal
         isOpen={Boolean(supersedeModalReport)}
         onClose={() => setSupersedeModalReport(null)}
-        title={`Supersede & Correct Report: ${supersedeModalReport?.reportCode}`}
-        description="Replace erroneous laboratory findings through traceable versioning."
+        title={`Correct report ${supersedeModalReport?.reportCode ?? ''}`}
+        description="The current version is kept in the audit history."
       >
-        <form onSubmit={handleSupersedeSubmit} className="space-y-4 text-xs">
-          <p className="text-[#243447]">
-            You are creating <strong>Version {((supersedeModalReport?.versionNumber || 1) + 1)}</strong> for patient <strong>{supersedeModalReport?.patientName}</strong> ({supersedeModalReport?.patientId}). The prior version will be preserved in audit records.
+        <form onSubmit={handleSupersedeSubmit} className="space-y-5">
+          {supersedeError && <Alert type="error">{supersedeError}</Alert>}
+          <p className="text-sm text-ink-700">
+            Creating <strong className="font-semibold text-ink-900">version {(supersedeModalReport?.versionNumber || 1) + 1}</strong> for{' '}
+            <strong className="font-semibold text-ink-900">{supersedeModalReport?.patientName}</strong> ({supersedeModalReport?.patientId}).
           </p>
-
           <div>
-            <label className="block font-semibold text-[#243447] mb-1">
-              Correction Reason (Mandatory Audit Requirement) <span className="text-red-500">*</span>
-            </label>
+            <label htmlFor="sup-reason" className="field-label">Reason for correction</label>
             <textarea
+              id="sup-reason"
               rows={3}
               value={correctionReason}
-              onChange={(e) => setCorrectionReason(e.target.value)}
-              placeholder="e.g. Recalibration amendment, typing correction in reference interval..."
-              className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1]"
+              onChange={e => setCorrectionReason(e.target.value)}
+              placeholder="e.g. Reference interval typing correction"
+              className="field-control resize-y"
               required
             />
           </div>
-
-          <div>
-            <label className="block font-semibold text-[#243447] mb-1">
-              Select Corrected PDF Report <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setCorrectedFile(e.target.files?.[0] || null)}
-              className="w-full p-2 border border-[#CBD5E1] rounded-lg bg-[#F8FAFC]"
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#E1E8ED]">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setSupersedeModalReport(null)}>
+          <FileDrop label="Corrected PDF" file={correctedFile} onChange={setCorrectedFile} accept="application/pdf" hint="PDF only · up to 10 MB" />
+          <div className="flex justify-end gap-2 border-t border-line pt-4">
+            <Button variant="ghost" type="button" onClick={() => setSupersedeModalReport(null)}>
               Cancel
             </Button>
-            <Button variant="danger" size="sm" type="submit" isLoading={isUploading}>
-              Publish Superseded Version
+            <Button variant="danger" type="submit" isLoading={isUploading} loadingText="Publishing…">
+              Publish corrected version
             </Button>
           </div>
         </form>

@@ -18,11 +18,11 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -4 }}
+      exit={{ opacity: 0 }}
       transition={{
-        duration: 0.24,
+        duration: 0.2,
         ease: [0.21, 0.47, 0.32, 0.98],
       }}
       className={className}

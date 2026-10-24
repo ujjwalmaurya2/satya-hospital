@@ -1,234 +1,220 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { 
-  Activity, 
-  Users, 
-  Calendar, 
-  FileText, 
-  Settings, 
-  LogOut, 
-  ShieldCheck, 
-  Stethoscope, 
-  Microscope, 
-  Menu, 
-  X, 
-  Home,
-  Clock,
-  ClipboardList,
-  Heart,
-  ListOrdered
-} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, Menu, Microscope, Stethoscope, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
-import { Badge } from '../common/Badge';
+import { homePathForRole } from '../../lib/access';
+import { cn } from '../../lib/cn';
+import { Avatar } from '../dashboard/Dashboard';
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+}
+
+const icon = 'h-[18px] w-[18px]';
+
+const NAV: Record<Exclude<UserRole, 'patient'>, NavItem[]> = {
+  reception: [
+    { label: 'Queue desk', path: '/staff', icon: <ListOrdered className={icon} /> },
+    { label: 'Records & uploads', path: '/reception', icon: <FolderOpen className={icon} /> },
+  ],
+  doctor: [{ label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> }],
+  pathology: [{ label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> }],
+  admin: [
+    { label: 'Overview', path: '/admin', icon: <Activity className={icon} /> },
+    { label: 'Queue desk', path: '/staff', icon: <ListOrdered className={icon} /> },
+    { label: 'Records & uploads', path: '/reception', icon: <FolderOpen className={icon} /> },
+    { label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> },
+    { label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> },
+  ],
+};
+
+const ROLE_LABEL: Record<UserRole, string> = {
+  reception: 'Reception',
+  doctor: 'Doctor',
+  pathology: 'Pathology',
+  admin: 'Administrator',
+  patient: 'Patient',
+};
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' });
+}
 
 export const StaffLayout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const reduce = useReducedMotion();
   const { user, role, logout, updateRole, isLiveSession } = useAuth();
   // Demo role switching is a development aid only; real staff keep their assigned role.
   const showRoleSwitcher = import.meta.env.DEV && !isLiveSession;
 
-  const roleNavItems: Record<UserRole, { label: string; path: string; icon: React.ReactNode }[]> = {
-    admin: [
-      { label: 'Operational Overview', path: '/admin', icon: <Activity className="w-5 h-5" /> },
-      { label: 'OPD Queue Desk', path: '/staff', icon: <ListOrdered className="w-5 h-5" /> },
-      { label: 'OPD & Hospital Rules', path: '/admin#rules', icon: <Clock className="w-5 h-5" /> },
-      { label: 'Staff & Roles', path: '/admin#staff', icon: <Users className="w-5 h-5" /> },
-      { label: 'Audit Trail Logs', path: '/admin#audit', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'System & Storage', path: '/admin#system', icon: <Settings className="w-5 h-5" /> },
-    ],
-    reception: [
-      { label: 'OPD Queue Desk', path: '/staff', icon: <ListOrdered className="w-5 h-5" /> },
-      { label: 'Arrivals & Records', path: '/reception', icon: <Calendar className="w-5 h-5" /> },
-      { label: 'Walk-In Registration', path: '/reception#register', icon: <Users className="w-5 h-5" /> },
-      { label: 'Patient Search', path: '/reception#search', icon: <FileText className="w-5 h-5" /> },
-      { label: 'Upload Rx Scan', path: '/reception#upload', icon: <FileText className="w-5 h-5" /> },
-    ],
-    doctor: [
-      { label: 'My OPD Queue', path: '/doctor', icon: <Stethoscope className="w-5 h-5" /> },
-      { label: 'Consultations & History', path: '/doctor#consultations', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'Prescription Verifications', path: '/doctor#prescriptions', icon: <FileText className="w-5 h-5" /> },
-    ],
-    pathology: [
-      { label: 'Pathology Worklist', path: '/pathology-dashboard', icon: <Microscope className="w-5 h-5" /> },
-      { label: 'Upload PDF Report', path: '/pathology-dashboard#upload', icon: <FileText className="w-5 h-5" /> },
-      { label: 'Verify & Publish', path: '/pathology-dashboard#verify', icon: <ShieldCheck className="w-5 h-5" /> },
-    ],
-    patient: [
-      { label: 'Patient Dashboard', path: '/patient/dashboard', icon: <Home className="w-5 h-5" /> },
-    ],
-  };
+  const items = role === 'patient' ? [] : NAV[role];
 
-  const currentNav = roleNavItems[role] || roleNavItems.admin;
+  useEffect(() => setOpen(false), [location.pathname]);
 
-  const handleRoleSwitch = (newRole: UserRole) => {
-    updateRole(newRole);
-    if (newRole === 'admin') navigate('/admin');
-    else if (newRole === 'reception') navigate('/staff');
-    else if (newRole === 'doctor') navigate('/doctor');
-    else if (newRole === 'pathology') navigate('/pathology-dashboard');
-    else navigate('/patient/dashboard');
-  };
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/staff/login');
   };
 
-  return (
-    <div className="min-h-screen bg-[#FCFDFB] flex flex-col md:flex-row">
-      {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-[#E5ECEF] px-4 py-3 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#3DA9DF] flex items-center justify-center text-white">
-            <Heart className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="text-sm font-bold text-[#193247]">Satya Hospital</span>
-            <div className="flex items-center gap-1.5">
-              <Badge variant="medical-blue" size="sm">
-                {role.toUpperCase()}
-              </Badge>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 text-[#193247] hover:bg-[#EBF6FC] rounded-lg"
-          aria-label="Toggle staff sidebar"
-        >
-          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
+  const sidebar = (onNavigate?: () => void) => (
+    <div className="flex h-full flex-col">
+      <Link to={homePathForRole(role)} className="flex items-center gap-3 px-5 pt-6 pb-5" onClick={onNavigate}>
+        <img src="/favicon.svg" alt="" className="h-9 w-9 rounded-[11px]" />
+        <span className="leading-tight">
+          <span className="block text-[15px] font-bold tracking-tight text-white">Satya Hospital</span>
+          <span className="block text-xs text-white/50">Staff workspace</span>
+        </span>
+      </Link>
 
-      {/* Staff Sidebar */}
-      <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-72 bg-[#193247] text-white flex flex-col transition-transform duration-200 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        }`}
-      >
-        {/* Brand Header */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#3DA9DF] flex items-center justify-center text-white shadow-sm">
-              <Heart className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-white leading-tight">Satya Hospital</h2>
-              <span className="text-xs font-semibold text-[#EBF6FC] uppercase">
-                Staff Workspace
-              </span>
-            </div>
-          </Link>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden text-white/60 hover:text-white p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+      <nav aria-label="Workspace" className="flex-1 overflow-y-auto px-3 py-2">
+        <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/35">Workspace</p>
+        <ul className="space-y-0.5">
+          {items.map(item => (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                end
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  cn(
+                    'relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
+                    isActive ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && <span className="absolute -left-3 top-2 bottom-2 w-[3px] rounded-r-full bg-brand-400" aria-hidden="true" />}
+                    <span className={isActive ? 'text-brand-300' : ''} aria-hidden="true">
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
 
-        {/* Current User Card & Fast Role Switcher */}
-        <div className="p-4 bg-white/5 border-b border-white/10">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-white/60">Active Session:</span>
-            <Badge variant="medical-blue" size="sm" dot>
-              {role.toUpperCase()}
-            </Badge>
-          </div>
-          <div className="text-sm font-semibold text-white truncate">
-            {user?.fullName || 'Hospital Staff'}
-          </div>
-          <div className="text-xs text-white/60 truncate mt-0.5">
-            {user?.email || 'staff@satyahospital.com'}
-          </div>
-
-          {/* Quick Role Switcher (development demo only) */}
-          {showRoleSwitcher && (
-          <div className="mt-3 pt-3 border-t border-white/10">
-            <label className="text-[11px] font-bold text-[#EBF6FC] block mb-1.5 uppercase tracking-wider">
-              Switch Staff Panel:
-            </label>
-            <div className="grid grid-cols-2 gap-1.5 text-xs">
-              {(['reception', 'doctor', 'pathology', 'admin'] as UserRole[]).map((r) => (
+        {showRoleSwitcher && (
+          <div className="mt-8 px-3">
+            <p className="pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/35">Demo role</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(['reception', 'doctor', 'pathology', 'admin'] as UserRole[]).map(r => (
                 <button
                   key={r}
-                  onClick={() => handleRoleSwitch(r)}
-                  className={`px-2 py-1.5 rounded-md text-left text-xs font-medium transition-colors cursor-pointer ${
-                    role === r
-                      ? 'bg-[#3DA9DF] text-white font-bold'
-                      : 'bg-white/10 text-white/70 hover:bg-white/15 hover:text-white'
-                  }`}
+                  type="button"
+                  aria-pressed={role === r}
+                  onClick={() => {
+                    updateRole(r);
+                    navigate(homePathForRole(r));
+                    onNavigate?.();
+                  }}
+                  className={cn(
+                    'h-8 rounded-lg text-xs font-medium transition-colors cursor-pointer',
+                    role === r ? 'bg-brand-500/20 text-brand-200 ring-1 ring-inset ring-brand-400/40' : 'bg-white/5 text-white/55 hover:text-white'
+                  )}
                 >
-                  {r === 'admin' ? 'Super Admin' : r.charAt(0).toUpperCase() + r.slice(1)}
+                  {ROLE_LABEL[r]}
                 </button>
               ))}
             </div>
           </div>
-          )}
-        </div>
+        )}
+      </nav>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Staff Navigation">
-          <div className="text-[11px] font-semibold text-white/40 uppercase tracking-wider px-3 mb-2">
-            Operations
+      <div className="border-t border-white/10 p-3">
+        <Link to="/" className="flex h-9 items-center gap-2.5 rounded-lg px-3 text-[13px] text-white/50 hover:text-white" onClick={onNavigate}>
+          <ExternalLink className="h-4 w-4" aria-hidden="true" /> Public website
+        </Link>
+        <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/5 p-3">
+          <Avatar name={user?.fullName || 'Staff'} size="sm" className="from-brand-400/30 to-leaf-400/30 text-white" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-white">{user?.fullName || 'Staff member'}</p>
+            <p className="truncate text-xs text-white/50">{ROLE_LABEL[role]}</p>
           </div>
-          {currentNav.map((item) => {
-            const active = location.pathname === item.path || (location.pathname + location.hash) === item.path;
-            return (
-              <Link
-                key={item.label}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  active
-                    ? 'bg-[#3DA9DF] text-white shadow-xs font-bold'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-
-          <div className="pt-4 mt-4 border-t border-white/10">
-            <div className="text-[11px] font-semibold text-white/40 uppercase tracking-wider px-3 mb-2">
-              External Shortcuts
-            </div>
-            <Link
-              to="/"
-              className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 hover:text-white"
-            >
-              <Home className="w-4 h-4 text-[#EBF6FC]" />
-              <span>Public Hospital Website</span>
-            </Link>
-            <Link
-              to="/patient/dashboard"
-              className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 hover:text-white"
-            >
-              <Users className="w-4 h-4 text-[#91BB40]" />
-              <span>View Patient Portal</span>
-            </Link>
-          </div>
-        </nav>
-
-        {/* Logout Footer */}
-        <div className="p-4 border-t border-white/10 bg-black/10">
           <button
+            type="button"
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-xs font-bold text-red-200 hover:text-white bg-red-900/40 hover:bg-red-800/50 rounded-xl border border-red-800/50 transition-colors cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white cursor-pointer"
+            aria-label="Sign out"
+            title="Sign out"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out Workspace</span>
+            <LogOut className="h-4 w-4" />
           </button>
         </div>
-      </aside>
+      </div>
+    </div>
+  );
 
-      {/* Main Content Pane */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl">
+  return (
+    <div className="min-h-screen bg-[#F6F8F9] lg:pl-64">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-ink-900 lg:block">{sidebar()}</aside>
+
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.div className="absolute inset-0 bg-ink-950/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} />
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-label="Workspace menu"
+              className="absolute inset-y-0 left-0 w-72 max-w-[85%] bg-ink-900 shadow-float"
+              initial={reduce ? { opacity: 0 } : { x: '-100%' }}
+              animate={reduce ? { opacity: 1 } : { x: 0 }}
+              exit={reduce ? { opacity: 0 } : { x: '-100%' }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="absolute right-3 top-5 flex h-9 w-9 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              {sidebar(() => setOpen(false))}
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <header className="sticky top-0 z-20 border-b border-line bg-white/90 backdrop-blur-md">
+        <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-50 lg:hidden cursor-pointer"
+              aria-label="Open menu"
+              aria-expanded={open}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <p className="text-sm text-ink-500">{todayLabel()}</p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full bg-ink-50 px-3 py-1 text-xs font-medium text-ink-600">
+            <span className={cn('h-1.5 w-1.5 rounded-full', isLiveSession ? 'bg-leaf-500' : 'bg-ink-300')} aria-hidden="true" />
+            <span className="hidden sm:inline">{isLiveSession ? 'Signed in' : 'Demo session'} · </span>
+            {ROLE_LABEL[role]}
+          </span>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <Outlet />
       </main>
     </div>

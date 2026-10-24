@@ -1,38 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  Phone, 
-  CheckCircle2, 
-  AlertTriangle, 
-  ArrowRight, 
-  ShieldCheck, 
-  Stethoscope, 
-  Baby,
-  Heart,
-  FileText,
-  Building,
-  Info,
-  Sparkles
-} from 'lucide-react';
-import { Card, CardBody, CardHeader } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertTriangle, ArrowRight, Baby, Calendar, CalendarCheck, CheckCircle2, Clock, Info, ShieldCheck, Sparkles, Stethoscope } from 'lucide-react';
+import { Button, LinkButton } from '../../components/common/Button';
 import { Alert } from '../../components/common/Alert';
-import { LottiePlayer } from '../../components/common/LottiePlayer';
-import { MedicalLoader } from '../../components/common/MedicalLoader';
-import { LottieAssets } from '../../assets/lottie';
-import { ScrollReveal } from '../../components/motion';
+import { PageHero, Section } from '../../components/site/Section';
 import { useHospital } from '../../context/HospitalContext';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  checkOnlineBookingCutoff, 
-  getHospitalTodayDate, 
-  getNextEligibleOpdDate,
-  isValidIndianPhone 
-} from '../../lib/tokens';
+import { checkOnlineBookingCutoff, getHospitalTodayDate, getNextEligibleOpdDate, isValidIndianPhone } from '../../lib/tokens';
+import { to12h } from '../../lib/contact';
+import { cn } from '../../lib/cn';
 import { Appointment } from '../../types';
 
 export const BookAppointment: React.FC = () => {
@@ -64,7 +41,7 @@ export const BookAppointment: React.FC = () => {
   const [age, setAge] = useState<string>(patientProfile?.age?.toString() || '4');
   const [ageUnit, setAgeUnit] = useState<'years' | 'months'>('years');
   const [notes, setNotes] = useState<string>('');
-  const [agreeTerms, setAgreeTerms] = useState<boolean>(true);
+  const [agreeTerms, setAgreeTerms] = useState<boolean>(false);
 
   // Status state
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -110,8 +87,10 @@ export const BookAppointment: React.FC = () => {
       let patientIdToBook = patientProfile?.id;
 
       if (!patientIdToBook) {
-        // Search if patient exists with this phone
-        const existing = searchPatients(phone.trim());
+        // Reuse an existing record only when phone AND name match: siblings often share a parent's number.
+        const existing = searchPatients(phone.trim()).filter(
+          p => p.phone === phone.trim() && p.fullName.trim().toLowerCase() === fullName.trim().toLowerCase()
+        );
         if (existing.length > 0) {
           patientIdToBook = existing[0].id;
         } else {
@@ -169,464 +148,351 @@ export const BookAppointment: React.FC = () => {
     }
   };
 
+  const doctor = doctors.find(d => d.id === selectedDoctorId);
+  const prettyDate = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
+
+  const careTypes = [
+    { id: 'pediatric', label: 'Pediatric care', icon: <Baby className="h-5 w-5" /> },
+    { id: 'newborn', label: 'Newborn care', icon: <Sparkles className="h-5 w-5" /> },
+    { id: 'general', label: 'General OPD', icon: <Stethoscope className="h-5 w-5" /> },
+  ];
+
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
-        {/* Breadcrumb / Headline */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-bold border border-[#BCE1F5]">
-              <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Pediatric &amp; Family Outpatient Scheduling</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#193247] tracking-tight">
-              Book an OPD Appointment
-            </h1>
-            <p className="text-xs sm:text-sm text-[#647785] max-w-2xl leading-relaxed">
-              Reserve your child’s sequential consultation token online. Same-day online reservations close promptly at <strong className="text-[#193247]">{settings.onlineCutoffTime} AM IST</strong>.
-            </p>
-          </div>
-        </ScrollReveal>
+    <>
+      <PageHero
+        crumbs={[{ label: 'Book appointment' }]}
+        eyebrow="OPD token reservation"
+        title={confirmedBooking ? 'Your token is reserved' : 'Book an OPD appointment'}
+        description={
+          confirmedBooking
+            ? 'Keep your token number and reference code handy when you arrive at reception.'
+            : `Reserve a sequential consultation token online. Same-day online booking closes at ${to12h(settings.onlineCutoffTime)} IST.`
+        }
+      />
 
-        {/* Confirmation View */}
+      <Section size="md">
         {confirmedBooking ? (
-          <Card className="p-8 border-[#3DA9DF]/50 bg-white shadow-md animate-in fade-in duration-200">
-            <div className="flex flex-col items-center text-center space-y-4">
-              {/* Lottie Medical Verification Checkmark Animation */}
-              <div className="w-24 h-24 flex items-center justify-center">
-                <LottiePlayer
-                  animationData={LottieAssets.bookingSuccessCheck}
-                  width={96}
-                  height={96}
-                  loop={false}
-                  autoplay={true}
-                  ariaLabel="OPD Appointment Confirmed"
-                  fallback={
-                    <div className="w-16 h-16 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-                      <CheckCircle2 className="w-10 h-10 stroke-[2.3]" />
+          <div className="mx-auto max-w-2xl animate-scale-in">
+            <div className="overflow-hidden rounded-[28px] border border-line bg-white shadow-lift">
+              <div className="relative bg-ink-800 px-7 py-8 text-white sm:px-10">
+                <div aria-hidden="true" className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-500/25 blur-3xl" />
+                <div className="relative flex items-start justify-between gap-6">
+                  <div>
+                    <p className="inline-flex items-center gap-2 text-sm text-leaf-300">
+                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Confirmed
+                    </p>
+                    <p className="mt-4 text-sm text-white/60">OPD token</p>
+                    <p className="text-6xl font-bold leading-none tracking-tight tabular-nums">#{confirmedBooking.tokenNumber}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-white/60">Reference</p>
+                    <p className="mt-1 font-mono text-sm font-semibold">{confirmedBooking.appointmentCode}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <div aria-hidden="true" className="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-canvas" />
+                <div aria-hidden="true" className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-canvas" />
+                <dl className="grid grid-cols-1 gap-x-8 gap-y-5 px-7 py-7 text-sm sm:grid-cols-2 sm:px-10">
+                  {[
+                    ['Patient', confirmedBooking.patientName],
+                    ['Hospital patient ID', confirmedBooking.patientId],
+                    ['Date', prettyDate(confirmedBooking.appointmentDate)],
+                    ['Doctor', confirmedBooking.doctorName || '—'],
+                  ].map(([k, v]) => (
+                    <div key={k}>
+                      <dt className="text-ink-500">{k}</dt>
+                      <dd className="mt-0.5 font-semibold text-ink-900">{v}</dd>
                     </div>
-                  }
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Badge variant="medical-blue" size="md">
-                  Confirmed OPD Token #{confirmedBooking.tokenNumber}
-                </Badge>
-                <h2 className="text-2xl font-bold text-[#193247] pt-2">
-                  Appointment Successfully Reserved!
-                </h2>
-                <p className="text-xs text-[#647785]">
-                  Reference Code: <strong className="text-[#193247]">{confirmedBooking.appointmentCode}</strong>
-                </p>
-              </div>
-
-              {/* Token Summary Card */}
-              <div className="w-full max-w-md bg-[#FCFDFB] border border-[#E5ECEF] rounded-2xl p-5 text-left text-xs space-y-2.5 my-4">
-                <div className="flex justify-between py-1 border-b border-[#E5ECEF]">
-                  <span className="text-[#647785]">Hospital Patient ID:</span>
-                  <span className="font-bold text-[#193247]">{confirmedBooking.patientId}</span>
+                  ))}
+                </dl>
+                <div className="mx-7 mb-7 flex gap-3 rounded-2xl bg-brand-50 p-4 text-sm text-brand-900 ring-1 ring-brand-100 sm:mx-10">
+                  <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+                  <p>
+                    Please arrive at reception by <strong>{to12h(settings.opdStartTime)}</strong> on {prettyDate(confirmedBooking.appointmentDate)} and give your token
+                    number or registered mobile number to check in.
+                  </p>
                 </div>
-                <div className="flex justify-between py-1 border-b border-[#E5ECEF]">
-                  <span className="text-[#647785]">Patient Name:</span>
-                  <span className="font-semibold text-[#193247]">{confirmedBooking.patientName}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-[#E5ECEF]">
-                  <span className="text-[#647785]">Appointment Date:</span>
-                  <span className="font-semibold text-[#193247]">{confirmedBooking.appointmentDate}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-[#E5ECEF]">
-                  <span className="text-[#647785]">Consulting Doctor:</span>
-                  <span className="font-semibold text-[#193247]">{confirmedBooking.doctorName}</span>
-                </div>
-                <div className="flex justify-between py-1 pt-1.5">
-                  <span className="text-[#647785]">Assigned Daily Token:</span>
-                  <span className="font-extrabold text-base text-[#3DA9DF]">Token #{confirmedBooking.tokenNumber}</span>
-                </div>
-              </div>
-
-              <div className="bg-[#EBF6FC] border border-[#BCE1F5] p-4 rounded-xl text-xs text-[#1E78A4] text-left max-w-md w-full">
-                <div className="font-bold mb-1 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-[#3DA9DF]" />
-                  <span>Next Steps for Consultation:</span>
-                </div>
-                <p className="leading-relaxed text-[11px]">
-                  Please arrive at the hospital reception by <strong>09:30 AM</strong> on {confirmedBooking.appointmentDate}. Present this token code or your registered mobile number for check-in.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 w-full max-w-md">
-                <Link to="/patient/dashboard" className="flex-1">
-                  <Button variant="primary" size="md" className="w-full font-bold">
-                    Go to Patient Portal
-                  </Button>
-                </Link>
-                <Button 
-                  variant="outline" 
-                  size="md" 
-                  className="flex-1"
-                  onClick={() => {
-                    setConfirmedBooking(null);
-                    setSelectedDate(nextEligibleDate);
-                    setNotes('');
-                  }}
-                >
-                  Book Another Slot
-                </Button>
               </div>
             </div>
-          </Card>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <LinkButton to="/patient/dashboard" className="flex-1">
+                Go to patient portal
+              </LinkButton>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setConfirmedBooking(null);
+                  setSelectedDate(nextEligibleDate);
+                  setNotes('');
+                }}
+              >
+                Book another appointment
+              </Button>
+            </div>
+          </div>
         ) : (
-          /* Booking Form */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            {/* Main Form (8 cols) */}
-            <div className="lg:col-span-8">
-              <Card className="border-[#CBD7DD] bg-white">
-                <CardHeader className="border-b border-[#E5ECEF]">
-                  <div className="flex items-center justify-between w-full">
-                    <h2 className="text-base font-bold text-[#193247]">
-                      Appointment Scheduling &amp; Patient Details
-                    </h2>
-                    <Badge variant="medical-blue" size="sm">
-                      Complimentary Online Token
-                    </Badge>
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+            <form onSubmit={handleSubmit} className="space-y-6 lg:col-span-8" noValidate>
+              {errorMsg && (
+                <Alert type="error" title="We couldn’t book this appointment">
+                  {errorMsg}
+                </Alert>
+              )}
+
+              {/* 1. Visit */}
+              <fieldset className="rounded-3xl border border-line bg-white p-6 sm:p-8">
+                <legend className="sr-only">Visit details</legend>
+                <p className="text-xs font-semibold text-leaf-700">Step 1</p>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight text-ink-900">Visit details</h2>
+
+                <div className="mt-6">
+                  <p className="field-label" id="care-type-label">Type of care</p>
+                  <div role="radiogroup" aria-labelledby="care-type-label" className="grid grid-cols-3 gap-2.5">
+                    {careTypes.map(t => {
+                      const on = appointmentType === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => setAppointmentType(t.id)}
+                          className={cn(
+                            'flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-[13px] font-semibold transition-[border-color,background-color,color] cursor-pointer',
+                            on ? 'border-brand-500 bg-brand-50 text-brand-800 ring-2 ring-brand-500/15' : 'border-line text-ink-600 hover:border-ink-300'
+                          )}
+                        >
+                          {t.icon}
+                          {t.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                </CardHeader>
+                </div>
 
-                <CardBody>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {errorMsg && (
-                      <Alert type="error" title="Booking Notice">
-                        {errorMsg}
-                      </Alert>
-                    )}
+                <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="b-date" className="field-label">Appointment date</label>
+                    <input
+                      id="b-date"
+                      type="date"
+                      min={todayStr}
+                      value={selectedDate}
+                      onChange={e => {
+                        setSelectedDate(e.target.value);
+                        setErrorMsg(null);
+                      }}
+                      className="field-control"
+                      aria-describedby="b-date-hint"
+                      required
+                    />
+                    <p id="b-date-hint" className="field-hint">
+                      OPD from {to12h(settings.opdStartTime)} · same-day cutoff {to12h(settings.onlineCutoffTime)}
+                    </p>
+                  </div>
+                  <div>
+                    <label htmlFor="b-doctor" className="field-label">Doctor</label>
+                    <select id="b-doctor" value={selectedDoctorId} onChange={e => setSelectedDoctorId(e.target.value)} className="field-control" aria-describedby="b-doc-hint">
+                      {doctors.map(doc => (
+                        <option key={doc.id} value={doc.id}>
+                          {doc.fullName} — {doc.department}
+                        </option>
+                      ))}
+                    </select>
+                    <p id="b-doc-hint" className="field-hint">{doctor?.consultationRoom || 'OPD hall'}</p>
+                  </div>
+                </div>
 
-                    {/* Cutoff Notice */}
-                    {!cutoffStatus.allowed && (
-                      <div className="p-4 rounded-xl border border-amber-300 bg-amber-50 text-xs text-amber-900 space-y-2.5">
-                        <div className="flex items-center gap-2 font-bold text-amber-800">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>Online Booking Closed For {selectedDate}</span>
-                        </div>
-                        <p className="leading-relaxed">{cutoffStatus.reason}</p>
+                <AnimatePresence initial={false}>
+                  {!cutoffStatus.allowed && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <div className="mt-5 rounded-2xl border border-warning-200 bg-warning-50 p-4 text-sm text-warning-700">
+                        <p className="flex items-center gap-2 font-semibold">
+                          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                          Online booking isn’t open for this date
+                        </p>
+                        <p className="mt-1.5 leading-relaxed">{cutoffStatus.reason}</p>
                         {cutoffStatus.nextEligibleDate && cutoffStatus.nextEligibleDate !== selectedDate && (
-                          <div className="pt-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedDate(cutoffStatus.nextEligibleDate!);
-                                setErrorMsg(null);
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3DA9DF] text-white font-bold text-xs hover:bg-[#2B92C4] transition-colors"
-                            >
-                              <span>Switch to Next Eligible Date ({cutoffStatus.nextEligibleDate})</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedDate(cutoffStatus.nextEligibleDate!);
+                              setErrorMsg(null);
+                            }}
+                            className="link mt-2 inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            Switch to {prettyDate(cutoffStatus.nextEligibleDate)} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
                         )}
                       </div>
-                    )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </fieldset>
 
-                    {/* Consultation Type Selector */}
-                    <div>
-                      <label className="block text-xs font-bold text-[#193247] mb-2">
-                        Select Care Discipline
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setAppointmentType('pediatric')}
-                          className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                            appointmentType === 'pediatric'
-                              ? 'border-[#3DA9DF] bg-[#EBF6FC] text-[#3DA9DF]'
-                              : 'border-[#E5ECEF] text-[#647785] hover:bg-[#FCFDFB]'
-                          }`}
-                        >
-                          <Baby className="w-4 h-4" />
-                          <span>Pediatric Care</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setAppointmentType('newborn')}
-                          className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                            appointmentType === 'newborn'
-                              ? 'border-[#91BB40] bg-[#F3F8EC] text-[#486812]'
-                              : 'border-[#E5ECEF] text-[#647785] hover:bg-[#FCFDFB]'
-                          }`}
-                        >
-                          <Sparkles className="w-4 h-4" />
-                          <span>Newborn Care</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setAppointmentType('general')}
-                          className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                            appointmentType === 'general'
-                              ? 'border-[#3DA9DF] bg-[#EBF6FC] text-[#3DA9DF]'
-                              : 'border-[#E5ECEF] text-[#647785] hover:bg-[#FCFDFB]'
-                          }`}
-                        >
-                          <Stethoscope className="w-4 h-4" />
-                          <span>General OPD</span>
-                        </button>
-                      </div>
-                    </div>
+              {/* 2. Patient */}
+              <fieldset className="rounded-3xl border border-line bg-white p-6 sm:p-8">
+                <legend className="sr-only">Patient details</legend>
+                <p className="text-xs font-semibold text-leaf-700">Step 2</p>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight text-ink-900">Patient details</h2>
 
-                    {/* Date & Doctor Selection */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                          Appointment Date <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          min={todayStr}
-                          value={selectedDate}
-                          onChange={(e) => {
-                            setSelectedDate(e.target.value);
-                            setErrorMsg(null);
-                          }}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                          required
-                        />
-                        <span className="text-[11px] text-[#647785] mt-1 block">
-                          OPD starts at 09:30 AM &bull; Cutoff at {settings.onlineCutoffTime} AM
-                        </span>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                          Consulting Specialist <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={selectedDoctorId}
-                          onChange={(e) => setSelectedDoctorId(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                        >
-                          {doctors.map((doc) => (
-                            <option key={doc.id} value={doc.id}>
-                              {doc.fullName} ({doc.department})
-                            </option>
-                          ))}
-                        </select>
-                        <span className="text-[11px] text-[#647785] mt-1 block">
-                          Chamber: {doctors.find(d => d.id === selectedDoctorId)?.consultationRoom || 'OPD Hall'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Patient Name & Parent/Guardian Name */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                          Patient (Child / Adult) Full Name <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <User className="w-4 h-4 text-[#647785] absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="text"
-                            placeholder="e.g. Aarav Sharma"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                          Parent / Guardian Name (If Child)
-                        </label>
-                        <div className="relative">
-                          <User className="w-4 h-4 text-[#647785] absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="text"
-                            placeholder="e.g. Manoj Sharma (Father)"
-                            value={guardianName}
-                            onChange={(e) => setGuardianName(e.target.value)}
-                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Phone & Gender & Age */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                          Mobile Number (10 digits) <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <Phone className="w-4 h-4 text-[#647785] absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="tel"
-                            maxLength={10}
-                            placeholder="e.g. 9839123456"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                            className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                          Sex / Gender <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={gender}
-                          onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other')}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                        >
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="block text-xs font-bold text-[#193247]">
-                            Age <span className="text-red-500">*</span>
-                          </label>
-                          <div className="flex items-center gap-2 text-[10px] font-bold">
-                            <button
-                              type="button"
-                              onClick={() => setAgeUnit('years')}
-                              className={`cursor-pointer ${ageUnit === 'years' ? 'text-[#3DA9DF] underline' : 'text-[#647785]'}`}
-                            >
-                              Years
-                            </button>
-                            <span className="text-[#CBD7DD]">|</span>
-                            <button
-                              type="button"
-                              onClick={() => setAgeUnit('months')}
-                              className={`cursor-pointer ${ageUnit === 'months' ? 'text-[#3DA9DF] underline' : 'text-[#647785]'}`}
-                            >
-                              Months
-                            </button>
-                          </div>
-                        </div>
-                        <input
-                          type="number"
-                          min={1}
-                          max={ageUnit === 'months' ? 24 : 120}
-                          value={age}
-                          onChange={(e) => setAge(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Chief Reason / Notes */}
-                    <div>
-                      <label className="block text-xs font-bold text-[#193247] mb-1.5">
-                        Chief Complaint / Medical Concerns (Optional)
-                      </label>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Mild fever since yesterday, routine vaccination checkup..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-[#CBD7DD] text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-                      />
-                    </div>
-
-                    {/* Consent & Policy Checkbox */}
-                    <div className="pt-2">
-                      <label className="flex items-start gap-2.5 text-xs text-[#647785] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={agreeTerms}
-                          onChange={(e) => setAgreeTerms(e.target.checked)}
-                          className="mt-0.5 rounded border-[#CBD7DD] text-[#3DA9DF] focus:ring-[#3DA9DF]"
-                        />
-                        <span>
-                          I confirm that the details provided are accurate and agree to Satya Hospital's{' '}
-                          <Link to="/terms-and-conditions" className="text-[#3DA9DF] underline font-medium">Terms &amp; Conditions</Link>{' '}
-                          and{' '}
-                          <Link to="/privacy-policy" className="text-[#3DA9DF] underline font-medium">Privacy Policy</Link> (Digital Personal Data Protection Act compliant).
-                        </span>
-                      </label>
-                    </div>
-
-                    {/* Genuine Loading Feedback */}
-                    {isSubmitting && (
-                      <MedicalLoader 
-                        size={32} 
-                        layout="horizontal" 
-                        label="Allocating daily OPD queue token..." 
-                      />
-                    )}
-
-                    {/* Submit Button */}
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="lg"
-                      className="w-full font-bold shadow-xs hover:shadow-md"
-                      isLoading={isSubmitting}
-                      disabled={!cutoffStatus.allowed}
-                    >
-                      Confirm OPD Appointment &amp; Generate Token
-                    </Button>
-                  </form>
-                </CardBody>
-              </Card>
-            </div>
-
-            {/* Guidelines Sidebar (4 cols) */}
-            <div className="lg:col-span-4 space-y-4">
-              <Card className="p-5 border-[#CBD7DD] space-y-4 bg-white">
-                <h3 className="text-sm font-bold text-[#193247] flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#3DA9DF]" />
-                  <span>OPD Queue Guidelines</span>
-                </h3>
-
-                <div className="space-y-3 text-xs text-[#647785]">
-                  <div className="p-3 bg-[#FCFDFB] rounded-xl border border-[#E5ECEF]">
-                    <strong className="text-[#193247] block mb-1">09:00 AM Strict Cutoff</strong>
-                    Same-day online bookings close automatically at 09:00 AM IST to lock clinic workflow.
+                <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="b-name" className="field-label">Patient’s full name</label>
+                    <input id="b-name" autoComplete="name" placeholder="e.g. Aarav Sharma" value={fullName} onChange={e => setFullName(e.target.value)} className="field-control" required />
                   </div>
-
-                  <div className="p-3 bg-[#FCFDFB] rounded-xl border border-[#E5ECEF]">
-                    <strong className="text-[#193247] block mb-1">09:30 AM Clinic Start</strong>
-                    Doctors begin patient consultations at 09:30 AM in their assigned OPD chambers.
-                  </div>
-
-                  <div className="p-3 bg-[#FCFDFB] rounded-xl border border-[#E5ECEF]">
-                    <strong className="text-[#193247] block mb-1">Shared Daily Queue</strong>
-                    Online appointments and walk-in arrivals share one unified sequential daily token queue. Offline walk-in registration at reception continues after 09:00 AM.
+                  <div>
+                    <label htmlFor="b-guardian" className="field-label">
+                      Parent / guardian <span className="font-normal text-ink-400">(for children)</span>
+                    </label>
+                    <input id="b-guardian" placeholder="e.g. Manoj Sharma (father)" value={guardianName} onChange={e => setGuardianName(e.target.value)} className="field-control" />
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-[#E5ECEF]">
-                  <div className="flex items-center gap-2 text-xs text-[#486812]">
-                    <ShieldCheck className="w-4 h-4 text-[#91BB40] shrink-0" />
-                    <span>No upfront online consultation fee is charged.</span>
+                <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+                  <div>
+                    <label htmlFor="b-phone" className="field-label">Mobile number</label>
+                    <input
+                      id="b-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      maxLength={10}
+                      placeholder="10 digits"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
+                      className="field-control"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="b-gender" className="field-label">Sex</label>
+                    <select id="b-gender" value={gender} onChange={e => setGender(e.target.value as 'male' | 'female' | 'other')} className="field-control">
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <label htmlFor="b-age" className="text-[13px] font-semibold text-ink-800">Age</label>
+                      <div role="radiogroup" aria-label="Age unit" className="inline-flex rounded-full bg-ink-50 p-0.5 text-[11px] font-semibold">
+                        {(['years', 'months'] as const).map(u => (
+                          <button
+                            key={u}
+                            type="button"
+                            role="radio"
+                            aria-checked={ageUnit === u}
+                            onClick={() => setAgeUnit(u)}
+                            className={cn('rounded-full px-2.5 py-0.5 capitalize cursor-pointer', ageUnit === u ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-500')}
+                          >
+                            {u}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <input id="b-age" type="number" min={1} max={ageUnit === 'months' ? 24 : 120} value={age} onChange={e => setAge(e.target.value)} className="field-control" required />
                   </div>
                 </div>
-              </Card>
 
-              <div className="bg-[#F3F8EC] p-4 rounded-2xl border border-[#D5E8BA] text-xs text-[#486812] space-y-2">
-                <div className="font-bold text-sm text-[#486812] flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-[#91BB40]" />
-                  <span>Walk-In OPD Registrations</span>
+                <div className="mt-5">
+                  <label htmlFor="b-notes" className="field-label">
+                    Reason for visit <span className="font-normal text-ink-400">(optional)</span>
+                  </label>
+                  <textarea
+                    id="b-notes"
+                    rows={3}
+                    placeholder="e.g. Mild fever since yesterday, routine vaccination"
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    className="field-control resize-y"
+                  />
                 </div>
-                <p className="leading-relaxed text-[11px] text-[#647785]">
-                  If the online cutoff has passed or you prefer registering in person, visit the hospital reception desk on the ground floor between 09:30 AM and 01:00 PM.
+              </fieldset>
+
+              {/* 3. Confirm */}
+              <div className="rounded-3xl border border-line bg-white p-6 sm:p-8">
+                <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-ink-600">
+                  <input
+                    type="checkbox"
+                    checked={agreeTerms}
+                    onChange={e => setAgreeTerms(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded-md border-line-strong accent-brand-700"
+                  />
+                  <span>
+                    I confirm these details are accurate and agree to the{' '}
+                    <Link to="/terms-and-conditions" className="link">terms &amp; conditions</Link> and{' '}
+                    <Link to="/privacy-policy" className="link">privacy policy</Link> (DPDP Act).
+                  </span>
+                </label>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="mt-6 w-full"
+                  isLoading={isSubmitting}
+                  loadingText="Reserving your token…"
+                  disabled={!cutoffStatus.allowed}
+                  leftIcon={<CalendarCheck className="h-[18px] w-[18px]" />}
+                >
+                  Confirm appointment
+                </Button>
+                <p className="mt-3 text-center text-[13px] text-ink-500">Free to reserve — the consultation fee is paid at reception.</p>
+              </div>
+            </form>
+
+            <aside className="lg:col-span-4">
+              <div className="space-y-5 lg:sticky lg:top-28">
+                <div className="rounded-3xl border border-line bg-white p-6">
+                  <h2 className="text-sm font-semibold text-ink-900">Your visit</h2>
+                  <dl className="mt-4 space-y-3.5 text-sm">
+                    <div className="flex gap-3">
+                      <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" aria-hidden="true" />
+                      <div>
+                        <dt className="sr-only">Date</dt>
+                        <dd className="font-medium text-ink-900">{selectedDate ? prettyDate(selectedDate) : 'Choose a date'}</dd>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Stethoscope className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" aria-hidden="true" />
+                      <div>
+                        <dt className="sr-only">Doctor</dt>
+                        <dd className="font-medium text-ink-900">{doctor?.fullName}</dd>
+                        <dd className="text-ink-500">{doctor?.consultationRoom}</dd>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" aria-hidden="true" />
+                      <div>
+                        <dt className="sr-only">Time</dt>
+                        <dd className="font-medium text-ink-900">OPD from {to12h(settings.opdStartTime)}</dd>
+                        <dd className="text-ink-500">Called in token order</dd>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <div className="rounded-3xl bg-leaf-50 p-6 ring-1 ring-leaf-200/70">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+                    <Info className="h-4 w-4 text-leaf-700" aria-hidden="true" /> How the queue works
+                  </h2>
+                  <ul className="mt-3 space-y-2.5 text-[13px] leading-relaxed text-ink-600">
+                    <li>Same-day online booking closes at {to12h(settings.onlineCutoffTime)} IST.</li>
+                    <li>Doctors begin consultations at {to12h(settings.opdStartTime)}.</li>
+                    <li>Online and walk-in patients share one token sequence. Walk-in registration continues at reception after the cutoff.</li>
+                  </ul>
+                </div>
+
+                <p className="flex items-center gap-2 px-1 text-[13px] text-ink-500">
+                  <ShieldCheck className="h-4 w-4 text-leaf-600" aria-hidden="true" /> No online payment is taken.
                 </p>
               </div>
-            </div>
-
+            </aside>
           </div>
         )}
-      </div>
-    </div>
+      </Section>
+    </>
   );
 };

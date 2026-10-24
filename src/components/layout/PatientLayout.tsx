@@ -1,34 +1,26 @@
 import React from 'react';
-import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { 
-  Heart, 
-  Calendar, 
-  FileText, 
-  User, 
-  ShieldCheck, 
-  LogOut, 
-  PlusCircle, 
-  Home,
-  CheckCircle2,
-  Baby
-} from 'lucide-react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { CalendarCheck, CalendarDays, FileText, Home, LogOut, Microscope, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from '../common/Button';
-import { Badge } from '../common/Badge';
+import { LinkButton } from '../common/Button';
+import { BrandMark } from '../site/BrandMark';
+import { Avatar } from '../dashboard/Dashboard';
+import { cn } from '../../lib/cn';
+
+const tabs = [
+  { label: 'Overview', path: '/patient/dashboard', icon: <Home className="h-4 w-4" /> },
+  { label: 'Appointments', path: '/patient/appointments', icon: <CalendarDays className="h-4 w-4" /> },
+  { label: 'Lab reports', path: '/patient/reports', icon: <Microscope className="h-4 w-4" /> },
+  { label: 'Prescriptions', path: '/patient/prescriptions', icon: <FileText className="h-4 w-4" /> },
+  { label: 'Profile', path: '/patient/profile', icon: <UserRound className="h-4 w-4" /> },
+  { label: 'Privacy', path: '/patient/consent-and-privacy', icon: <ShieldCheck className="h-4 w-4" /> },
+];
 
 export const PatientLayout: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const { user, patientProfile, logout } = useAuth();
-
-  const navTabs = [
-    { label: 'Overview', path: '/patient/dashboard', icon: <Home className="w-4 h-4" /> },
-    { label: 'Appointments', path: '/patient/appointments', icon: <Calendar className="w-4 h-4" /> },
-    { label: 'Pathology Reports', path: '/patient/reports', icon: <FileText className="w-4 h-4" /> },
-    { label: 'Prescriptions', path: '/patient/prescriptions', icon: <FileText className="w-4 h-4" /> },
-    { label: 'My Profile', path: '/patient/profile', icon: <User className="w-4 h-4" /> },
-    { label: 'Consent & Privacy', path: '/patient/consent-and-privacy', icon: <ShieldCheck className="w-4 h-4" /> },
-  ];
+  const name = patientProfile?.fullName || user?.fullName || 'Patient';
 
   const handleLogout = async () => {
     await logout();
@@ -36,85 +28,68 @@ export const PatientLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFDFB] flex flex-col">
-      {/* Patient Top Header */}
-      <header className="bg-white border-b border-[#E5ECEF] sticky top-0 z-30 shadow-2xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3DA9DF] to-[#2B92C4] flex items-center justify-center text-white shadow-2xs">
-                <Heart className="w-5 h-5" />
+    <div className="flex min-h-screen flex-col bg-[#F6F8F9]">
+      <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          <BrandMark compact subtitle="Patient portal" />
+          <div className="flex items-center gap-2">
+            <LinkButton to="/book-appointment" size="sm" className="hidden sm:inline-flex" leftIcon={<CalendarCheck className="h-4 w-4" />}>
+              Book appointment
+            </LinkButton>
+            <div className="hidden items-center gap-2.5 border-l border-line pl-3 md:flex">
+              <Avatar name={name} size="sm" />
+              <div className="leading-tight">
+                <p className="max-w-[10rem] truncate text-sm font-semibold text-ink-900">{name}</p>
+                {patientProfile?.patientId && <p className="font-mono text-[11px] text-ink-500">{patientProfile.patientId}</p>}
               </div>
-              <div className="hidden sm:block">
-                <h1 className="text-base font-extrabold text-[#193247] leading-none">Satya Hospital</h1>
-                <span className="text-[11px] font-bold text-[#3DA9DF] uppercase tracking-wide">Patient Portal</span>
-              </div>
-            </Link>
-
-            {patientProfile && (
-              <div className="ml-2 pl-3 border-l border-[#E5ECEF] flex items-center gap-2">
-                <Badge variant="medical-blue" size="md">
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                  ID: {patientProfile.patientId}
-                </Badge>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Link to="/book-appointment">
-              <Button variant="primary" size="sm" leftIcon={<PlusCircle className="w-4 h-4" />} className="font-bold">
-                New OPD Appointment
-              </Button>
-            </Link>
-
+            </div>
             <button
+              type="button"
               onClick={handleLogout}
-              className="p-2 text-[#647785] hover:text-red-600 hover:bg-[#EBF6FC] rounded-xl transition-colors cursor-pointer"
-              title="Sign Out"
-              aria-label="Sign Out"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-500 hover:bg-ink-50 hover:text-ink-900 cursor-pointer"
+              aria-label="Sign out"
+              title="Sign out"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="h-[18px] w-[18px]" />
             </button>
           </div>
         </div>
-
-        {/* Sub Navigation Bar for Patient Tabs */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 overflow-x-auto scrollbar-none border-t border-[#F1F5F9]">
-          <nav className="flex space-x-1 sm:space-x-2 py-2" aria-label="Patient portal tabs">
-            {navTabs.map((tab) => {
-              const active = location.pathname === tab.path;
-              return (
-                <Link
-                  key={tab.path}
-                  to={tab.path}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-colors ${
-                    active
-                      ? 'bg-[#EBF6FC] text-[#3DA9DF]'
-                      : 'text-[#647785] hover:text-[#193247] hover:bg-[#FCFDFB]'
-                  }`}
+        <nav aria-label="Patient portal" className="mx-auto max-w-6xl px-2 sm:px-4">
+          <ul className="no-scrollbar flex gap-1 overflow-x-auto">
+            {tabs.map(t => (
+              <li key={t.path} className="shrink-0">
+                <NavLink
+                  to={t.path}
+                  className={({ isActive }) =>
+                    cn('relative inline-flex h-11 items-center gap-2 px-3 text-sm font-medium transition-colors', isActive ? 'text-ink-900' : 'text-ink-500 hover:text-ink-800')
+                  }
                 >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+                  {({ isActive }) => (
+                    <>
+                      <span className={isActive ? 'text-brand-600' : ''} aria-hidden="true">
+                        {t.icon}
+                      </span>
+                      {t.label}
+                      {isActive && <motion.span layoutId="patient-tab" className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-600" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </header>
 
-      {/* Main Outlet Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <Outlet />
       </main>
 
-      {/* Portal Footer */}
-      <footer className="bg-white border-t border-[#E5ECEF] py-4 text-center text-xs text-[#647785]">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>&copy; {new Date().getFullYear()} Satya Hospital &amp; Pathology &bull; Civil Lines, Prayagraj</span>
-          <span className="flex items-center gap-1.5 text-[11px] text-[#486812]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#91BB40]" />
-            DPDP Act Compliant Medical Record Protection
+      <footer className="border-t border-line bg-white">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-[13px] text-ink-500 sm:flex-row sm:px-6">
+          <span>© {new Date().getFullYear()} Satya Hospital &amp; Pathology, Prayagraj</span>
+          <span className="inline-flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4 text-leaf-600" aria-hidden="true" /> Records handled in line with the DPDP Act ·{' '}
+            <Link to="/privacy-policy" className="link">Privacy</Link>
           </span>
         </div>
       </footer>

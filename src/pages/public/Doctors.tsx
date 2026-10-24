@@ -1,122 +1,112 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Stethoscope, 
-  Clock, 
-  MapPin, 
-  Calendar, 
-  ShieldCheck, 
-  ArrowRight,
-  UserCheck,
-  Baby,
-  BadgeCheck
-} from 'lucide-react';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
-import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
+import { CalendarCheck, Clock, DoorOpen, Info } from 'lucide-react';
+import { LinkButton } from '../../components/common/Button';
+import { StaggerContainer, StaggerItem } from '../../components/motion';
+import { PageHero, Section } from '../../components/site/Section';
+import { CtaBand } from '../../components/site/CtaBand';
 import { useHospital } from '../../context/HospitalContext';
+import { cn } from '../../lib/cn';
+
+const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function initials(name: string) {
+  return name
+    .replace(/^Dr\.?\s*/i, '')
+    .split(/[\s.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(n => n[0])
+    .join('');
+}
 
 export const Doctors: React.FC = () => {
   const { doctors } = useHospital();
 
   return (
-    <div className="bg-[#FCFDFB] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        {/* Header */}
-        <ScrollReveal direction="up" distance={16}>
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-              <UserCheck className="w-3.5 h-3.5 text-[#3DA9DF]" />
-              <span>Medical Practitioners Directory &bull; Satya Hospital</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
-              Consultant Medical Specialists &amp; Physicians
-            </h1>
-            <p className="text-sm text-[#647785] leading-relaxed">
-              Satya Hospital's physicians and consultants bring extensive clinical experience across outpatient medicine, pediatric care, general surgery, and women's health in Prayagraj.
-            </p>
-          </div>
-        </ScrollReveal>
+    <>
+      <PageHero
+        crumbs={[{ label: 'Doctors' }]}
+        eyebrow="Consulting doctors"
+        title="Physicians and consultant specialists"
+        description="Outpatient medicine, pediatric care, surgery and women’s health in Prayagraj. Each profile shows qualifications, consultation room, OPD hours and weekly days."
+      />
 
-        {/* Verification Notice */}
-        <ScrollReveal direction="up" delay={0.06} distance={12}>
-          <div className="bg-[#FFF0E7] border border-[#FCD5C1] p-4 rounded-2xl flex items-center justify-between text-xs text-[#9A3412]">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#EA580C] shrink-0" />
-              <span>
-                Doctor qualifications and consultation hours are verified against official hospital rosters.
-              </span>
-            </div>
-            <span className="text-[11px] font-bold text-[#9A3412]">
-              Official Roster &bull; {new Date().getFullYear()}
-            </span>
-          </div>
-        </ScrollReveal>
+      <Section size="md">
+        <div className="mb-10 flex items-start gap-3 rounded-2xl border border-line bg-white px-5 py-4 text-sm text-ink-600">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+          <p>Consultation days and hours can change for leave or emergencies. Please confirm with reception before travelling.</p>
+        </div>
 
-        {/* Doctor Cards Grid */}
-        <StaggerContainer staggerDelay={0.08} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {doctors.map((doc) => (
-            <StaggerItem key={doc.id} hoverLift className="h-full">
-              <Card className="overflow-hidden border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md bg-white h-full">
-                <div className="p-6 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#3DA9DF]/15 to-[#EBF6FC] flex items-center justify-center text-[#3DA9DF] border border-[#BCE1F5] font-bold text-lg">
-                      {doc.fullName.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <Badge variant="medical-blue" size="sm" dot>
-                      OPD Active
-                    </Badge>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-bold text-[#193247]">{doc.fullName}</h3>
-                    <p className="text-xs font-bold text-[#3DA9DF] mt-0.5">{doc.designation}</p>
-                    <p className="text-xs text-[#647785] mt-1">{doc.qualifications}</p>
-                  </div>
-
-                  <div className="bg-[#FCFDFB] p-3.5 rounded-xl border border-[#E5ECEF] text-xs space-y-2">
-                    <div className="flex items-center gap-2 text-[#193247]">
-                      <MapPin className="w-3.5 h-3.5 text-[#3DA9DF] shrink-0" />
-                      <span>{doc.consultationRoom}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[#193247]">
-                      <Clock className="w-3.5 h-3.5 text-[#3DA9DF] shrink-0" />
-                      <span>{doc.opdTimings}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] font-bold text-[#647785] block mb-1">
-                      Consultation Days:
+        <StaggerContainer className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3" staggerDelay={0.07}>
+          {doctors.map(doc => (
+            <StaggerItem key={doc.id} distance={12} className="h-full">
+              <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-soft">
+                <div className="relative bg-gradient-to-br from-brand-50 via-white to-leaf-50 px-6 pt-6 pb-5">
+                  <div className="flex items-center gap-4">
+                    <span
+                      className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white text-xl font-semibold text-brand-800 shadow-card ring-1 ring-line"
+                      aria-hidden="true"
+                    >
+                      {initials(doc.fullName)}
                     </span>
-                    <div className="flex flex-wrap gap-1">
-                      {doc.availableDays.map((day) => (
-                        <span 
-                          key={day} 
-                          className="px-2 py-0.5 rounded-md bg-[#F3F8EC] border border-[#D5E8BA] text-[10px] font-bold text-[#486812]"
-                        >
-                          {day.slice(0, 3)}
-                        </span>
-                      ))}
+                    <div className="min-w-0">
+                      <h2 className="text-lg font-semibold tracking-tight text-ink-900">{doc.fullName}</h2>
+                      <p className="text-sm font-medium text-brand-700">{doc.designation}</p>
+                      <p className="mt-0.5 text-[13px] text-ink-500">{doc.department}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 bg-[#FCFDFB] border-t border-[#E5ECEF] flex items-center justify-between">
-                  <Link to={`/book-appointment?doctor=${doc.id}`} className="w-full">
-                    <Button variant="primary" size="sm" className="w-full font-bold" leftIcon={<Calendar className="w-4 h-4" />}>
-                      Book Consultation with {doc.fullName.split(' ')[1] || 'Doctor'}
-                    </Button>
-                  </Link>
+                <div className="flex flex-1 flex-col px-6 py-5">
+                  <p className="text-sm leading-relaxed text-ink-700">{doc.qualifications}</p>
+
+                  <dl className="mt-5 space-y-2.5 text-sm">
+                    <div className="flex items-center gap-2.5 text-ink-700">
+                      <DoorOpen className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                      <dt className="sr-only">Consultation room</dt>
+                      <dd>{doc.consultationRoom}</dd>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-ink-700">
+                      <Clock className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                      <dt className="sr-only">OPD hours</dt>
+                      <dd>{doc.opdTimings}</dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-5">
+                    <p className="text-xs font-medium text-ink-500">Consultation days</p>
+                    <ul className="mt-2 flex gap-1.5" aria-label={`Available ${doc.availableDays.join(', ')}`}>
+                      {WEEK.map(day => {
+                        const on = doc.availableDays.includes(day);
+                        return (
+                          <li
+                            key={day}
+                            aria-hidden="true"
+                            className={cn(
+                              'flex h-8 w-9 items-center justify-center rounded-lg text-[11.5px] font-semibold',
+                              on ? 'bg-leaf-100 text-leaf-800 ring-1 ring-inset ring-leaf-200' : 'bg-ink-50 text-ink-300'
+                            )}
+                          >
+                            {day.slice(0, 2)}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  <div className="mt-auto pt-6">
+                    <LinkButton to={`/book-appointment?doctor=${doc.id}`} className="w-full" leftIcon={<CalendarCheck className="h-4 w-4" />}>
+                      Book a consultation
+                    </LinkButton>
+                  </div>
                 </div>
-              </Card>
+              </article>
             </StaggerItem>
           ))}
         </StaggerContainer>
+      </Section>
 
-      </div>
-    </div>
+      <CtaBand />
+    </>
   );
 };
