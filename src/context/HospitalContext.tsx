@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { 
   Appointment, 
   AppointmentStatus, 
   Department, 
+  FeePaymentMode,
   DoctorProfile, 
   HospitalSettings, 
   MedicalDocument, 
@@ -33,6 +34,7 @@ import {
   isValidIndianPhone 
 } from '../lib/tokens';
 import { auditLogger } from '../lib/audit';
+import { applyCallNext, applyFeePayment, applyStatusChange, nextTokenNumber } from '../lib/queue';
 import { useAuth } from './AuthContext';
 import { supabaseService } from '../services/supabaseService';
 
@@ -91,6 +93,11 @@ interface HospitalContextType {
     actorRole: UserRole,
     reason?: string
   ) => boolean;
+
+  // Reception queue desk (validated transitions, see src/lib/queue.ts)
+  callNextToken: () => BookingResult;
+  changeQueueStatus: (appointmentId: string, status: AppointmentStatus, reason?: string) => BookingResult;
+  setConsultationFee: (appointmentId: string, mode: FeePaymentMode | null) => BookingResult;
 
   // Clinical Consultation Operations
   addPatientVisit: (visit: Omit<PatientVisit, 'id' | 'createdAt' | 'updatedAt'>) => PatientVisit;
@@ -203,6 +210,20 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   });
 
+  // Refs mirror state so back-to-back calls in one handler (register patient ->
+  // issue token) see each other's writes instead of a stale render closure.
+  const appointmentsRef = useRef(appointments);
+  const patientsRef = useRef(patientProfiles);
+  const countersRef = useRef(tokenCounters);
+  useEffect(() => { appointmentsRef.current = appointments; }, [appointments]);
+  useEffect(() => { patientsRef.current = patientProfiles; }, [patientProfiles]);
+  useEffect(() => { countersRef.current = tokenCounters; }, [tokenCounters]);
+
+  const commitAppointments = (next: Appointment[]) => {
+    appointmentsRef.current = next;
+    setAppointments(next);
+  };
+
   // Initial Supabase Sync
   useEffect(() => {
     async function syncSupabaseData() {
@@ -291,8 +312,10 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       return { success: false, error: 'Please enter a valid 10-digit Indian mobile number.' };
     }
 
-    // Check existing records by phone
-    const existing = patientProfiles.find(p => p.phone === data.phone.trim());
+    // Match on phone + name: siblings often share a parent's mobile number.
+    const existing = patientsRef.current.find(
+      p => p.phone === data.phone.trim() && p.fullName.trim().toLowerCase() === data.fullName.trim().toLowerCase()
+    );
     if (existing) {
       return {
         success: true,
@@ -301,7 +324,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       };
     }
 
-    const nextSeq = patientProfiles.length + 1;
+    const nextSeq = patientsRef.current.length + 1;
     const patientId = generatePatientId(nextSeq);
 
     const newPatient: PatientProfile = {
@@ -321,7 +344,8 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       updatedAt: new Date().toISOString(),
     };
 
-    setPatientProfiles(prev => [newPatient, ...prev]);
+    patientsRef.current = [newPatient, ...patientsRef.current];
+    setPatientProfiles(patientsRef.current);
 
     auditLogger.record({
       actorId: user?.id || 'staff',
@@ -354,11 +378,9 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Helper: Next Daily Token for target date (monotonic sequence allocation)
   const allocateNextTokenForDate = (dateStr: string): number => {
-    const dailyAppointments = appointments.filter(a => a.appointmentDate === dateStr);
-    const maxTokenInDaily = dailyAppointments.reduce((max, a) => Math.max(max, a.tokenNumber || 0), 0);
-    const lastCounter = tokenCounters[dateStr] || 0;
-    const nextToken = Math.max(lastCounter, maxTokenInDaily) + 1;
-    setTokenCounters(prev => ({ ...prev, [dateStr]: nextToken }));
+    const nextToken = nextTokenNumber(appointmentsRef.current, dateStr, countersRef.current[dateStr] || 0);
+    countersRef.current = { ...countersRef.current, [dateStr]: nextToken };
+    setTokenCounters(countersRef.current);
     return nextToken;
   };
 
@@ -374,7 +396,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
   }): BookingResult => {
     // 0. Idempotency Check: Prevent duplicate processing for repeated submissions / payment retries
     if (params.idempotencyKey) {
-      const existing = appointments.find(a => a.idempotencyKey === params.idempotencyKey);
+      const existing = appointmentsRef.current.find(a => a.idempotencyKey === params.idempotencyKey);
       if (existing) {
         return { success: true, appointment: existing };
       }
@@ -394,7 +416,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
 
     // 2. Check daily capacity ONLY IF explicitly configured (null = unlimited)
-    const currentDayAppointments = appointments.filter(
+    const currentDayAppointments = appointmentsRef.current.filter(
       a => a.appointmentDate === params.appointmentDate && a.status !== 'cancelled'
     );
     if (
@@ -419,14 +441,14 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       };
     }
 
-    const patient = patientProfiles.find(p => p.id === params.patientProfileId);
+    const patient = patientsRef.current.find(p => p.id === params.patientProfileId);
     if (!patient) {
       return { success: false, error: 'Selected patient profile was not found.' };
     }
 
     const doctor = doctors.find(d => d.id === params.doctorId) || doctors[0];
     const tokenNumber = allocateNextTokenForDate(params.appointmentDate);
-    const appointmentCode = generateAppointmentCode(appointments.length + 101);
+    const appointmentCode = generateAppointmentCode(appointmentsRef.current.length + 101);
 
     const newAppointment: Appointment = {
       id: `apt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -452,7 +474,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       updatedAt: new Date().toISOString(),
     };
 
-    setAppointments(prev => [newAppointment, ...prev]);
+    commitAppointments([newAppointment, ...appointmentsRef.current]);
 
     // Asynchronously synchronize with Supabase (if configured)
     supabaseService.saveAppointment(newAppointment).catch(err => {
@@ -488,7 +510,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
   }): BookingResult => {
     // 0. Idempotency Check
     if (params.idempotencyKey) {
-      const existing = appointments.find(a => a.idempotencyKey === params.idempotencyKey);
+      const existing = appointmentsRef.current.find(a => a.idempotencyKey === params.idempotencyKey);
       if (existing) {
         return { success: true, appointment: existing };
       }
@@ -497,7 +519,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     const today = getHospitalTodayDate();
 
     // Check shared capacity ONLY IF explicitly configured
-    const currentDayAppointments = appointments.filter(
+    const currentDayAppointments = appointmentsRef.current.filter(
       a => a.appointmentDate === today && a.status !== 'cancelled'
     );
     if (
@@ -511,14 +533,22 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       };
     }
 
-    const patient = patientProfiles.find(p => p.id === params.patientProfileId);
+    const patient = patientsRef.current.find(p => p.id === params.patientProfileId);
     if (!patient) {
       return { success: false, error: 'Selected patient profile was not found.' };
     }
 
+    const alreadyQueued = currentDayAppointments.find(a => a.patientProfileId === patient.id);
+    if (alreadyQueued) {
+      return {
+        success: false,
+        error: `${patient.fullName} already holds token #${alreadyQueued.tokenNumber} for today.`,
+      };
+    }
+
     const doctor = doctors.find(d => d.id === params.doctorId) || doctors[0];
     const tokenNumber = allocateNextTokenForDate(today);
-    const appointmentCode = generateAppointmentCode(appointments.length + 101);
+    const appointmentCode = generateAppointmentCode(appointmentsRef.current.length + 101);
 
     const newAppointment: Appointment = {
       id: `apt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -531,6 +561,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       tokenNumber,
       queueType: 'walk_in',
       status: 'checked_in', // Walk-ins at reception are automatically checked-in
+      checkedInAt: new Date().toISOString(),
       doctorId: doctor.id,
       doctorName: doctor.fullName,
       bookedByRole: 'reception',
@@ -541,7 +572,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
       updatedAt: new Date().toISOString(),
     };
 
-    setAppointments(prev => [newAppointment, ...prev]);
+    commitAppointments([newAppointment, ...appointmentsRef.current]);
 
     // Asynchronously synchronize with Supabase (if configured)
     supabaseService.saveAppointment(newAppointment).catch(err => {
@@ -596,6 +627,56 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     });
 
     return true;
+  };
+
+  const recordQueueAudit = (appointment: Appointment, description: string, metadata: Record<string, unknown>) => {
+    auditLogger.record({
+      actorId: user?.id || 'reception',
+      actorName: user?.fullName || 'Reception Desk',
+      actorRole: user?.role || 'reception',
+      actionType: metadata.feeMode !== undefined ? 'payment.reconcile' : 'appointment.status_change',
+      targetEntity: 'appointments',
+      targetId: appointment.id,
+      description,
+      metadata,
+    });
+  };
+
+  const callNextToken = (): BookingResult => {
+    const res = applyCallNext(appointmentsRef.current, getHospitalTodayDate());
+    if (!res.ok) return { success: false, error: res.error };
+    commitAppointments(res.appointments);
+    recordQueueAudit(res.appointment, `Token #${res.appointment.tokenNumber} called to consultation.`, {
+      newStatus: 'in_consultation',
+    });
+    return { success: true, appointment: res.appointment };
+  };
+
+  const changeQueueStatus = (appointmentId: string, status: AppointmentStatus, reason?: string): BookingResult => {
+    const previous = appointmentsRef.current.find(a => a.id === appointmentId);
+    const res = applyStatusChange(appointmentsRef.current, appointmentId, status, { reason });
+    if (!res.ok) return { success: false, error: res.error };
+    commitAppointments(res.appointments);
+    recordQueueAudit(res.appointment, `Token #${res.appointment.tokenNumber} moved to ${status.toUpperCase()}.`, {
+      previousStatus: previous?.status,
+      newStatus: status,
+      reason,
+    });
+    return { success: true, appointment: res.appointment };
+  };
+
+  const setConsultationFee = (appointmentId: string, mode: FeePaymentMode | null): BookingResult => {
+    const res = applyFeePayment(appointmentsRef.current, appointmentId, mode);
+    if (!res.ok) return { success: false, error: res.error };
+    commitAppointments(res.appointments);
+    recordQueueAudit(
+      res.appointment,
+      mode
+        ? `Consultation fee collected for token #${res.appointment.tokenNumber} via ${mode.toUpperCase()}.`
+        : `Consultation fee for token #${res.appointment.tokenNumber} marked unpaid.`,
+      { feeMode: mode }
+    );
+    return { success: true, appointment: res.appointment };
   };
 
   // Add Patient Visit (Doctor Consultation Notes)
@@ -849,6 +930,9 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
         bookOnlineAppointment,
         registerWalkInAppointment,
         updateAppointmentStatus,
+        callNextToken,
+        changeQueueStatus,
+        setConsultationFee,
         addPatientVisit,
         uploadMedicalDocument,
         verifyMedicalDocument,

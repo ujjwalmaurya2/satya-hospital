@@ -50,7 +50,10 @@ async function run() {
     await client.connect();
     console.log(' Successfully connected to Supabase database!');
 
-    const sqlFilePath = path.join(__dirname, 'complete_satya_hospital_setup.sql');
+    // Optional 2nd arg: a specific migration file (e.g. migrations/20261024000003_staff_queue_desk.sql)
+    const sqlFilePath = process.argv[3]
+      ? path.resolve(__dirname, process.argv[3])
+      : path.join(__dirname, 'complete_satya_hospital_setup.sql');
     console.log(`Reading SQL from: ${sqlFilePath}`);
     const sqlContent = fs.readFileSync(sqlFilePath, 'utf8');
 

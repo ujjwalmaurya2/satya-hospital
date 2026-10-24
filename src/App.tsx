@@ -47,10 +47,16 @@ import { ReceptionDashboard } from './pages/staff/ReceptionDashboard';
 import { DoctorDashboard } from './pages/staff/DoctorDashboard';
 import { PathologyDashboard } from './pages/staff/PathologyDashboard';
 import { AdminDashboard } from './pages/staff/AdminDashboard';
+import { QueueDesk } from './pages/staff/QueueDesk';
+import { RequireRole } from './components/auth/RequireRole';
+import { ROUTE_ROLES } from './lib/access';
+import { UserRole } from './types';
 import { NotFound } from './pages/NotFound';
 import { FloatingAppointmentWidget } from './components/common/FloatingAppointmentWidget';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { PageTransition } from './components/motion';
+
+const ALL_STAFF_ROLES: UserRole[] = ['reception', 'doctor', 'pathology', 'admin'];
 
 // Public Layout Wrapper
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -118,12 +124,13 @@ export const App: React.FC = () => {
             {/* STAFF AUTH */}
             <Route path="/staff/login" element={<PublicLayout><StaffLogin /></PublicLayout>} />
 
-            {/* STAFF DASHBOARDS (NESTED UNDER STAFF LAYOUT) */}
-            <Route element={<StaffLayout />}>
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/reception" element={<ReceptionDashboard />} />
-              <Route path="/doctor" element={<DoctorDashboard />} />
-              <Route path="/pathology-dashboard" element={<PathologyDashboard />} />
+            {/* STAFF DASHBOARDS (NESTED UNDER STAFF LAYOUT, ROLE-GUARDED) */}
+            <Route element={<RequireRole roles={ALL_STAFF_ROLES}><StaffLayout /></RequireRole>}>
+              <Route path="/staff" element={<RequireRole roles={ROUTE_ROLES.staffDesk}><QueueDesk /></RequireRole>} />
+              <Route path="/admin" element={<RequireRole roles={ROUTE_ROLES.admin}><AdminDashboard /></RequireRole>} />
+              <Route path="/reception" element={<RequireRole roles={ROUTE_ROLES.reception}><ReceptionDashboard /></RequireRole>} />
+              <Route path="/doctor" element={<RequireRole roles={ROUTE_ROLES.doctor}><DoctorDashboard /></RequireRole>} />
+              <Route path="/pathology-dashboard" element={<RequireRole roles={ROUTE_ROLES.pathology}><PathologyDashboard /></RequireRole>} />
             </Route>
 
             {/* 404 CATCH ALL */}

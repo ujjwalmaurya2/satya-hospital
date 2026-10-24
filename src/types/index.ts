@@ -68,9 +68,17 @@ export interface Appointment {
   paymentStatus?: PaymentStatus;
   paymentId?: string;
   paymentReconciliationNotes?: string;
+  consultationFeeAmount?: number;
+  feePaymentMode?: FeePaymentMode | null;
+  feeCollectedAt?: string;
+  checkedInAt?: string;
+  calledAt?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export type FeePaymentMode = 'cash' | 'upi';
 
 export interface DoctorProfile {
   id: string;

@@ -15,7 +15,8 @@ import {
   Home,
   Clock,
   ClipboardList,
-  Heart
+  Heart,
+  ListOrdered
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
@@ -25,18 +26,22 @@ export const StaffLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, role, logout, updateRole } = useAuth();
+  const { user, role, logout, updateRole, isLiveSession } = useAuth();
+  // Demo role switching is a development aid only; real staff keep their assigned role.
+  const showRoleSwitcher = import.meta.env.DEV && !isLiveSession;
 
   const roleNavItems: Record<UserRole, { label: string; path: string; icon: React.ReactNode }[]> = {
     admin: [
       { label: 'Operational Overview', path: '/admin', icon: <Activity className="w-5 h-5" /> },
+      { label: 'OPD Queue Desk', path: '/staff', icon: <ListOrdered className="w-5 h-5" /> },
       { label: 'OPD & Hospital Rules', path: '/admin#rules', icon: <Clock className="w-5 h-5" /> },
       { label: 'Staff & Roles', path: '/admin#staff', icon: <Users className="w-5 h-5" /> },
       { label: 'Audit Trail Logs', path: '/admin#audit', icon: <ClipboardList className="w-5 h-5" /> },
       { label: 'System & Storage', path: '/admin#system', icon: <Settings className="w-5 h-5" /> },
     ],
     reception: [
-      { label: 'OPD Queue & Arrivals', path: '/reception', icon: <Calendar className="w-5 h-5" /> },
+      { label: 'OPD Queue Desk', path: '/staff', icon: <ListOrdered className="w-5 h-5" /> },
+      { label: 'Arrivals & Records', path: '/reception', icon: <Calendar className="w-5 h-5" /> },
       { label: 'Walk-In Registration', path: '/reception#register', icon: <Users className="w-5 h-5" /> },
       { label: 'Patient Search', path: '/reception#search', icon: <FileText className="w-5 h-5" /> },
       { label: 'Upload Rx Scan', path: '/reception#upload', icon: <FileText className="w-5 h-5" /> },
@@ -61,7 +66,7 @@ export const StaffLayout: React.FC = () => {
   const handleRoleSwitch = (newRole: UserRole) => {
     updateRole(newRole);
     if (newRole === 'admin') navigate('/admin');
-    else if (newRole === 'reception') navigate('/reception');
+    else if (newRole === 'reception') navigate('/staff');
     else if (newRole === 'doctor') navigate('/doctor');
     else if (newRole === 'pathology') navigate('/pathology-dashboard');
     else navigate('/patient/dashboard');
@@ -140,7 +145,8 @@ export const StaffLayout: React.FC = () => {
             {user?.email || 'staff@satyahospital.com'}
           </div>
 
-          {/* Quick Role Switcher */}
+          {/* Quick Role Switcher (development demo only) */}
+          {showRoleSwitcher && (
           <div className="mt-3 pt-3 border-t border-white/10">
             <label className="text-[11px] font-bold text-[#EBF6FC] block mb-1.5 uppercase tracking-wider">
               Switch Staff Panel:
@@ -161,6 +167,7 @@ export const StaffLayout: React.FC = () => {
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* Navigation Items */}

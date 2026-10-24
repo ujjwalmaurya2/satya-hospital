@@ -69,6 +69,29 @@ Or with the full connection string:
 node supabase/apply_master_migration.cjs "postgresql://postgres:<YOUR_DATABASE_PASSWORD>@db.rkwbzkxkksdyhxoqpmhg.supabase.co:5432/postgres"
 ```
 
+### Staff Queue Desk migration (`/staff`)
+Run **after** the master file. Paste `migrations/20261024000003_staff_queue_desk.sql` into the SQL Editor, or:
+```bash
+node supabase/apply_master_migration.cjs "<YOUR_DATABASE_PASSWORD>" migrations/20261024000003_staff_queue_desk.sql
+```
+It adds:
+- A `BEFORE INSERT` trigger on `appointments` that always takes `token_number` from `allocate_daily_opd_token()`, so online bookings and walk-ins share one atomic daily sequence. It also enforces the IST window (online booking for a date opens the day before and closes 09:00 AM IST on the day; walk-ins are today-only).
+- A `BEFORE UPDATE` trigger validating queue status changes (`booked → checked_in → in_consultation → completed`, `no_show` from any active state, `no_show → checked_in`).
+- RPCs used by the desk: `register_walk_in`, `call_next_token` (row-locked, so two desks never call the same patient), `set_appointment_status`, `record_consultation_fee` (₹500, Cash / UPI). All require role `reception` or `admin`.
+- RLS on `daily_opd_token_counters`, and removes direct client access to the allocator.
+- A trigger that creates a `profiles` row (role `patient`) for every new auth user, and adds `appointments` to Realtime.
+
+### Provisioning a reception / admin account
+1. **Authentication → Users → Add user**: enter the staff email, set a password (or leave blank and use the magic-link tab on `/staff/login`).
+2. Promote the profile in the SQL Editor:
+   ```sql
+   UPDATE public.profiles SET role = 'reception', full_name = 'Priya Srivastava'
+   WHERE email = 'reception@satyahospital.in';
+   ```
+   Use `role = 'admin'` for administrators. Set `is_active = false` to revoke access.
+
+Magic links are sent with `shouldCreateUser: false`, so unknown emails cannot self-register. Add your site URL (e.g. `http://localhost:5173`) under **Authentication → URL Configuration → Redirect URLs**.
+
 ---
 
 ## 4. Fallback Architecture
