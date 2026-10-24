@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
 
 export interface NewsArticle {
   id: string;
@@ -151,93 +152,94 @@ export const News: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-            <Newspaper className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Official News &amp; Clinical Advisories &bull; Satya Hospital</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+              <Newspaper className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Official News &amp; Clinical Advisories &bull; Satya Hospital</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
+              Hospital Bulletins &amp; Health Updates
+            </h1>
+            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
+              Stay informed with official operational notices, pediatric health advisories, diagnostic laboratory upgrades, and clinical announcements from Satya Hospital in Prayagraj.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-            Hospital Bulletins &amp; Health Updates
-          </h1>
-          <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-            Stay informed with official operational notices, pediatric health advisories, diagnostic laboratory upgrades, and clinical announcements from Satya Hospital in Prayagraj.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Search and Category Filters */}
-        <div className="space-y-4">
-          <div className="max-w-md relative">
-            <Search className="w-4 h-4 text-[#647785] absolute left-3.5 top-3 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search news, advisories, or departments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#CBD7DD] text-xs sm:text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
-            />
-          </div>
+        <ScrollReveal direction="up" delay={0.06} distance={12}>
+          <div className="space-y-4">
+            <div className="max-w-md relative">
+              <Search className="w-4 h-4 text-[#647785] absolute left-3.5 top-3 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search news, advisories, or departments..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#CBD7DD] text-xs sm:text-sm text-[#193247] focus:ring-2 focus:ring-[#3DA9DF] focus:border-transparent bg-white shadow-2xs"
+              />
+            </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === cat.id
-                    ? 'bg-[#3DA9DF] text-white shadow-xs'
-                    : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    selectedCategory === cat.id
+                      ? 'bg-[#3DA9DF] text-white shadow-xs'
+                      : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* News Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StaggerContainer staggerDelay={0.07} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredArticles.map((article) => (
-            <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
-              onClick={() => setActiveArticle(article)}
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Badge variant={article.badgeVariant} size="sm">
-                    {article.categoryLabel}
-                  </Badge>
-                  <span className="text-[11px] text-[#647785] flex items-center gap-1 font-medium">
-                    <Calendar className="w-3 h-3 text-[#3DA9DF]" />
-                    <span>{article.publishDate}</span>
-                  </span>
+            <StaggerItem key={article.id} hoverLift className="h-full">
+              <div
+                className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer h-full"
+                onClick={() => setActiveArticle(article)}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant={article.badgeVariant} size="sm">
+                      {article.categoryLabel}
+                    </Badge>
+                    <span className="text-[11px] text-[#647785] flex items-center gap-1 font-medium">
+                      <Calendar className="w-3 h-3 text-[#3DA9DF]" />
+                      <span>{article.publishDate}</span>
+                    </span>
+                  </div>
+
+                  <h2 className="text-base font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors leading-snug">
+                    {article.title}
+                  </h2>
+
+                  <p className="text-xs text-[#647785] leading-relaxed line-clamp-3">
+                    {article.summary}
+                  </p>
                 </div>
 
-                <h2 className="text-base font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors leading-snug">
-                  {article.title}
-                </h2>
-
-                <p className="text-xs text-[#647785] leading-relaxed line-clamp-3">
-                  {article.summary}
-                </p>
+                <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-[#3DA9DF] font-semibold truncate max-w-[170px]">
+                    {article.department}
+                  </span>
+                  <span className="text-xs font-bold text-[#3DA9DF] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    <span>Read Full</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
               </div>
-
-              <div className="pt-4 mt-4 border-t border-[#E5ECEF] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-[#3DA9DF] font-semibold truncate max-w-[170px]">
-                  {article.department}
-                </span>
-                <span className="text-xs font-bold text-[#3DA9DF] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                  <span>Read Full</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {filteredArticles.length === 0 && (
           <div className="bg-white rounded-2xl border border-[#E5ECEF] p-12 text-center max-w-lg mx-auto space-y-3">

@@ -14,11 +14,21 @@ import {
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { LottiePlayer } from '../../components/common/LottiePlayer';
+import { LottieAssets } from '../../assets/lottie';
+import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
 import { useHospital } from '../../context/HospitalContext';
 
 export const Services: React.FC = () => {
   const { departments } = useHospital();
   const [selectedDeptId, setSelectedDeptId] = useState<string>('all');
+
+  const getDeptLottie = (slug: string) => {
+    if (slug.includes('paed') || slug.includes('child')) return LottieAssets.servicePediatrics;
+    if (slug.includes('path') || slug.includes('lab')) return LottieAssets.servicePathology;
+    if (slug.includes('gynae') || slug.includes('ob')) return LottieAssets.servicePediatrics;
+    return LottieAssets.serviceMedicine;
+  };
 
   const filteredDepts = selectedDeptId === 'all' 
     ? departments 
@@ -29,133 +39,170 @@ export const Services: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-            <Activity className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Clinical Disciplines &amp; Specialties</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+              <Activity className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Clinical Disciplines &amp; Specialties</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
+              Outpatient Healthcare Services &amp; Medical Departments
+            </h1>
+            <p className="text-sm text-[#647785] leading-relaxed">
+              Satya Hospital provides dedicated outpatient medical departments staffed by certified consultant physicians, pediatric specialists, surgeons, and pathologists.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#193247] tracking-tight">
-            Outpatient Healthcare Services &amp; Medical Departments
-          </h1>
-          <p className="text-sm text-[#647785] leading-relaxed">
-            Satya Hospital provides dedicated outpatient medical departments staffed by certified consultant physicians, pediatric specialists, surgeons, and pathologists.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Quick Highlights for Childcare */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link 
-            to="/pediatric-care"
-            className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold">
-                <Baby className="w-5 h-5" />
+        <StaggerContainer staggerDelay={0.08} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <StaggerItem hoverLift className="h-full">
+            <Link 
+              to="/pediatric-care"
+              className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex items-center justify-between group h-full"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#F3F8EC] text-[#91BB40] flex items-center justify-center font-bold overflow-hidden group-hover:scale-105 transition-transform">
+                  <LottiePlayer
+                    animationData={LottieAssets.servicePediatrics}
+                    width={28}
+                    height={28}
+                    loop={true}
+                    autoplay={false}
+                    triggerOnHover={true}
+                    ariaLabel="Pediatric Care Wing"
+                    fallback={<Baby className="w-5 h-5" />}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
+                    Dedicated Pediatric Care Wing
+                  </h3>
+                  <p className="text-xs text-[#647785]">Routine checkups, childhood illness, and growth tracking</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
-                  Dedicated Pediatric Care Wing
-                </h3>
-                <p className="text-xs text-[#647785]">Routine checkups, childhood illness, and growth tracking</p>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#3DA9DF] group-hover:translate-x-1 transition-transform shrink-0" />
-          </Link>
+              <ArrowRight className="w-4 h-4 text-[#3DA9DF] group-hover:translate-x-1 transition-transform shrink-0" />
+            </Link>
+          </StaggerItem>
 
-          <Link 
-            to="/newborn-care"
-            className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
-                <Sparkles className="w-5 h-5" />
+          <StaggerItem hoverLift className="h-full">
+            <Link 
+              to="/newborn-care"
+              className="p-5 rounded-2xl bg-white border border-[#CBD7DD] hover:border-[#3DA9DF] shadow-xs hover:shadow-md transition-all flex items-center justify-between group h-full"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold overflow-hidden group-hover:scale-105 transition-transform">
+                  <LottiePlayer
+                    animationData={LottieAssets.servicePediatrics}
+                    width={28}
+                    height={28}
+                    loop={true}
+                    autoplay={false}
+                    triggerOnHover={true}
+                    ariaLabel="Newborn Healthcare"
+                    fallback={<Sparkles className="w-5 h-5" />}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
+                    Newborn &amp; Infant Healthcare
+                  </h3>
+                  <p className="text-xs text-[#647785]">Postnatal assessments, lactation support, and baby wellness</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors">
-                  Newborn &amp; Infant Healthcare
-                </h3>
-                <p className="text-xs text-[#647785]">Postnatal assessments, lactation support, and baby wellness</p>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#3DA9DF] group-hover:translate-x-1 transition-transform shrink-0" />
-          </Link>
-        </div>
+              <ArrowRight className="w-4 h-4 text-[#3DA9DF] group-hover:translate-x-1 transition-transform shrink-0" />
+            </Link>
+          </StaggerItem>
+        </StaggerContainer>
 
         {/* Department Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <button
-            onClick={() => setSelectedDeptId('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
-              selectedDeptId === 'all'
-                ? 'bg-[#3DA9DF] text-white shadow-xs'
-                : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-            }`}
-          >
-            All Departments ({departments.length})
-          </button>
-          {departments.map((dept) => (
+        <ScrollReveal direction="up" delay={0.05} distance={12}>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             <button
-              key={dept.id}
-              onClick={() => setSelectedDeptId(dept.id)}
+              onClick={() => setSelectedDeptId('all')}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                selectedDeptId === dept.id
+                selectedDeptId === 'all'
                   ? 'bg-[#3DA9DF] text-white shadow-xs'
                   : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
               }`}
             >
-              {dept.name}
+              All Departments ({departments.length})
             </button>
-          ))}
-        </div>
+            {departments.map((dept) => (
+              <button
+                key={dept.id}
+                onClick={() => setSelectedDeptId(dept.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                  selectedDeptId === dept.id
+                    ? 'bg-[#3DA9DF] text-white shadow-xs'
+                    : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
+                }`}
+              >
+                {dept.name}
+              </button>
+            ))}
+          </div>
+        </ScrollReveal>
 
         {/* Department Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <StaggerContainer staggerDelay={0.07} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filteredDepts.map((dept) => (
-            <Card key={dept.id} className="overflow-hidden border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all duration-200 bg-white hover:shadow-md">
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold">
-                      <Stethoscope className="w-6 h-6" />
+            <StaggerItem key={dept.id} hoverLift className="h-full">
+              <Card className="overflow-hidden border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all duration-200 bg-white hover:shadow-md h-full">
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center font-bold overflow-hidden shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                        <LottiePlayer
+                          animationData={getDeptLottie(dept.slug)}
+                          width={32}
+                          height={32}
+                          loop={true}
+                          autoplay={false}
+                          triggerOnHover={true}
+                          ariaLabel={dept.name}
+                          fallback={<Stethoscope className="w-6 h-6" />}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#193247]">{dept.name}</h3>
+                        <span className="text-xs text-[#486812] font-bold">
+                          Outpatient Clinic Active
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#193247]">{dept.name}</h3>
-                      <span className="text-xs text-[#486812] font-bold">
-                        Outpatient Clinic Active
-                      </span>
+                    <Badge variant="medical-blue" size="sm" dot>
+                      Active
+                    </Badge>
+                  </div>
+
+                  <p className="text-xs text-[#647785] leading-relaxed">
+                    {dept.description}
+                  </p>
+
+                  <div className="bg-[#FCFDFB] rounded-xl p-4 border border-[#E5ECEF] text-xs space-y-2">
+                    <div className="flex items-center justify-between text-[#193247]">
+                      <span className="text-[#647785]">Senior Consultant / Head:</span>
+                      <span className="font-bold">{dept.headOfDepartment}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[#193247]">
+                      <span className="text-[#647785]">Consultation Room:</span>
+                      <span className="font-semibold">Ground / First Floor OPD</span>
                     </div>
                   </div>
-                  <Badge variant="medical-blue" size="sm" dot>
-                    Active
-                  </Badge>
-                </div>
 
-                <p className="text-xs text-[#647785] leading-relaxed">
-                  {dept.description}
-                </p>
-
-                <div className="bg-[#FCFDFB] rounded-xl p-4 border border-[#E5ECEF] text-xs space-y-2">
-                  <div className="flex items-center justify-between text-[#193247]">
-                    <span className="text-[#647785]">Senior Consultant / Head:</span>
-                    <span className="font-bold">{dept.headOfDepartment}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[#193247]">
-                    <span className="text-[#647785]">Consultation Room:</span>
-                    <span className="font-semibold">Ground / First Floor OPD</span>
+                  <div className="pt-2 flex items-center justify-between">
+                    <Link to={`/book-appointment`} className="w-full">
+                      <Button variant="primary" size="sm" className="w-full font-bold" leftIcon={<Calendar className="w-4 h-4" />}>
+                        Book Appointment for {dept.name.split(' ')[0]}
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-
-                <div className="pt-2 flex items-center justify-between">
-                  <Link to={`/book-appointment`} className="w-full">
-                    <Button variant="primary" size="sm" className="w-full font-bold" leftIcon={<Calendar className="w-4 h-4" />}>
-                      Book Appointment for {dept.name.split(' ')[0]}
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
       </div>
     </div>

@@ -21,6 +21,10 @@ import { Card, CardBody, CardHeader } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Alert } from '../../components/common/Alert';
+import { LottiePlayer } from '../../components/common/LottiePlayer';
+import { MedicalLoader } from '../../components/common/MedicalLoader';
+import { LottieAssets } from '../../assets/lottie';
+import { ScrollReveal } from '../../components/motion';
 import { useHospital } from '../../context/HospitalContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -170,25 +174,40 @@ export const BookAppointment: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Breadcrumb / Headline */}
-        <div className="space-y-2 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-bold border border-[#BCE1F5]">
-            <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Pediatric &amp; Family Outpatient Scheduling</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="space-y-2 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-bold border border-[#BCE1F5]">
+              <Baby className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Pediatric &amp; Family Outpatient Scheduling</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#193247] tracking-tight">
+              Book an OPD Appointment
+            </h1>
+            <p className="text-xs sm:text-sm text-[#647785] max-w-2xl leading-relaxed">
+              Reserve your child’s sequential consultation token online. Same-day online reservations close promptly at <strong className="text-[#193247]">{settings.onlineCutoffTime} AM IST</strong>.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#193247] tracking-tight">
-            Book an OPD Appointment
-          </h1>
-          <p className="text-xs sm:text-sm text-[#647785] max-w-2xl leading-relaxed">
-            Reserve your child’s sequential consultation token online. Same-day online reservations close promptly at <strong className="text-[#193247]">{settings.onlineCutoffTime} AM IST</strong>.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Confirmation View */}
         {confirmedBooking ? (
           <Card className="p-8 border-[#3DA9DF]/50 bg-white shadow-md animate-in fade-in duration-200">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
-                <CheckCircle2 className="w-10 h-10 stroke-[2.3]" />
+              {/* Lottie Medical Verification Checkmark Animation */}
+              <div className="w-24 h-24 flex items-center justify-center">
+                <LottiePlayer
+                  animationData={LottieAssets.bookingSuccessCheck}
+                  width={96}
+                  height={96}
+                  loop={false}
+                  autoplay={true}
+                  ariaLabel="OPD Appointment Confirmed"
+                  fallback={
+                    <div className="w-16 h-16 rounded-full bg-[#EBF6FC] text-[#3DA9DF] flex items-center justify-center">
+                      <CheckCircle2 className="w-10 h-10 stroke-[2.3]" />
+                    </div>
+                  }
+                />
               </div>
 
               <div className="space-y-1">
@@ -535,6 +554,15 @@ export const BookAppointment: React.FC = () => {
                         </span>
                       </label>
                     </div>
+
+                    {/* Genuine Loading Feedback */}
+                    {isSubmitting && (
+                      <MedicalLoader 
+                        size={32} 
+                        layout="horizontal" 
+                        label="Allocating daily OPD queue token..." 
+                      />
+                    )}
 
                     {/* Submit Button */}
                     <Button

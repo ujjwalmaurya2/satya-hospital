@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Calendar, Sparkles, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { LottiePlayer } from './LottiePlayer';
+import { LottieAssets } from '../../assets/lottie';
 
 export const FloatingAppointmentWidget: React.FC = () => {
   const location = useLocation();
@@ -58,10 +60,20 @@ export const FloatingAppointmentWidget: React.FC = () => {
               />
             </div>
 
-            {/* Calendar Icon with Live Pulse Indicator */}
+            {/* Calendar Micro-Animation with Live Queue Status Indicator */}
             <div className="relative shrink-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-[#3DA9DF] to-[#2B92C4] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform duration-200">
-                <Calendar className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2]" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-[#CBD7DD] flex items-center justify-center shadow-2xs group-hover:border-[#3DA9DF] group-hover:scale-105 transition-all duration-200 overflow-hidden">
+                <LottiePlayer
+                  animationData={LottieAssets.appointmentCalendar}
+                  width={28}
+                  height={28}
+                  loop={true}
+                  autoplay={true}
+                  triggerOnHover={false}
+                  triggerOnView={true}
+                  ariaLabel="Appointment Schedule Indicator"
+                  fallback={<Calendar className="w-4 h-4 text-[#168C8C] stroke-[2.2]" />}
+                />
               </div>
               {/* Green Active Queue Pulse Indicator */}
               <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">

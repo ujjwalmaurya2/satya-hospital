@@ -49,12 +49,20 @@ import { PathologyDashboard } from './pages/staff/PathologyDashboard';
 import { AdminDashboard } from './pages/staff/AdminDashboard';
 import { NotFound } from './pages/NotFound';
 import { FloatingAppointmentWidget } from './components/common/FloatingAppointmentWidget';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { PageTransition } from './components/motion';
 
 // Public Layout Wrapper
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen flex flex-col bg-[#FCFDFB]">
     <Navbar />
-    <main className="flex-1">{children}</main>
+    <main className="flex-1">
+      <ErrorBoundary>
+        <PageTransition>
+          {children}
+        </PageTransition>
+      </ErrorBoundary>
+    </main>
     <FloatingAppointmentWidget />
     <Footer />
   </div>

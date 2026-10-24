@@ -23,6 +23,7 @@ import { motion } from 'framer-motion';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
 
 export interface HospitalFacility {
   id: string;
@@ -164,99 +165,100 @@ export const Facilities: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-            <Building className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Hospital Infrastructure &amp; Amenities &bull; Prayagraj</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+              <Building className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Hospital Infrastructure &amp; Amenities &bull; Prayagraj</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
+              Clinical Facilities &amp; Care Standards
+            </h1>
+            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
+              Satya Hospital &amp; Pathology provides structured, child-friendly facilities designed for clinical hygiene, diagnostic accuracy, and family comfort during morning outpatient visits.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-            Clinical Facilities &amp; Care Standards
-          </h1>
-          <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-            Satya Hospital &amp; Pathology provides structured, child-friendly facilities designed for clinical hygiene, diagnostic accuracy, and family comfort during morning outpatient visits.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Category Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                activeCategory === cat.id
-                  ? 'bg-[#3DA9DF] text-white shadow-xs'
-                  : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+        <ScrollReveal direction="up" delay={0.06} distance={12}>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id as any)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  activeCategory === cat.id
+                    ? 'bg-[#3DA9DF] text-white shadow-xs'
+                    : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </ScrollReveal>
 
         {/* Facilities Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <StaggerContainer staggerDelay={0.07} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filteredFacilities.map((fac) => (
-            <motion.div
-              key={fac.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-xl ${fac.iconBg} ${fac.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform font-bold`}>
-                      {fac.icon}
+            <StaggerItem key={fac.id} hoverLift className="h-full">
+              <div
+                className="bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group h-full"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-xl ${fac.iconBg} ${fac.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform font-bold`}>
+                        {fac.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-bold text-[#193247]">
+                          {fac.title}
+                        </h3>
+                        <span className="text-[11px] font-bold text-[#3DA9DF]">
+                          {fac.location}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-base sm:text-lg font-bold text-[#193247]">
-                        {fac.title}
-                      </h3>
-                      <span className="text-[11px] font-bold text-[#3DA9DF]">
-                        {fac.location}
-                      </span>
-                    </div>
+                    <Badge variant="medical-blue" size="sm">
+                      {fac.badge}
+                    </Badge>
                   </div>
-                  <Badge variant="medical-blue" size="sm">
-                    {fac.badge}
-                  </Badge>
+
+                  <p className="text-xs text-[#647785] leading-relaxed">
+                    {fac.description}
+                  </p>
+
+                  <div className="p-3.5 bg-[#FCFDFB] rounded-xl border border-[#E5ECEF] text-xs space-y-2">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#647785]">
+                      Key Infrastructure Features:
+                    </div>
+                    <ul className="space-y-1.5">
+                      {fac.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-[#193247]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40] shrink-0 mt-0.5" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
-                <p className="text-xs text-[#647785] leading-relaxed">
-                  {fac.description}
-                </p>
-
-                <div className="p-3.5 bg-[#FCFDFB] rounded-xl border border-[#E5ECEF] text-xs space-y-2">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-[#647785]">
-                    Key Infrastructure Features:
-                  </div>
-                  <ul className="space-y-1.5">
-                    {fac.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-[#193247]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#91BB40] shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="pt-4 border-t border-[#E5ECEF] mt-4 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-[#647785] flex items-center gap-1.5 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
+                    <span>{fac.timing}</span>
+                  </span>
+                  <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1">
+                    <span>Book Consultation</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </div>
-
-              <div className="pt-4 border-t border-[#E5ECEF] mt-4 flex items-center justify-between text-xs">
-                <span className="text-[11px] text-[#647785] flex items-center gap-1.5 font-medium">
-                  <Clock className="w-3.5 h-3.5 text-[#3DA9DF]" />
-                  <span>{fac.timing}</span>
-                </span>
-                <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4] flex items-center gap-1">
-                  <span>Book Consultation</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
       </div>
     </div>

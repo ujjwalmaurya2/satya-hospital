@@ -19,6 +19,7 @@ import { motion } from 'framer-motion';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { ScrollReveal } from '../../components/motion';
 
 export interface JourneyMilestone {
   period: string;
@@ -116,18 +117,20 @@ export const Journey: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-            <Milestone className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Clinical Evolution &amp; Milestones &bull; Prayagraj</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="max-w-3xl space-y-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+              <Milestone className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Clinical Evolution &amp; Milestones &bull; Prayagraj</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
+              The Satya Hospital Journey
+            </h1>
+            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
+              From a focused community clinic to a family-trusted pediatric and diagnostic center in Civil Lines, Prayagraj. Explore the milestones that shaped our patient-first healthcare model.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-            The Satya Hospital Journey
-          </h1>
-          <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-            From a focused community clinic to a family-trusted pediatric and diagnostic center in Civil Lines, Prayagraj. Explore the milestones that shaped our patient-first healthcare model.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Timeline Section */}
         <div className="relative">
@@ -139,12 +142,8 @@ export const Journey: React.FC = () => {
               const isEven = idx % 2 === 0;
 
               return (
-                <motion.div
+                <div
                   key={milestone.title}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-60px' }}
-                  transition={{ duration: 0.45, delay: idx * 0.08 }}
                   className={`relative flex flex-col md:flex-row items-center ${
                     isEven ? 'md:flex-row-reverse' : ''
                   } gap-6 md:gap-12`}
@@ -158,67 +157,71 @@ export const Journey: React.FC = () => {
 
                   {/* Content Card (Half width) */}
                   <div className="w-full md:w-1/2">
-                    <Card className="p-6 sm:p-7 border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all hover:shadow-md bg-white">
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className="text-xs font-bold text-[#647785] uppercase tracking-wider">
-                          {milestone.period}
-                        </span>
-                        <Badge variant="medical-blue" size="sm">
-                          {milestone.badge}
-                        </Badge>
-                      </div>
+                    <ScrollReveal direction={isEven ? "left" : "right"} delay={idx * 0.05} distance={20}>
+                      <Card className="p-6 sm:p-7 border-[#CBD7DD] hover:border-[#3DA9DF]/50 transition-all hover:shadow-md bg-white">
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <span className="text-xs font-bold text-[#647785] uppercase tracking-wider">
+                            {milestone.period}
+                          </span>
+                          <Badge variant="medical-blue" size="sm">
+                            {milestone.badge}
+                          </Badge>
+                        </div>
 
-                      <h2 className="text-lg sm:text-xl font-bold text-[#193247] mb-1">
-                        {milestone.title}
-                      </h2>
-                      <h3 className="text-xs font-bold text-[#3DA9DF] mb-3">
-                        {milestone.subtitle}
-                      </h3>
+                        <h2 className="text-lg sm:text-xl font-bold text-[#193247] mb-1">
+                          {milestone.title}
+                        </h2>
+                        <h3 className="text-xs font-bold text-[#3DA9DF] mb-3">
+                          {milestone.subtitle}
+                        </h3>
 
-                      <p className="text-xs sm:text-sm text-[#647785] leading-relaxed mb-4">
-                        {milestone.description}
-                      </p>
+                        <p className="text-xs sm:text-sm text-[#647785] leading-relaxed mb-4">
+                          {milestone.description}
+                        </p>
 
-                      <div className="space-y-2 pt-3 border-t border-[#E5ECEF] text-xs">
-                        {milestone.highlights.map((item, hIdx) => (
-                          <div key={hIdx} className="flex items-start gap-2 text-[#193247]">
-                            <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
-                            <span>{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
+                        <div className="space-y-2 pt-3 border-t border-[#E5ECEF] text-xs">
+                          {milestone.highlights.map((item, hIdx) => (
+                            <div key={hIdx} className="flex items-start gap-2 text-[#193247]">
+                              <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    </ScrollReveal>
                   </div>
 
                   {/* Spacer for the other half */}
                   <div className="hidden md:block w-1/2" />
-                </motion.div>
+                </div>
               );
             })}
           </div>
         </div>
 
         {/* Bottom CTA Card */}
-        <div className="bg-[#193247] text-white rounded-3xl p-8 sm:p-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <h2 className="text-xl sm:text-2xl font-bold">Experience Child-First, Family-Centred Care</h2>
-            <p className="text-xs sm:text-sm text-white/70 max-w-xl">
-              Join the hundreds of Prayagraj families who rely on Satya Hospital for transparent OPD consultations and certified diagnostic pathology.
-            </p>
+        <ScrollReveal direction="up" distance={20}>
+          <div className="bg-[#193247] text-white rounded-3xl p-8 sm:p-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <h2 className="text-xl sm:text-2xl font-bold">Experience Child-First, Family-Centred Care</h2>
+              <p className="text-xs sm:text-sm text-white/70 max-w-xl">
+                Join the hundreds of Prayagraj families who rely on Satya Hospital for transparent OPD consultations and certified diagnostic pathology.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
+              <Link to="/book-appointment">
+                <Button variant="primary" size="lg" leftIcon={<Calendar className="w-5 h-5" />} className="font-bold">
+                  Book OPD Token
+                </Button>
+              </Link>
+              <Link to="/doctors">
+                <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
+                  Meet Doctors &rarr;
+                </Button>
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
-            <Link to="/book-appointment">
-              <Button variant="primary" size="lg" leftIcon={<Calendar className="w-5 h-5" />} className="font-bold">
-                Book OPD Token
-              </Button>
-            </Link>
-            <Link to="/doctors">
-              <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
-                Meet Doctors &rarr;
-              </Button>
-            </Link>
-          </div>
-        </div>
+        </ScrollReveal>
 
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Card, CardBody, CardHeader } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Alert } from '../../components/common/Alert';
+import { EmptyState } from '../../components/common/EmptyState';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
 import { getAuthorizedSignedDocumentUrl } from '../../lib/storage';
@@ -74,8 +75,13 @@ export const PatientReports: React.FC = () => {
       <Card className="rounded-2xl border-sky-100 shadow-xs">
         <CardBody className="p-0 divide-y divide-slate-100">
           {filteredReports.length === 0 ? (
-            <div className="p-8 text-center text-xs text-[#647785]">
-              No matching diagnostic reports found for your account.
+            <div className="p-6">
+              <EmptyState
+                title="No Lab Reports Available"
+                description="There are currently no published pathology reports for this patient record. Once samples are verified by our senior pathologist, your digital signed PDF will appear here immediately."
+                actionLabel="Explore Test Catalog"
+                actionLink="/pathology-lab"
+              />
             </div>
           ) : (
             filteredReports.map((report) => {

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/motion';
 
 export interface GalleryItem {
   id: string;
@@ -168,117 +169,117 @@ export const Gallery: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
-            <Images className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Visual Tour &amp; Clinical Campus &bull; Satya Hospital</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F8EC] text-[#486812] border border-[#D5E8BA] text-xs font-bold">
+              <Images className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Visual Tour &amp; Clinical Campus &bull; Satya Hospital</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
+              Hospital &amp; Clinical Facility Gallery
+            </h1>
+            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
+              Take a visual tour through our child-friendly pediatric chambers, infant examination room, certified automated pathology lab, and reception facilities in Prayagraj.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-            Hospital &amp; Clinical Facility Gallery
-          </h1>
-          <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-            Take a visual tour through our child-friendly pediatric chambers, infant examination room, certified automated pathology lab, and reception facilities in Prayagraj.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {[
-            { id: 'all', label: 'All Areas' },
-            { id: 'chambers', label: 'Consultation Suites' },
-            { id: 'pathology', label: 'Pathology Lab' },
-            { id: 'daycare', label: 'Day Care & Minor OT' },
-            { id: 'reception', label: 'Reception & Waiting' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setSelectedCategory(tab.id);
-                setActiveLightboxIndex(null);
-              }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                selectedCategory === tab.id
-                  ? 'bg-[#3DA9DF] text-white shadow-xs'
-                  : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <ScrollReveal direction="up" delay={0.06} distance={12}>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {[
+              { id: 'all', label: 'All Areas' },
+              { id: 'chambers', label: 'Consultation Suites' },
+              { id: 'pathology', label: 'Pathology Lab' },
+              { id: 'daycare', label: 'Day Care & Minor OT' },
+              { id: 'reception', label: 'Reception & Waiting' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setSelectedCategory(tab.id);
+                  setActiveLightboxIndex(null);
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  selectedCategory === tab.id
+                    ? 'bg-[#3DA9DF] text-white shadow-xs'
+                    : 'bg-white border border-[#E5ECEF] text-[#193247] hover:bg-[#FCFDFB]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </ScrollReveal>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggerContainer staggerDelay={0.06} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              whileHover={{ y: -4 }}
-              className="group cursor-pointer bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-              onClick={() => setActiveLightboxIndex(index)}
-            >
-              {/* Visual Header / Graphic Card or Real Photo */}
-              {item.imageSrc ? (
-                <div className="h-44 relative overflow-hidden bg-slate-100">
-                  <img 
-                    src={item.imageSrc} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#193247]/80 via-transparent to-black/20" />
-                  <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
-                    <Badge variant="medical-blue" size="sm" className="bg-white/95 backdrop-blur-xs">
-                      {item.categoryLabel}
-                    </Badge>
-                    <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#193247] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
-                      <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+            <StaggerItem key={item.id} hoverLift className="h-full">
+              <div
+                className="group cursor-pointer bg-white rounded-2xl border border-[#CBD7DD] hover:border-[#3DA9DF]/50 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between h-full"
+                onClick={() => setActiveLightboxIndex(index)}
+              >
+                {/* Visual Header / Graphic Card or Real Photo */}
+                {item.imageSrc ? (
+                  <div className="h-44 relative overflow-hidden bg-slate-100">
+                    <img 
+                      src={item.imageSrc} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#193247]/80 via-transparent to-black/20" />
+                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+                      <Badge variant="medical-blue" size="sm" className="bg-white/95 backdrop-blur-xs">
+                        {item.categoryLabel}
+                      </Badge>
+                      <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#193247] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
+                        <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-[#193247]/80 backdrop-blur-xs px-2.5 py-1 rounded-md">
+                      {item.roomInfo}
                     </div>
                   </div>
-                  <div className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-[#193247]/80 backdrop-blur-xs px-2.5 py-1 rounded-md">
-                    {item.roomInfo}
-                  </div>
-                </div>
-              ) : (
-                <div className={`h-44 bg-gradient-to-br ${item.gradient} p-5 flex flex-col justify-between relative overflow-hidden`}>
-                  <div className="flex justify-between items-start z-10">
-                    <Badge variant="medical-blue" size="sm" className="bg-white/90 backdrop-blur-xs">
-                      {item.categoryLabel}
-                    </Badge>
-                    <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#193247] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
-                      <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+                ) : (
+                  <div className={`h-44 bg-gradient-to-br ${item.gradient} p-5 flex flex-col justify-between relative overflow-hidden`}>
+                    <div className="flex justify-between items-start z-10">
+                      <Badge variant="medical-blue" size="sm" className="bg-white/90 backdrop-blur-xs">
+                        {item.categoryLabel}
+                      </Badge>
+                      <div className="w-8 h-8 rounded-lg bg-white/80 backdrop-blur-xs flex items-center justify-center text-[#193247] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
+                        <Maximize2 className="w-4 h-4 text-[#3DA9DF]" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center py-2 z-10 group-hover:scale-110 transition-transform duration-300">
+                      {item.icon}
+                    </div>
+
+                    <div className="text-[11px] font-bold text-[#193247] z-10 bg-white/70 backdrop-blur-xs px-2.5 py-1 rounded-md inline-block w-fit">
+                      {item.roomInfo}
                     </div>
                   </div>
+                )}
 
-                  <div className="flex items-center justify-center py-2 z-10 group-hover:scale-110 transition-transform duration-300">
-                    {item.icon}
+                {/* Info Body */}
+                <div className="p-5 space-y-3">
+                  <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-[#647785] leading-relaxed line-clamp-2">
+                    {item.description}
+                  </p>
+
+                  <div className="pt-2 border-t border-[#E5ECEF] flex items-center justify-between text-[11px] text-[#3DA9DF] font-bold">
+                    <span>View Details</span>
+                    <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                   </div>
-
-                  <div className="text-[11px] font-bold text-[#193247] z-10 bg-white/70 backdrop-blur-xs px-2.5 py-1 rounded-md inline-block w-fit">
-                    {item.roomInfo}
-                  </div>
-                </div>
-              )}
-
-              {/* Info Body */}
-              <div className="p-5 space-y-3">
-                <h3 className="text-sm font-bold text-[#193247] group-hover:text-[#3DA9DF] transition-colors leading-snug">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-[#647785] leading-relaxed line-clamp-2">
-                  {item.description}
-                </p>
-
-                <div className="pt-2 border-t border-[#E5ECEF] flex items-center justify-between text-[11px] text-[#3DA9DF] font-bold">
-                  <span>View Details</span>
-                  <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </div>
               </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {/* Lightbox Modal */}
         <AnimatePresence>

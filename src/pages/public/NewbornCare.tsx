@@ -17,6 +17,7 @@ import {
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
+import { ScrollReveal, StaggerContainer, StaggerItem, ImageReveal } from '../../components/motion';
 import { useHospital } from '../../context/HospitalContext';
 
 export const NewbornCare: React.FC = () => {
@@ -66,132 +67,142 @@ export const NewbornCare: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header Breadcrumb / Pill */}
-        <div className="space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold border border-[#BCE1F5]">
-            <Heart className="w-3.5 h-3.5 text-[#3DA9DF]" />
-            <span>Newborn &amp; Infant Healthcare Clinic &bull; Satya Hospital Prayagraj</span>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="space-y-4 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF6FC] text-[#1E78A4] text-xs font-semibold border border-[#BCE1F5]">
+              <Heart className="w-3.5 h-3.5 text-[#3DA9DF]" />
+              <span>Newborn &amp; Infant Healthcare Clinic &bull; Satya Hospital Prayagraj</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
+              Gentle Care for Your Newborn. Peace of Mind for Parents.
+            </h1>
+            <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
+              The first months of a child’s life require gentle touch, meticulous clinical observation, and compassionate reassurance for parents. Satya Hospital provides clinical consultations tailored specifically for babies up to 12 months.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#193247] tracking-tight">
-            Gentle Care for Your Newborn. Peace of Mind for Parents.
-          </h1>
-          <p className="text-sm sm:text-base text-[#647785] leading-relaxed">
-            The first months of a child’s life require gentle touch, meticulous clinical observation, and compassionate reassurance for parents. Satya Hospital provides clinical consultations tailored specifically for babies up to 12 months.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Feature Hero Image Section */}
-        <div className="relative rounded-3xl overflow-hidden border border-[#E5ECEF] shadow-sm bg-white">
-          <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
-            <div className="lg:col-span-7 p-6 sm:p-10 space-y-5">
-              <Badge variant="lime-green" size="sm">
-                Dedicated Infant Consultation Room
-              </Badge>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] leading-tight">
-                Hygienic, Calm &amp; Reassuring Newborn Examinations
-              </h2>
-              <p className="text-xs sm:text-sm text-[#647785] leading-relaxed">
-                Our examination spaces are sanitized, temperature-regulated, and equipped with calibrated infant scales and diagnostic tools. We focus on low-stress assessments where mothers and fathers are right by their baby’s side.
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
-                  <span>Sanitized Infant Examination Mats</span>
+        <ScrollReveal direction="up" delay={0.06} distance={18}>
+          <div className="relative rounded-3xl overflow-hidden border border-[#E5ECEF] shadow-sm bg-white">
+            <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
+              <div className="lg:col-span-7 p-6 sm:p-10 space-y-5">
+                <Badge variant="lime-green" size="sm">
+                  Dedicated Infant Consultation Room
+                </Badge>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193247] leading-tight">
+                  Hygienic, Calm &amp; Reassuring Newborn Examinations
+                </h2>
+                <p className="text-xs sm:text-sm text-[#647785] leading-relaxed">
+                  Our examination spaces are sanitized, temperature-regulated, and equipped with calibrated infant scales and diagnostic tools. We focus on low-stress assessments where mothers and fathers are right by their baby’s side.
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
+                    <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
+                    <span>Sanitized Infant Examination Mats</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
+                    <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
+                    <span>Calibrated Digital Baby Weighing</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
+                    <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
+                    <span>Verified Consultant Physician</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
+                    <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
+                    <span>Same-Day Lab Reports Available</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
-                  <span>Calibrated Digital Baby Weighing</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#91BB40] shrink-0" />
-                  <span>Verified Consultant Physician</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-[#193247] font-medium bg-[#FCFDFB] p-2.5 rounded-xl border border-[#E5ECEF]">
-                  <CheckCircle2 className="w-4 h-4 text-[#3DA9DF] shrink-0" />
-                  <span>Same-Day Lab Reports Available</span>
+
+                <div className="pt-4 flex flex-wrap items-center gap-3">
+                  <Link to="/book-appointment">
+                    <Button variant="primary" size="md" leftIcon={<Calendar className="w-4 h-4" />}>
+                      Book Newborn OPD Token
+                    </Button>
+                  </Link>
+                  <a href="tel:+915322900000">
+                    <Button variant="outline" size="md" leftIcon={<PhoneCall className="w-4 h-4" />}>
+                      Call Hospital Reception
+                    </Button>
+                  </a>
                 </div>
               </div>
 
-              <div className="pt-4 flex flex-wrap items-center gap-3">
-                <Link to="/book-appointment">
-                  <Button variant="primary" size="md" leftIcon={<Calendar className="w-4 h-4" />}>
-                    Book Newborn OPD Token
-                  </Button>
-                </Link>
-                <a href="tel:+915322900000">
-                  <Button variant="outline" size="md" leftIcon={<PhoneCall className="w-4 h-4" />}>
-                    Call Hospital Reception
-                  </Button>
-                </a>
+              <div className="lg:col-span-5 h-72 sm:h-96 lg:h-full relative overflow-hidden bg-[#EBF6FC]/50">
+                <ImageReveal
+                  src="/images/newborn-care.jpg"
+                  alt="Pediatrician conducting gentle newborn infant examination at Satya Hospital"
+                  className="w-full h-full"
+                  imageClassName="object-cover object-center"
+                  priority
+                />
               </div>
-            </div>
-
-            <div className="lg:col-span-5 h-72 sm:h-96 lg:h-full relative overflow-hidden bg-[#EBF6FC]/50">
-              <img 
-                src="/images/newborn-care.jpg" 
-                alt="Pediatrician conducting gentle newborn infant examination at Satya Hospital"
-                className="w-full h-full object-cover object-center"
-                loading="eager"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#193247]/30 via-transparent to-transparent lg:hidden" />
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Services Grid */}
         <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold text-[#193247]">Core Newborn Outpatient Disciplines</h2>
-            <p className="text-xs text-[#647785] mt-1">
-              Available during daily hospital OPD schedules with transparent token queuing.
-            </p>
-          </div>
+          <ScrollReveal direction="up" distance={14}>
+            <div>
+              <h2 className="text-2xl font-bold text-[#193247]">Core Newborn Outpatient Disciplines</h2>
+              <p className="text-xs text-[#647785] mt-1">
+                Available during daily hospital OPD schedules with transparent token queuing.
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerContainer staggerDelay={0.06} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newbornServices.map((service, idx) => (
-              <Card key={idx} className="p-6 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] flex items-center justify-center shadow-2xs">
-                      {service.icon}
+              <StaggerItem key={idx} hoverLift className="h-full">
+                <Card className="p-6 border-[#E5ECEF] hover:border-[#3DA9DF]/50 transition-all duration-200 flex flex-col justify-between hover:shadow-md h-full">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-12 rounded-xl bg-[#EBF6FC] flex items-center justify-center shadow-2xs">
+                        {service.icon}
+                      </div>
+                      <Badge variant={idx % 2 === 0 ? 'medical-blue' : 'lime-green'} size="sm">
+                        {service.badge}
+                      </Badge>
                     </div>
-                    <Badge variant={idx % 2 === 0 ? 'medical-blue' : 'lime-green'} size="sm">
-                      {service.badge}
-                    </Badge>
+                    <div>
+                      <h3 className="text-base font-bold text-[#193247]">{service.title}</h3>
+                      <p className="text-xs text-[#647785] mt-2 leading-relaxed">
+                        {service.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-[#193247]">{service.title}</h3>
-                    <p className="text-xs text-[#647785] mt-2 leading-relaxed">
-                      {service.description}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="pt-5 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-[#3DA9DF] flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Clinical Safety Checked
-                  </span>
-                  <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4]">
-                    Book Token
-                  </Link>
-                </div>
-              </Card>
+                  <div className="pt-5 mt-4 border-t border-[#E5ECEF] flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-[#3DA9DF] flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Clinical Safety Checked
+                    </span>
+                    <Link to="/book-appointment" className="text-xs font-bold text-[#3DA9DF] hover:text-[#2B92C4]">
+                      Book Token
+                    </Link>
+                  </div>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
 
         {/* Routine Milestone & Warning Signs Notice */}
-        <div className="bg-[#FFF0E7]/60 border border-[#FCD5C1] rounded-3xl p-6 sm:p-8 space-y-4">
-          <div className="flex items-center gap-2.5 text-[#9A3412]">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <h3 className="text-sm font-bold uppercase tracking-wider">
-              Clinical Advisory &bull; Immediate In-Person Care for Infants
-            </h3>
+        <ScrollReveal direction="up" distance={16}>
+          <div className="bg-[#FFF0E7]/60 border border-[#FCD5C1] rounded-3xl p-6 sm:p-8 space-y-4">
+            <div className="flex items-center gap-2.5 text-[#9A3412]">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <h3 className="text-sm font-bold uppercase tracking-wider">
+                Clinical Advisory &bull; Immediate In-Person Care for Infants
+              </h3>
+            </div>
+            <p className="text-xs text-[#647785] leading-relaxed">
+              If your newborn develops a rectal/axillary temperature above 100.4&deg;F (38&deg;C), refuses multiple consecutive feeds, shows significant lethargy, sunken fontanelles, or rapid grunting breathing, do not wait for an online OPD slot. Please seek immediate physical medical attention at the emergency desk or nearest advanced neonatal center.
+            </p>
           </div>
-          <p className="text-xs text-[#647785] leading-relaxed">
-            If your newborn develops a rectal/axillary temperature above 100.4&deg;F (38&deg;C), refuses multiple consecutive feeds, shows significant lethargy, sunken fontanelles, or rapid grunting breathing, do not wait for an online OPD slot. Please seek immediate physical medical attention at the emergency desk or nearest advanced neonatal center.
-          </p>
-        </div>
+        </ScrollReveal>
 
       </div>
     </div>

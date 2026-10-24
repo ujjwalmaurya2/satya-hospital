@@ -22,40 +22,58 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-## 2. Database Migrations
+## 2. Complete Database Setup (Consolidated Single SQL File)
 
-Two SQL migrations are prepared in `supabase/migrations/`:
+All 16 tables, functions, token allocation sequences, Row Level Security (RLS) policies, and verified initial seed data have been consolidated into a single self-contained, idempotent file:
 
-### Migration 1: Core Hospital Schema
-**File**: [`supabase/migrations/20261022000001_satya_hospital_schema.sql`](file:///C:/Users/ujjwa/.gemini/antigravity/scratch/satya-hospital/supabase/migrations/20261022000001_satya_hospital_schema.sql)
-- **Daily OPD Token Allocation**: Table `daily_opd_token_counters` and concurrency-safe function `allocate_daily_opd_token(appointment_date)`.
-- **Hospital Settings**: Configurable operating hours, same-day 09:00 AM cutoff, and unlimited capacity (`max_daily_capacity = NULL`).
-- **Demographic & Auth Profiles**: `profiles` (linked to `auth.users`) and `patient_profiles` (with immutable `SH-YYYY-XXXXX` identifier).
-- **Appointments Table**: Unique constraint `uq_appointment_token_per_day` on `(appointment_date, token_number)` to prevent race conditions or duplicate token issues.
-- **Pathology & Clinical**: `pathology_tests`, `pathology_reports` with two-step pathologist sign-off requirement.
-- **Security & RLS**: 13 tables protected with strict Row Level Security (RLS) policies.
+👉 **[`supabase/complete_satya_hospital_setup.sql`](file:///C:/Users/ujjwa/.gemini/antigravity/scratch/satya-hospital/supabase/complete_satya_hospital_setup.sql)**
 
-### Migration 2: Testimonials & Gallery
-**File**: [`supabase/migrations/20261023000002_gallery_and_testimonials.sql`](file:///C:/Users/ujjwa/.gemini/antigravity/scratch/satya-hospital/supabase/migrations/20261023000002_gallery_and_testimonials.sql)
-- **Testimonials**: `public.testimonials` with approved status flag, RLS policies (public read approved, admin manage).
-- **Gallery Items**: `public.gallery_items` with category filtering, facility rooms, equipment arrays, and public read RLS.
+### Tables Created:
+1. `hospital_settings`: Global OPD timings, 09:00 AM cutoff, unlimited capacity.
+2. `daily_opd_token_counters`: Concurrency-safe atomic token allocator (`allocate_daily_opd_token()`).
+3. `profiles`: User accounts linked with Supabase Auth (`auth.users`).
+4. `patient_profiles`: Patient records with collision-safe `SH-YYYY-XXXXX` identifier.
+5. `departments`: Clinical specialties with slugs and icons.
+6. `services`: Detailed medical procedures and offerings.
+7. `doctor_profiles`: Medical staff schedules and consultation rooms.
+8. `appointments`: Token-guaranteed bookings with composite unique constraints.
+9. `patient_visits`: Consultation notes, diagnosis, and clinical entries.
+10. `medical_documents`: Prescription and record storage metadata.
+11. `pathology_tests`: Lab test catalog with specimen types, turnaround hours, and prices.
+12. `pathology_reports`: Two-step pathologist verification and publishing workflow.
+13. `consent_records`: DPDP Act 2023 compliance audit records.
+14. `audit_logs`: Immutable clinical security trace.
+15. `testimonials`: Verified patient reviews with approval flags.
+16. `gallery_items`: Clinical facility photos and equipment lists.
 
 ---
 
-## 3. How to Execute Migrations
+## 3. How to Apply the Schema to Supabase
 
-1. Log into your [Supabase Dashboard](https://supabase.com/dashboard).
-2. Select your project (`rkwbzkxkksdyhxoqpmhg`).
-3. Navigate to **SQL Editor** in the left sidebar.
-4. Copy the entire contents of `20261022000001_satya_hospital_schema.sql` and click **Run**.
-5. Copy the contents of `20261023000002_gallery_and_testimonials.sql` and click **Run**.
-6. The application's live health checker (`Admin Dashboard` &rarr; `System Readiness`) will immediately detect the initialized tables.
+You have two instant options:
+
+### Option A: Via Supabase Web Dashboard (Recommended — 30 seconds, no password required)
+1. Open your browser and go to:
+   **[https://supabase.com/dashboard/project/rkwbzkxkksdyhxoqpmhg/sql/new](https://supabase.com/dashboard/project/rkwbzkxkksdyhxoqpmhg/sql/new)**
+2. Open [`supabase/complete_satya_hospital_setup.sql`](file:///C:/Users/ujjwa/.gemini/antigravity/scratch/satya-hospital/supabase/complete_satya_hospital_setup.sql), copy the entire SQL content, and paste it into the SQL Editor.
+3. Click the green **Run** button.
+4. Go to **Table Editor** in the left menu — all 16 tables will immediately appear populated with initial seed records!
+
+### Option B: Via Terminal / Automated Node Script
+If you know your Supabase database password:
+```bash
+node supabase/apply_master_migration.cjs "<YOUR_DATABASE_PASSWORD>"
+```
+Or with the full connection string:
+```bash
+node supabase/apply_master_migration.cjs "postgresql://postgres:<YOUR_DATABASE_PASSWORD>@db.rkwbzkxkksdyhxoqpmhg.supabase.co:5432/postgres"
+```
 
 ---
 
 ## 4. Fallback Architecture
 
-If Supabase is offline or if migrations have not yet been executed:
+If Supabase is offline or before migrations are run:
 - The frontend **never crashes** or displays raw database errors (`PGRST205`).
 - The service layer (`src/services/supabaseService.ts`) transparently falls back to persistent local storage and verified clinical datasets.
 - Appointments, queues, and reports remain 100% operational in demonstration mode.

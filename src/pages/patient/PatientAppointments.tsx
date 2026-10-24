@@ -6,6 +6,7 @@ import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Alert } from '../../components/common/Alert';
 import { Modal } from '../../components/common/Modal';
+import { EmptyState } from '../../components/common/EmptyState';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
 import { Appointment } from '../../types';
@@ -49,8 +50,13 @@ export const PatientAppointments: React.FC = () => {
       <Card>
         <CardBody className="p-0 divide-y divide-[#E1E8ED]">
           {myAppointments.length === 0 ? (
-            <div className="p-8 text-center text-xs text-[#667085]">
-              No appointment records found for your account.
+            <div className="p-6">
+              <EmptyState
+                title="No Scheduled Appointments"
+                description="You currently have no active or previous OPD appointments on record. You can reserve a daily consultation token online with no upfront fee."
+                actionLabel="Book OPD Consultation Token"
+                actionLink="/book-appointment"
+              />
             </div>
           ) : (
             myAppointments.map((apt) => {
