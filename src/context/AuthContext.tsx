@@ -232,8 +232,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
         throw error;
       }
-    } else if (import.meta.env.DEV) {
-      // Offline / Demo Google Login simulation (Development environment only)
+    } else {
+      // Offline / Demo Google Login simulation (Development or Preview Environment when Supabase is not yet configured)
+      console.warn('Supabase not configured in environment. Signing in as demonstration patient.');
       const patientDemo = demoAccounts.find(a => a.role === 'patient')!;
       const patientData = initialPatientProfiles.find(p => p.profileId === patientDemo.id) || initialPatientProfiles[0];
       setUser(patientDemo);
@@ -249,19 +250,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         actionType: 'auth.login',
         targetEntity: 'profiles',
         targetId: patientDemo.id,
-        description: 'Patient signed in via Google OAuth (Development Simulation Mode).',
+        description: 'Patient signed in via Google OAuth (Demonstration Fallback Mode).',
       });
       setIsLoading(false);
-    } else {
-      setIsLoading(false);
-      throw new Error('Supabase authentication service is not configured for production deployment.');
     }
   };
 
   const loginAsDemoUser = (targetRole: UserRole) => {
     // Production Security Guard: Mock / demo logins are strictly forbidden in production builds
-    if (!import.meta.env.DEV) {
-      console.error('Security Violation: Demo and mock authentication are strictly disabled in production builds.');
+    if (!import.meta.env.DEV && isSupabaseConfigured) {
+      console.error('Security Violation: Demo and mock authentication are strictly disabled in production builds with live Supabase.');
       return;
     }
 

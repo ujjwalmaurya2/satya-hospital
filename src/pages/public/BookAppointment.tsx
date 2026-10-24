@@ -244,6 +244,11 @@ export const BookAppointment: React.FC = () => {
       <p className="mt-2 text-[15px] leading-relaxed text-ink-600">
         We use your Google account to keep your bookings, tokens and reports together and private. You’ll come straight back here.
       </p>
+      {!live && (
+        <Alert type="info" className="mt-5 text-left text-xs">
+          <strong>Vercel Preview Note:</strong> Supabase environment variables are not configured in Vercel settings. Continuing below will use a preview patient profile to test the booking flow.
+        </Alert>
+      )}
       {formError && <Alert type="error" className="mt-5 text-left">{formError}</Alert>}
       <Button size="lg" variant="outline" className="mt-7 w-full gap-3" onClick={startGoogle} isLoading={isLoading} loadingText="Opening Google…">
         <GoogleIcon />
