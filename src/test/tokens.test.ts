@@ -52,27 +52,18 @@ describe('Satya Hospital - Identifier & Scheduling Rules', () => {
     expect(res.reason).toContain('past dates');
   });
 
-  it('enforces T-1 booking window: permits booking for tomorrow, rejects dates further out', () => {
-    const baseDate = '2026-10-22'; // Fixed Thursday
-    const tomorrow = '2026-10-23'; // Friday
-    const farFuture = '2026-10-24'; // Saturday (Operating day, but 2 days away)
+  it('allows advance booking several days ahead and rejects dates beyond the window', () => {
+    const baseDate = '2026-10-20'; // Tuesday
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    // Tomorrow is open
-    const resTomorrow = checkOnlineBookingCutoff(tomorrow, {
-      baseDate,
-      currentTime: { hours: 10, minutes: 0 },
-      operatingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    });
-    expect(resTomorrow.allowed).toBe(true);
+    // Five days ahead is open (no longer limited to the day before)
+    const resAhead = checkOnlineBookingCutoff('2026-10-24', { baseDate, currentTime: { hours: 10, minutes: 0 }, operatingDays: days });
+    expect(resAhead.allowed).toBe(true);
 
-    // Date > 1 day in advance is not yet open
-    const resFar = checkOnlineBookingCutoff(farFuture, {
-      baseDate,
-      currentTime: { hours: 10, minutes: 0 },
-      operatingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    });
+    // Beyond the configured advance window is rejected
+    const resFar = checkOnlineBookingCutoff('2026-11-30', { baseDate, currentTime: { hours: 10, minutes: 0 }, operatingDays: days, maxAdvanceDays: 30 });
     expect(resFar.allowed).toBe(false);
-    expect(resFar.reason).toContain('opens 1 calendar day in advance');
+    expect(resFar.reason).toContain('up to 30 days ahead');
   });
 
   it('enforces 09:00 AM cutoff for same-day online booking and suggests next eligible date', () => {

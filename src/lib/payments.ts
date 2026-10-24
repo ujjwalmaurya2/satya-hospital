@@ -1,4 +1,9 @@
 /**
+ * NOTE: Legacy in-browser simulation kept for its unit tests only. It is NOT
+ * used by the app. Real payments run server-side in supabase/functions
+ * (opd-create-order, opd-verify-payment, razorpay-webhook) and SQL
+ * (confirm_opd_payment). Its signature check is not cryptographic.
+ *
  * Satya Hospital Secure Payment & Booking Consistency Service
  * 
  * Rules:

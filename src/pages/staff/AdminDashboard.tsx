@@ -45,9 +45,7 @@ export const AdminDashboard: React.FC = () => {
     settings.operatingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   );
   const [holidaysText, setHolidaysText] = useState((settings.holidays || []).join(', '));
-  const [onlineBookingWindowDays, setOnlineBookingWindowDays] = useState(
-    settings.onlineBookingWindowDays?.toString() || '1'
-  );
+  const [maxAdvanceBookingDays, setMaxAdvanceBookingDays] = useState(settings.maxAdvanceBookingDays?.toString() || '30');
   const [consultationFee, setConsultationFee] = useState(
     settings.consultationFee !== null && settings.consultationFee !== undefined ? settings.consultationFee.toString() : ''
   );
@@ -93,7 +91,7 @@ export const AdminDashboard: React.FC = () => {
         maxDailyCapacity: parsedCapacity,
         operatingDays,
         holidays: holidaysList,
-        onlineBookingWindowDays: parseInt(onlineBookingWindowDays, 10) || 1,
+        maxAdvanceBookingDays: Math.min(180, Math.max(1, parseInt(maxAdvanceBookingDays, 10) || 30)),
         consultationFee: parsedFee,
         isOnlinePaymentEnabled,
         isPolicyApprovedByHospital,
@@ -195,18 +193,18 @@ export const AdminDashboard: React.FC = () => {
                   <p className="field-hint">Default 09:00 AM IST</p>
                 </div>
                 <div>
-                  <label htmlFor="s-window" className="field-label">Advance booking window (days)</label>
+                  <label htmlFor="s-window" className="field-label">Book up to (days ahead)</label>
                   <input
                     id="s-window"
                     type="number"
                     min={1}
-                    max={14}
-                    value={onlineBookingWindowDays}
-                    onChange={e => setOnlineBookingWindowDays(e.target.value)}
+                    max={180}
+                    value={maxAdvanceBookingDays}
+                    onChange={e => setMaxAdvanceBookingDays(e.target.value)}
                     className="field-control"
                     required
                   />
-                  <p className="field-hint">Default 1 day before the visit</p>
+                  <p className="field-hint">How far ahead patients can book online (default 30)</p>
                 </div>
                 <div>
                   <label htmlFor="s-cap" className="field-label">Maximum daily capacity</label>

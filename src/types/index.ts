@@ -17,7 +17,7 @@ export interface PatientProfile {
   fullName: string;
   dob?: string;
   age?: number;
-  gender: 'male' | 'female' | 'other';
+  gender?: 'male' | 'female' | 'other'; // optional on the online booking form
   phone: string;
   email?: string;
   bloodGroup?: string;
@@ -69,6 +69,13 @@ export interface Appointment {
   paymentId?: string;
   paymentReconciliationNotes?: string;
   consultationFeeAmount?: number;
+  bookingReference?: string;
+  contactPhone?: string;
+  visitReason?: string;
+  paymentProvider?: string | null;
+  paymentReference?: string | null;
+  amountPaid?: number | null;
+  paidAt?: string;
   feePaymentMode?: FeePaymentMode | null;
   feeCollectedAt?: string;
   checkedInAt?: string;
@@ -217,7 +224,8 @@ export interface HospitalSettings {
   opdDays: string[]; // e.g. ['Monday', 'Tuesday', ...]
   operatingDays: string[]; // explicit configured days
   holidays: string[]; // specific dates in YYYY-MM-DD
-  onlineBookingWindowDays: number; // default: 1 (opens 1 calendar day before target OPD date)
+  onlineBookingWindowDays: number; // deprecated: superseded by maxAdvanceBookingDays
+  maxAdvanceBookingDays: number; // online booking open for eligible dates up to this many days ahead
   isOnlineBookingEnabled: boolean;
   isOnlinePaymentEnabled: boolean; // default: false (payments disabled until hospital approves)
   consultationFee: number | null; // null represents unconfirmed/pending hospital fee approval

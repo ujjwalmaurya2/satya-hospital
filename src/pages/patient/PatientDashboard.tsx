@@ -7,6 +7,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { Panel } from '../../components/dashboard/Dashboard';
 import { AppointmentItem, InlineNote, prettyDate, usePatientDocumentOpener } from '../../components/patient/PatientUI';
 import { useAuth } from '../../context/AuthContext';
+import { usePatientAppointments } from '../../hooks/usePatientAppointments';
 import { useHospital } from '../../context/HospitalContext';
 import { to12h } from '../../lib/contact';
 
@@ -16,7 +17,7 @@ export const PatientDashboard: React.FC = () => {
   const docs = usePatientDocumentOpener();
 
   // Only records belonging to the signed-in patient
-  const myAppointments = appointments.filter(a => a.patientProfileId === patientProfile?.id || a.patientId === patientProfile?.patientId);
+  const { appointments: myAppointments } = usePatientAppointments();
   const myReports = pathologyReports.filter(
     r => (r.patientProfileId === patientProfile?.id || r.patientId === patientProfile?.patientId) && r.status === 'published'
   );

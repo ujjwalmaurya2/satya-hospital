@@ -99,6 +99,7 @@ export const supabaseService = {
         operatingDays: data.opd_days || initialHospitalSettings.operatingDays,
         holidays: data.holidays || [],
         onlineBookingWindowDays: data.online_booking_window_days || 1,
+        maxAdvanceBookingDays: data.max_advance_booking_days || 30,
         consultationFee: data.consultation_fee ? Number(data.consultation_fee) : null,
         isOnlinePaymentEnabled: data.is_online_payment_enabled ?? false,
         isPolicyApprovedByHospital: data.is_policy_approved_by_hospital ?? false,

@@ -14,7 +14,8 @@ interface AuthContextType {
   isLiveSession: boolean;
   signInWithEmail: (email: string, password: string) => Promise<UserProfile>;
   sendMagicLink: (email: string, redirectPath: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  /** Starts Google sign-in; returns to `redirectPath` (default: patient dashboard). */
+  loginWithGoogle: (redirectPath?: string) => Promise<void>;
   loginAsDemoUser: (role: UserRole) => void;
   loginAsPatient: (patientId: string) => boolean;
   logout: () => Promise<void>;
@@ -45,8 +46,32 @@ async function fetchLiveProfile(userId: string): Promise<{ user: UserProfile; pa
 
   let patient: PatientProfile | null = null;
   if (profile.role === 'patient') {
-    const { data: pat } = await supabase.from('patient_profiles').select('*').eq('profile_id', profile.id).single();
-    patient = pat || null;
+    // A parent's account can hold several family members; use the earliest record as the default.
+    const { data: pat } = await supabase
+      .from('patient_profiles')
+      .select('*')
+      .eq('profile_id', profile.id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    patient = pat
+      ? {
+          id: pat.id,
+          profileId: pat.profile_id,
+          patientId: pat.patient_id,
+          fullName: pat.full_name,
+          dob: pat.dob ?? undefined,
+          gender: pat.gender ?? undefined,
+          phone: pat.phone,
+          email: pat.email ?? undefined,
+          bloodGroup: pat.blood_group ?? undefined,
+          address: pat.address ?? undefined,
+          emergencyContact: pat.emergency_contact ?? undefined,
+          isVerified: pat.is_verified,
+          createdAt: pat.created_at,
+          updatedAt: pat.updated_at,
+        }
+      : null;
   }
   return { user: userObj, patient };
 }
@@ -192,13 +217,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (error) throw new Error(error.message);
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (redirectPath = '/patient/dashboard') => {
     setIsLoading(true);
     if (isSupabaseConfigured && supabase) {
+      // Only same-site relative paths are accepted as the post-login destination.
+      const safePath = redirectPath.startsWith('/') && !redirectPath.startsWith('//') ? redirectPath : '/patient/dashboard';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/patient/dashboard',
+          redirectTo: window.location.origin + safePath,
         },
       });
       if (error) {

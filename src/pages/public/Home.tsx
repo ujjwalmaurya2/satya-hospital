@@ -29,7 +29,7 @@ import { ScrollReveal, StaggerContainer, StaggerItem } from '../../components/mo
 import { IconTile, Section, SectionHeading } from '../../components/site/Section';
 import { CtaBand } from '../../components/site/CtaBand';
 import { useHospital } from '../../context/HospitalContext';
-import { checkOnlineBookingCutoff, getHospitalTodayDate, getNextEligibleOpdDate } from '../../lib/tokens';
+import { checkOnlineBookingCutoff, getHospitalDateWithOffset, getHospitalTodayDate, getNextEligibleOpdDate } from '../../lib/tokens';
 import { cleanSettingText, phoneDisplay, phoneHref, to12h } from '../../lib/contact';
 import { cn } from '../../lib/cn';
 
@@ -62,33 +62,21 @@ export const Home: React.FC = () => {
     holidays: settings.holidays,
   });
 
-  // Quick booking (unchanged behaviour: hands off to /book-appointment)
-  const [deptId, setDeptId] = useState('all');
-  const [doctorId, setDoctorId] = useState(doctors[0]?.id || '');
+  // Quick booking: pick a date, then sign in and complete details on /book-appointment.
   const [date, setDate] = useState(nextEligibleDate);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const doctorsForDept = (id: string) =>
-    id === 'all'
-      ? doctors
-      : doctors.filter(d => {
-          const dept = departments.find(dep => dep.id === id);
-          return dept ? d.department.toLowerCase().includes(dept.name.toLowerCase().split(' ')[0]) : true;
-        });
-  const availableDoctors = doctorsForDept(deptId);
+  const maxDays = settings.maxAdvanceBookingDays || 30;
 
   const cutoff = checkOnlineBookingCutoff(date, {
     cutoffTimeStr: settings.onlineCutoffTime,
     operatingDays: settings.operatingDays,
     holidays: settings.holidays,
+    maxAdvanceDays: maxDays,
   });
 
   const submitQuickBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (doctorId) params.set('doctor', doctorId);
-    if (date) params.set('date', date);
-    navigate(`/book-appointment?${params.toString()}`);
+    navigate(`/book-appointment?date=${encodeURIComponent(date)}`);
   };
 
   const opd = to12h(settings.opdStartTime);
@@ -134,7 +122,10 @@ export const Home: React.FC = () => {
     },
     {
       q: 'Do I need to pay online to book a token?',
-      a: 'No online payment is required at present. Consultation fees are paid at the reception desk when you arrive.',
+      a:
+        settings.isOnlinePaymentEnabled && settings.isPolicyApprovedByHospital && settings.consultationFee
+          ? `Yes. The OPD consultation fee is paid securely online when you book, and your token is issued once the payment is verified.`
+          : 'No online payment is required at present. Consultation fees are paid at the reception desk when you arrive.',
     },
   ];
 
@@ -224,57 +215,31 @@ export const Home: React.FC = () => {
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 id="quick-booking-title" className="text-lg font-semibold tracking-tight text-ink-900">
-                  Reserve an OPD token
+                  Book an OPD appointment
                 </h2>
-                <p className="text-sm text-ink-500">Free to reserve · pay the consultation fee at reception</p>
+                <p className="text-sm text-ink-500">Choose a date, then sign in with Google to add the patient’s details.</p>
               </div>
             </div>
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
-              <div>
-                <label htmlFor="qb-dept" className="field-label">Department</label>
-                <select
-                  id="qb-dept"
-                  className="field-control"
-                  value={deptId}
-                  onChange={e => {
-                    setDeptId(e.target.value);
-                    const list = doctorsForDept(e.target.value);
-                    if (list.length) setDoctorId(list[0].id);
-                  }}
-                >
-                  <option value="all">All departments</option>
-                  {departments.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="qb-doctor" className="field-label">Doctor</label>
-                <select id="qb-doctor" className="field-control" value={doctorId} onChange={e => setDoctorId(e.target.value)}>
-                  {availableDoctors.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.fullName} — {d.department}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="qb-date" className="field-label">Date</label>
+            <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end">
+              <div className="sm:w-64">
+                <label htmlFor="qb-date" className="field-label">Appointment date</label>
                 <input
                   id="qb-date"
                   type="date"
                   className="field-control"
                   min={getHospitalTodayDate()}
+                  max={getHospitalDateWithOffset(maxDays)}
                   value={date}
                   onChange={e => setDate(e.target.value)}
                   required
                 />
               </div>
-              <Button type="submit" size="md" className="h-[46px] w-full lg:w-auto" disabled={!cutoff.allowed} rightIcon={<ArrowRight className="h-4 w-4" />}>
-                Continue
+              <Button type="submit" size="md" className="h-[46px] w-full sm:w-auto" disabled={!cutoff.allowed} rightIcon={<ArrowRight className="h-4 w-4" />}>
+                Book OPD
               </Button>
+              <p className="text-[13px] text-ink-500 sm:ml-auto sm:max-w-xs sm:text-right">
+                Book up to {maxDays} days ahead. Same-day online booking closes at {cutoffTime}.
+              </p>
             </div>
             <AnimatePresence initial={false}>
               {!cutoff.allowed && (

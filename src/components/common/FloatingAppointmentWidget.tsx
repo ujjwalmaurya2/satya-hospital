@@ -28,7 +28,7 @@ export const FloatingAppointmentWidget: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, [pathname]);
 
-  if (HIDDEN_ON.includes(pathname)) return null;
+  if (HIDDEN_ON.includes(pathname) || pathname.startsWith('/booking/')) return null;
 
   const motionProps = {
     initial: reduce ? { opacity: 0 } : { opacity: 0, y: 16 },

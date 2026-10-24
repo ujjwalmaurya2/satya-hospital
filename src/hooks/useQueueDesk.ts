@@ -33,6 +33,9 @@ export function useQueueDesk() {
   const hospital = useHospital();
   const live = isSupabaseConfigured && isLiveSession;
   const { date: today, time } = useIstClock();
+  // Day being viewed; actions that issue or call tokens are limited to today.
+  const [viewDate, setViewDate] = useState(today);
+  const isToday = viewDate === today;
 
   const [liveRows, setLiveRows] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(live);
@@ -41,20 +44,20 @@ export function useQueueDesk() {
   const refresh = useCallback(async () => {
     if (!live) return;
     try {
-      setLiveRows(await queueService.listForDate(today));
+      setLiveRows(await queueService.listForDate(viewDate));
       setSyncError(null);
     } catch (err) {
       setSyncError(errorText(err));
     } finally {
       setLoading(false);
     }
-  }, [live, today]);
+  }, [live, viewDate]);
 
   useEffect(() => {
     if (!live) return;
     setLoading(true);
     refresh();
-    const unsubscribe = queueService.subscribe(today, refresh);
+    const unsubscribe = queueService.subscribe(viewDate, refresh);
     const onVisible = () => {
       if (document.visibilityState === 'visible') refresh();
     };
@@ -63,10 +66,10 @@ export function useQueueDesk() {
       unsubscribe();
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [live, today, refresh]);
+  }, [live, viewDate, refresh]);
 
-  const appointments = live ? liveRows : todaysQueue(hospital.appointments, today);
-  const summary = summarizeQueue(appointments, today);
+  const appointments = live ? liveRows : todaysQueue(hospital.appointments, viewDate);
+  const summary = summarizeQueue(appointments, viewDate);
 
   const callNext = async (): Promise<ActionResult> => {
     if (live) {
@@ -105,6 +108,9 @@ export function useQueueDesk() {
   };
 
   const setFee = async (appt: Appointment, mode: FeePaymentMode | null): Promise<ActionResult> => {
+    if (appt.paymentProvider === 'razorpay') {
+      return { ok: false, error: `Token #${appt.tokenNumber} was paid online; the fee can’t be changed at the desk.` };
+    }
     const message = mode
       ? `Fee for token #${appt.tokenNumber} recorded as ${mode.toUpperCase()} paid.`
       : `Fee for token #${appt.tokenNumber} marked unpaid.`;
@@ -151,6 +157,9 @@ export function useQueueDesk() {
     loading,
     syncError,
     today,
+    viewDate,
+    setViewDate,
+    isToday,
     istTime: time,
     settings: hospital.settings,
     appointments,

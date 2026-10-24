@@ -5,21 +5,20 @@ import { Modal } from '../../components/common/Modal';
 import { EmptyState } from '../../components/common/EmptyState';
 import { PageHeader, Panel, Segmented } from '../../components/dashboard/Dashboard';
 import { AppointmentItem, prettyDate } from '../../components/patient/PatientUI';
-import { useAuth } from '../../context/AuthContext';
+import { usePatientAppointments } from '../../hooks/usePatientAppointments';
 import { useHospital } from '../../context/HospitalContext';
 import { Appointment } from '../../types';
 
 type View = 'upcoming' | 'past';
 
 export const PatientAppointments: React.FC = () => {
-  const { patientProfile } = useAuth();
-  const { appointments, updateAppointmentStatus } = useHospital();
+  const { updateAppointmentStatus } = useHospital();
+  const { appointments: myAppointments, live, loading, error } = usePatientAppointments();
 
   const [cancelModalApt, setCancelModalApt] = useState<Appointment | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [view, setView] = useState<View>('upcoming');
 
-  const myAppointments = appointments.filter(a => a.patientProfileId === patientProfile?.id || a.patientId === patientProfile?.patientId);
   const isUpcoming = (a: Appointment) => a.status === 'booked' || a.status === 'checked_in' || a.status === 'in_consultation';
   const upcoming = myAppointments.filter(isUpcoming);
   const past = myAppointments.filter(a => !isUpcoming(a));
@@ -59,10 +58,14 @@ export const PatientAppointments: React.FC = () => {
           />
         }
       >
-        {list.length === 0 ? (
+        {error ? (
+          <p className="px-6 py-10 text-center text-sm text-danger-700">{error}</p>
+        ) : loading ? (
+          <p className="px-6 py-10 text-center text-sm text-ink-500">Loading your appointments…</p>
+        ) : list.length === 0 ? (
           <EmptyState
             title={view === 'upcoming' ? 'No upcoming appointments' : 'No past appointments'}
-            description={view === 'upcoming' ? 'Reserve a consultation token online — there is no upfront fee.' : 'Completed and cancelled visits will be listed here.'}
+            description={view === 'upcoming' ? 'Book an OPD consultation token online.' : 'Completed and cancelled visits will be listed here.'}
             actionLabel={view === 'upcoming' ? 'Book a token' : undefined}
             actionLink="/book-appointment"
             icon={<CalendarDays className="h-6 w-6" />}
@@ -74,10 +77,13 @@ export const PatientAppointments: React.FC = () => {
                 key={a.id}
                 appt={a}
                 action={
-                  a.status === 'booked' ? (
+                  a.status === 'booked' && !live ? (
                     <Button variant="ghost" size="sm" className="text-danger-700 hover:bg-danger-50 hover:text-danger-700" onClick={() => setCancelModalApt(a)}>
                       Cancel token
                     </Button>
+                  ) : a.status === 'booked' && live ? (
+                    // Patients can't change appointment rows directly (RLS); cancellations go through reception.
+                    <span className="text-[13px] text-ink-500">To cancel, call reception</span>
                   ) : undefined
                 }
               />

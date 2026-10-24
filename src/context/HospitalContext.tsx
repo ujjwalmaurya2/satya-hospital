@@ -60,7 +60,7 @@ interface HospitalContextType {
   registerPatient: (data: {
     fullName: string;
     phone: string;
-    gender: 'male' | 'female' | 'other';
+    gender?: 'male' | 'female' | 'other';
     dob?: string;
     age?: number;
     email?: string;
@@ -295,7 +295,7 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     data: {
       fullName: string;
       phone: string;
-      gender: 'male' | 'female' | 'other';
+      gender?: 'male' | 'female' | 'other';
       dob?: string;
       age?: number;
       email?: string;

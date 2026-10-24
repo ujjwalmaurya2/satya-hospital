@@ -275,7 +275,7 @@ export const ReceptionDashboard: React.FC = () => {
                       onClick={() => {
                         setWalkInName(item.fullName);
                         setWalkInPhone(item.phone);
-                        setWalkInGender(item.gender);
+                        if (item.gender) setWalkInGender(item.gender);
                         if (item.age) setWalkInAge(item.age.toString());
                         setWalkInModalOpen(true);
                       }}

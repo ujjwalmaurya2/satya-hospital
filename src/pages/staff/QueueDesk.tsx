@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { BellRing, CheckCircle2, Clock, IndianRupee, RefreshCw, UserCheck, UserPlus, UserX, Wifi, WifiOff } from 'lucide-react';
+import { BellRing, CheckCircle2, Clock, CreditCard, IndianRupee, RefreshCw, Search, UserCheck, UserPlus, UserX, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Alert } from '../../components/common/Alert';
 import { SkeletonRows } from '../../components/common/Skeleton';
 import { APPOINTMENT_BADGE, PageHeader, Panel, Segmented } from '../../components/dashboard/Dashboard';
 import { useQueueDesk, ActionResult } from '../../hooks/useQueueDesk';
+import { useAuth } from '../../context/AuthContext';
+import { PaymentCasesPanel } from '../../components/staff/PaymentCasesPanel';
 import { DEFAULT_CONSULTATION_FEE_INR, formatInr } from '../../lib/queue';
 import { checkOnlineBookingCutoff, getDayName, isOperatingDay, isValidIndianPhone } from '../../lib/tokens';
 import { to12h } from '../../lib/contact';
@@ -29,6 +31,12 @@ function timeOf(iso?: string): string {
   return new Date(iso).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
 }
 
+function bookedAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
 function newIdempotencyKey(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `walkin-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -36,10 +44,12 @@ function newIdempotencyKey(): string {
 export const QueueDesk: React.FC = () => {
   const desk = useQueueDesk();
   const reduce = useReducedMotion();
-  const { summary, settings, today, istTime } = desk;
+  const { summary, settings, today, istTime, viewDate, isToday } = desk;
+  const { role } = useAuth();
   const fee = settings.consultationFee ?? DEFAULT_CONSULTATION_FEE_INR;
 
   const [filter, setFilter] = useState<Filter>('all');
+  const [query, setQuery] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -74,8 +84,17 @@ export const QueueDesk: React.FC = () => {
       : { open: false, text: `Online booking closed at ${cutoff} · walk-ins only` };
   }, [today, istTime, settings]);
 
-  const visible = desk.appointments.filter(FILTERS.find(f => f.id === filter)!.match);
-  const prettyDate = new Date(`${today}T12:00:00Z`).toLocaleDateString('en-IN', {
+  const q = query.trim().toLowerCase();
+  const matchesQuery = (a: Appointment) =>
+    !q ||
+    a.patientName.toLowerCase().includes(q) ||
+    a.patientPhone.includes(q) ||
+    (a.contactPhone ?? '').includes(q) ||
+    (a.bookingReference ?? '').toLowerCase().includes(q) ||
+    a.appointmentCode.toLowerCase().includes(q) ||
+    String(a.tokenNumber) === q.replace('#', '');
+  const visible = desk.appointments.filter(FILTERS.find(f => f.id === filter)!.match).filter(matchesQuery);
+  const prettyDate = new Date(`${viewDate}T12:00:00Z`).toLocaleDateString('en-IN', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -166,7 +185,7 @@ export const QueueDesk: React.FC = () => {
             size="lg"
             className="relative mt-6 w-full bg-white text-ink-900 hover:bg-brand-50"
             leftIcon={<BellRing className="h-5 w-5 text-brand-600" />}
-            disabled={!summary.nextUp || busy !== null}
+            disabled={!isToday || !summary.nextUp || busy !== null}
             isLoading={busy === 'call-next'}
             loadingText="Calling…"
             onClick={() => run('call-next', desk.callNext)}
@@ -188,8 +207,23 @@ export const QueueDesk: React.FC = () => {
 
       {/* Queue + walk-in */}
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Panel flush title="Today’s tokens" description="Called strictly in token order">
-          <div className="border-b border-line px-4 py-3 sm:px-6">
+        <Panel
+          flush
+          title={isToday ? 'Today’s tokens' : `Tokens for ${prettyDate}`}
+          description="Online and walk-in patients share one token sequence"
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="queue-date" className="sr-only">Date</label>
+              <input id="queue-date" type="date" value={viewDate} onChange={e => e.target.value && desk.setViewDate(e.target.value)} className="field-control h-9 w-auto py-0 text-[13px]" />
+              {!isToday && (
+                <Button variant="ghost" size="sm" onClick={() => desk.setViewDate(today)}>
+                  Today
+                </Button>
+              )}
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
             <Segmented
               label="Filter by status"
               layoutId="queue-filter"
@@ -197,11 +231,25 @@ export const QueueDesk: React.FC = () => {
               onChange={setFilter}
               items={FILTERS.map(f => ({ id: f.id, label: f.label, count: desk.appointments.filter(f.match).length }))}
             />
+            <div className="relative lg:w-64">
+              <label htmlFor="queue-search" className="sr-only">Search patients</label>
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+              <input
+                id="queue-search"
+                type="search"
+                placeholder="Name, phone, reference, token"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                className="field-control h-9 py-0 pl-9 text-[13px]"
+              />
+            </div>
           </div>
           {desk.loading ? (
             <SkeletonRows rows={5} label="Loading today’s queue" />
           ) : visible.length === 0 ? (
-            <p className="px-6 py-14 text-center text-sm text-ink-500">{filter === 'all' ? 'No tokens issued yet today.' : 'No tokens with this status.'}</p>
+            <p className="px-6 py-14 text-center text-sm text-ink-500">
+              {q ? 'No tokens match your search.' : filter === 'all' ? (isToday ? 'No tokens issued yet today.' : 'No tokens for this date.') : 'No tokens with this status.'}
+            </p>
           ) : (
             <ul className="divide-y divide-line">
               <AnimatePresence initial={false}>
@@ -220,8 +268,19 @@ export const QueueDesk: React.FC = () => {
           )}
         </Panel>
 
-        <WalkInForm today={today} onSubmit={input => desk.registerWalkIn(input)} />
+        {isToday ? (
+          <WalkInForm today={today} onSubmit={input => desk.registerWalkIn(input)} />
+        ) : (
+          <Panel title="Walk-in registration">
+            <p className="text-sm text-ink-600">Walk-in tokens can only be issued for today.</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => desk.setViewDate(today)}>
+              Back to today
+            </Button>
+          </Panel>
+        )}
       </div>
+
+      {desk.live && <PaymentCasesPanel today={today} canResolve={role === 'admin'} />}
     </div>
   );
 };
@@ -263,9 +322,11 @@ const QueueRow: React.FC<QueueRowProps> = ({ appt, fee, busyKey, onStatus, onFee
               </Badge>
             </div>
             <p className="mt-0.5 font-mono text-xs text-ink-500">
-              {appt.patientId}
+              {appt.bookingReference || appt.appointmentCode}
               {appt.patientPhone ? ` · +91 ${appt.patientPhone}` : ''}
+              {appt.createdAt ? ` · booked ${bookedAt(appt.createdAt)}` : ''}
             </p>
+            {(appt.visitReason || appt.notes) && <p className="mt-1 line-clamp-1 text-[13px] text-ink-600">{appt.visitReason || appt.notes}</p>}
           </div>
         </div>
 
@@ -294,7 +355,13 @@ const QueueRow: React.FC<QueueRowProps> = ({ appt, fee, busyKey, onStatus, onFee
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:pl-[72px]">
-        <FeeToggle mode={appt.feePaymentMode ?? null} fee={fee} disabled={disabled} onChange={onFee} />
+        {appt.paymentProvider === 'razorpay' ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-leaf-50 px-3 py-1 text-xs font-semibold text-leaf-800 ring-1 ring-inset ring-leaf-200">
+            <CreditCard className="h-3.5 w-3.5" aria-hidden="true" /> Paid online{appt.amountPaid ? ` · ${formatInr(appt.amountPaid)}` : ''}
+          </span>
+        ) : (
+          <FeeToggle mode={appt.feePaymentMode ?? null} fee={fee} disabled={disabled} onChange={onFee} />
+        )}
         {appt.status === 'checked_in' && (
           <span className="inline-flex items-center gap-1 text-xs text-ink-500">
             <Clock className="h-3.5 w-3.5" aria-hidden="true" /> Waiting since {timeOf(appt.checkedInAt || appt.updatedAt)}

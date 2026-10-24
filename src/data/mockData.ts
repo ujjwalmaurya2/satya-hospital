@@ -24,7 +24,8 @@ export const initialHospitalSettings: HospitalSettings = {
   opdDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   operatingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   holidays: [],
-  onlineBookingWindowDays: 1, // Opens 1 calendar day before target OPD date
+  onlineBookingWindowDays: 1, // Deprecated
+  maxAdvanceBookingDays: 30, // Online booking open up to 30 days ahead (configurable)
   isOnlineBookingEnabled: true,
   isOnlinePaymentEnabled: false, // Live payments disabled until hospital approves fee & policy
   consultationFee: null, // Pending hospital fee approval

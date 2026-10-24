@@ -3,7 +3,9 @@
  * 
  * Rules:
  * - OPD starts at 09:30 AM IST (Asia/Kolkata)
- * - Online booking for a particular OPD date opens 1 calendar day before the appointment date.
+ * - Online booking is open for any eligible OPD date up to `maxAdvanceDays` ahead (default 30).
+ * - These rules are enforced authoritatively in SQL (public.opd_booking_eligibility); this file
+ *   mirrors them for instant feedback in the browser.
  * - Online booking for that date closes strictly at 09:00 AM IST on the appointment date.
  * - After 09:00 AM, online booking for that date is rejected and the next eligible OPD date is shown.
  * - Offline walk-in registration at reception continues after 09:00 AM throughout OPD operating hours.
@@ -131,7 +133,7 @@ export function getNextEligibleOpdDate(options?: {
 
 /**
  * Validates if an online booking can be made for target date based on:
- * 1. T-1 Booking Window: Booking opens 1 calendar day before the appointment date.
+ * 1. Advance window: any eligible date up to maxAdvanceDays ahead (default 30).
  * 2. 09:00 AM Cutoff: Booking for that date closes at 09:00 AM IST on the appointment date.
  * 3. Operating Days & Holidays.
  */
@@ -143,6 +145,7 @@ export function checkOnlineBookingCutoff(
     holidays?: string[];
     currentTime?: { hours: number; minutes: number };
     baseDate?: string;
+    maxAdvanceDays?: number;
   }
 ): { allowed: boolean; reason?: string; nextEligibleDate?: string } {
   let cutoffTimeStr = '09:00';
@@ -150,6 +153,7 @@ export function checkOnlineBookingCutoff(
   let holidays: string[] = [];
   let currentTime = getHospitalCurrentTime();
   let todayStr = getHospitalTodayDate();
+  let maxAdvanceDays = 30;
 
   if (typeof cutoffOrOptions === 'string') {
     cutoffTimeStr = cutoffOrOptions;
@@ -159,6 +163,7 @@ export function checkOnlineBookingCutoff(
     if (cutoffOrOptions.holidays) holidays = cutoffOrOptions.holidays;
     if (cutoffOrOptions.currentTime) currentTime = cutoffOrOptions.currentTime;
     if (cutoffOrOptions.baseDate) todayStr = cutoffOrOptions.baseDate;
+    if (cutoffOrOptions.maxAdvanceDays) maxAdvanceDays = cutoffOrOptions.maxAdvanceDays;
   }
 
   const nextEligible = getNextEligibleOpdDate({
@@ -191,22 +196,14 @@ export function checkOnlineBookingCutoff(
     };
   }
 
-  // Booking Window rule: Online booking for date D opens 1 calendar day before D
-  const tomorrowStr = getHospitalDateWithOffset(1, todayStr);
-
-  // If target date is further than tomorrow (e.g. today is 22nd, target is 24th or later):
-  if (targetDateStr > tomorrowStr) {
-    const opensOnDate = getHospitalDateWithOffset(-1, targetDateStr);
+  // Advance-booking window: any eligible date up to maxAdvanceDays ahead.
+  const lastBookable = getHospitalDateWithOffset(maxAdvanceDays, todayStr);
+  if (targetDateStr > lastBookable) {
     return {
       allowed: false,
-      reason: `Online booking for ${targetDateStr} opens 1 calendar day in advance on ${opensOnDate}. The next currently open OPD date is ${nextEligible}.`,
+      reason: `Online booking is open up to ${maxAdvanceDays} days ahead. Please choose an earlier date.`,
       nextEligibleDate: nextEligible,
     };
-  }
-
-  // If target date is tomorrow (opened today): It is allowed!
-  if (targetDateStr === tomorrowStr) {
-    return { allowed: true, nextEligibleDate: nextEligible };
   }
 
   // If target date is today: Enforce 09:00 AM cutoff

@@ -17,6 +17,7 @@ import { Doctors } from './pages/public/Doctors';
 import { Pathology } from './pages/public/Pathology';
 import { Contact } from './pages/public/Contact';
 import { BookAppointment } from './pages/public/BookAppointment';
+import { BookingStatus } from './pages/public/BookingStatus';
 import { Journey } from './pages/public/Journey';
 import { Facilities } from './pages/public/Facilities';
 import { Gallery } from './pages/public/Gallery';
@@ -105,6 +106,7 @@ export const App: React.FC = () => {
             <Route path="/news" element={<PublicLayout><News /></PublicLayout>} />
             <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
             <Route path="/book-appointment" element={<PublicLayout><BookAppointment /></PublicLayout>} />
+            <Route path="/booking/:reference" element={<PublicLayout><BookingStatus /></PublicLayout>} />
             
             {/* LEGAL & STATUTORY POLICY ROUTES */}
             <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
