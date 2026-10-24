@@ -18,6 +18,7 @@ interface AuthContextType {
   loginWithGoogle: (redirectPath?: string) => Promise<void>;
   loginAsDemoUser: (role: UserRole) => void;
   loginAsPatient: (patientId: string) => boolean;
+  loginAsQuickPatient: (name?: string, phone?: string) => void;
   logout: () => Promise<void>;
   updateRole: (newRole: UserRole) => void;
 }
@@ -321,6 +322,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
+  const loginAsQuickPatient = (name = 'OPD Patient', phone = '') => {
+    const quickUser: UserProfile = {
+      id: `usr-${Date.now()}`,
+      email: phone ? `${phone}@satya.patient` : 'patient@satya.patient',
+      fullName: name || 'OPD Patient',
+      role: 'patient',
+      phone: phone || '',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+    const quickProfile: PatientProfile = {
+      id: `pat-${Date.now()}`,
+      profileId: quickUser.id,
+      patientId: `SH-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`,
+      fullName: name || 'OPD Patient',
+      phone: phone || '',
+      dob: '2020-01-01',
+      emergencyContact: phone || '+915322900000',
+      isVerified: true,
+      bloodGroup: 'B+',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setUser(quickUser);
+    setIsLiveSession(true);
+    setPatientProfile(quickProfile);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(quickUser));
+    localStorage.setItem(AUTH_PATIENT_KEY, JSON.stringify(quickProfile));
+  };
+
   const logout = async () => {
     if (user) {
       auditLogger.record({
@@ -363,6 +394,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loginWithGoogle,
         loginAsDemoUser,
         loginAsPatient,
+        loginAsQuickPatient,
         logout,
         updateRole,
       }}

@@ -36,10 +36,10 @@ export const BookAppointment: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { settings, doctors, registerPatient, bookOnlineAppointment, searchPatients } = useHospital();
-  const { user, patientProfile, role, isAuthenticated, isLiveSession, isLoading, loginWithGoogle, logout } = useAuth();
+  const { user, patientProfile, role, isAuthenticated, isLiveSession, isLoading, loginWithGoogle, loginAsQuickPatient, logout } = useAuth();
 
   const live = isSupabaseConfigured;
-  const isPatient = isAuthenticated && role === 'patient' && (!live || isLiveSession);
+  const isPatient = isAuthenticated && role === 'patient';
   const signedInAsStaff = isAuthenticated && role !== 'patient';
   const maxDays = settings.maxAdvanceBookingDays || 30;
 
@@ -253,6 +253,16 @@ export const BookAppointment: React.FC = () => {
       <Button size="lg" variant="outline" className="mt-7 w-full gap-3" onClick={startGoogle} isLoading={isLoading} loadingText="Opening Google…">
         <GoogleIcon />
         Continue with Google
+      </Button>
+
+      <div className="mt-4 flex items-center gap-3">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-xs text-ink-400 font-medium">or direct booking</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <Button size="lg" variant="primary" className="mt-3 w-full gap-2" onClick={() => loginAsQuickPatient()}>
+        Book with Mobile Number (Direct OPD Form) &rarr;
       </Button>
       <p className="mt-4 text-[13px] text-ink-500">
         Already registered at reception? <Link to="/patient/login" className="link">Use your patient ID</Link>
