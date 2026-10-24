@@ -81,6 +81,18 @@ It adds:
 - RLS on `daily_opd_token_counters`, and removes direct client access to the allocator.
 - A trigger that creates a `profiles` row (role `patient`) for every new auth user, and adds `appointments` to Realtime.
 
+### Contact enquiries migration (`/contact`)
+Run **after** the master file. Paste `migrations/20261024000004_contact_enquiries.sql` into the SQL Editor, or:
+```bash
+node supabase/apply_master_migration.cjs "<YOUR_DATABASE_PASSWORD>" migrations/20261024000004_contact_enquiries.sql
+```
+It adds:
+- A `contact_enquiries` table (`name`, `phone`, optional `email`, `topic`, `message`, `status` = `new` / `contacted` / `closed`, `handled_by`, `handled_at`, `created_at`) with length and format CHECKs (10-digit Indian mobile, message up to 2,000 characters).
+- RLS: `anon` and `authenticated` may only **INSERT**. Only `reception` / `admin` (via `get_auth_role()`) may **SELECT** and **UPDATE**. There is no DELETE policy — enquiries are closed, not removed.
+- A `BEFORE INSERT` trigger that forces `status = 'new'` and server timestamps, and rejects more than 3 enquiries from one phone number within 10 minutes. A `BEFORE UPDATE` trigger keeps the enquiry text immutable and stamps who changed the status.
+
+The public form calls `supabaseService.submitEnquiry()`. Until this migration is applied, inserts fail and the visitor sees a retryable error; with no Supabase credentials at all, the enquiry is kept in that browser only and the visitor is told to call reception. Reception sees enquiries under **Records & uploads → Enquiries**.
+
 ### Provisioning a reception / admin account
 1. **Authentication → Users → Add user**: enter the staff email, set a password (or leave blank and use the magic-link tab on `/staff/login`).
 2. Promote the profile in the SQL Editor:
