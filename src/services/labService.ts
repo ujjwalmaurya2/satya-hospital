@@ -6,7 +6,8 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { initialPathologyTests } from '../data/mockData';
 import { openRazorpayCheckout } from '../lib/razorpayCheckout';
-import { validateDocumentFile } from '../lib/storage';
+import { preparePdf } from '../lib/preparePdf';
+import type { PdfCompressResult } from '../lib/pdfCompress';
 import type { CartEntry } from '../lib/labCart';
 
 export interface LabTest {
@@ -38,9 +39,42 @@ export interface LabPackage {
 
 export interface LabConfig {
   duplicate_test_rule: 'skip_individual' | 'reject';
-  home_collection_enabled: boolean;
   online_payment_enabled: boolean;
+  require_independent_verification: boolean;
+  /** True only when switched on AND service areas, slots and fee are configured. */
+  home_collection_enabled: boolean;
+  home_collection_switch: boolean;
+  home_collection_fee: number | null;
+  home_collection_pincodes: string[];
+  home_collection_slots: string[];
+  home_collection_slot_capacity: number | null;
+  home_collection_max_days: number;
+  operating_days: string[];
+  holidays: string[];
 }
+
+export const DEFAULT_LAB_CONFIG: LabConfig = {
+  duplicate_test_rule: 'skip_individual',
+  online_payment_enabled: false,
+  require_independent_verification: false,
+  home_collection_enabled: false,
+  home_collection_switch: false,
+  home_collection_fee: null,
+  home_collection_pincodes: [],
+  home_collection_slots: [],
+  home_collection_slot_capacity: null,
+  home_collection_max_days: 7,
+  operating_days: [],
+  holidays: [],
+};
+
+export interface HomeCollectionInput {
+  address: string;
+  pincode: string;
+  slot: string;
+}
+
+export type UploadStage = 'preparing' | 'uploading' | 'saving';
 
 export interface LabOrderItem {
   id: string;
@@ -93,6 +127,10 @@ export interface LabOrder {
   lab_status: 'awaiting_sample' | 'sample_collected' | 'processing' | 'completed';
   subtotal_paise: number;
   total_paise: number;
+  collection_address: string | null;
+  collection_pincode: string | null;
+  collection_slot: string | null;
+  collection_fee_paise: number;
   last_payment_error: string | null;
   reconciliation_reason: string | null;
   cancel_reason: string | null;
@@ -180,13 +218,33 @@ export const labService = {
   },
 
   async config(): Promise<LabConfig> {
-    const fallback: LabConfig = { duplicate_test_rule: 'skip_individual', home_collection_enabled: false, online_payment_enabled: false };
-    if (!supabase) return fallback;
+    if (!supabase) return DEFAULT_LAB_CONFIG;
     const { data, error } = await supabase.rpc('lab_config');
-    return error || !data ? fallback : data;
+    if (error || !data) return DEFAULT_LAB_CONFIG;
+    return { ...DEFAULT_LAB_CONFIG, ...data, home_collection_fee: data.home_collection_fee != null ? Number(data.home_collection_fee) : null };
   },
 
-  async createOrder(cart: CartEntry[], patient: LabPatientInput, collection: 'hospital_lab' | 'home', preferredDate: string | null, idempotencyKey: string): Promise<LabOrder> {
+  /** Super Admin: home-collection setup (validated again in SQL). */
+  async saveHomeCollection(cfg: { enabled: boolean; fee: number | null; pincodes: string[]; slots: string[]; slotCapacity: number | null; maxDays: number }) {
+    const { error } = await client().rpc('set_lab_home_collection', {
+      p_enabled: cfg.enabled,
+      p_fee: cfg.fee,
+      p_pincodes: cfg.pincodes,
+      p_slots: cfg.slots,
+      p_slot_capacity: cfg.slotCapacity,
+      p_max_days: cfg.maxDays,
+    });
+    if (error) fail(error);
+  },
+
+  async createOrder(
+    cart: CartEntry[],
+    patient: LabPatientInput,
+    collection: 'hospital_lab' | 'home',
+    preferredDate: string | null,
+    idempotencyKey: string,
+    home?: HomeCollectionInput
+  ): Promise<LabOrder> {
     const { data, error } = await client().rpc('create_lab_order', {
       p_items: cart,
       p_patient_name: patient.patientName,
@@ -195,6 +253,9 @@ export const labService = {
       p_collection_method: collection,
       p_preferred_date: preferredDate,
       p_idempotency_key: idempotencyKey,
+      p_address: collection === 'home' ? home?.address ?? null : null,
+      p_pincode: collection === 'home' ? home?.pincode ?? null : null,
+      p_slot: collection === 'home' ? home?.slot ?? null : null,
     });
     if (error) fail(error);
     return data;
@@ -272,23 +333,40 @@ export const labService = {
     if (error) fail(error);
   },
 
-  async uploadReport(orderId: string, testId: string, file: File, correctionReason: string | null) {
-    const check = validateDocumentFile(file);
-    if (!check.valid) throw new Error(check.error);
+  /**
+   * Validate + losslessly compress (in a worker), upload to the private bucket,
+   * then register the report. If registering fails the just-uploaded file is
+   * removed, so storage never keeps an orphan the database doesn't know about.
+   */
+  async uploadReport(orderId: string, testId: string, file: File, correctionReason: string | null, onStage?: (s: UploadStage) => void): Promise<PdfCompressResult> {
+    onStage?.('preparing');
+    const prepared = await preparePdf(file);
+    const body = new Blob([prepared.bytes as Uint8Array<ArrayBuffer>], { type: 'application/pdf' });
     const key = `orders/${orderId}/${crypto.randomUUID()}.pdf`;
-    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+    const digest = await crypto.subtle.digest('SHA-256', await body.arrayBuffer());
     const checksum = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-    const { error: upErr } = await client().storage.from('lab-reports').upload(key, file, { contentType: 'application/pdf', upsert: false });
-    if (upErr) fail(upErr);
-    await labService.rpc('register_lab_report', {
+    const fileName = /\.pdf$/i.test(file.name) ? file.name : `${file.name || 'report'}.pdf`;
+
+    onStage?.('uploading');
+    const { error: upErr } = await client().storage.from('lab-reports').upload(key, body, { contentType: 'application/pdf', upsert: false });
+    if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+
+    onStage?.('saving');
+    const { error } = await client().rpc('register_lab_report', {
       p_order_id: orderId,
       p_test_id: testId,
       p_storage_key: key,
-      p_file_name: file.name,
-      p_file_size: file.size,
+      p_file_name: fileName,
+      p_file_size: prepared.finalSize,
       p_checksum: checksum,
       p_correction_reason: correctionReason,
+      p_original_file_size: prepared.originalSize,
     });
+    if (error) {
+      await client().storage.from('lab-reports').remove([key]).catch(() => undefined);
+      fail(error);
+    }
+    return prepared;
   },
 
   async saveTest(test: Partial<LabTest> & { id?: string }) {

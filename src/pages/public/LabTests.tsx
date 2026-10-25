@@ -8,7 +8,7 @@ import { MedicalLoader } from '../../components/common/MedicalLoader';
 import { PageHero, Section } from '../../components/site/Section';
 import { cn } from '../../lib/cn';
 import { CartEntry, CartPreview, formatPaise, previewCart, useLabCart } from '../../lib/labCart';
-import { LabConfig, LabPackage, LabTest, labService } from '../../services/labService';
+import { DEFAULT_LAB_CONFIG, LabConfig, LabPackage, LabTest, labService } from '../../services/labService';
 
 const PACKAGES = 'Packages';
 
@@ -17,7 +17,7 @@ export function useLabCatalogue() {
   const cartApi = useLabCart();
   const [tests, setTests] = useState<LabTest[]>([]);
   const [packages, setPackages] = useState<LabPackage[]>([]);
-  const [config, setConfig] = useState<LabConfig>({ duplicate_test_rule: 'skip_individual', home_collection_enabled: false, online_payment_enabled: false });
+  const [config, setConfig] = useState<LabConfig>(DEFAULT_LAB_CONFIG);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

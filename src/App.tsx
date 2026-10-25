@@ -50,7 +50,6 @@ const PatientLabOrders = lazy(() => import('./pages/patient/PatientLabOrders').t
 const StaffLogin = lazy(() => import('./pages/staff/StaffLogin').then(m => ({ default: m.StaffLogin })));
 const ReceptionDashboard = lazy(() => import('./pages/staff/ReceptionDashboard').then(m => ({ default: m.ReceptionDashboard })));
 const DoctorDashboard = lazy(() => import('./pages/staff/DoctorDashboard').then(m => ({ default: m.DoctorDashboard })));
-const PathologyDashboard = lazy(() => import('./pages/staff/PathologyDashboard').then(m => ({ default: m.PathologyDashboard })));
 const AdminDashboard = lazy(() => import('./pages/staff/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const QueueDesk = lazy(() => import('./pages/staff/QueueDesk').then(m => ({ default: m.QueueDesk })));
 const LabOrdersDesk = lazy(() => import('./pages/staff/LabOrdersDesk').then(m => ({ default: m.LabOrdersDesk })));
@@ -154,7 +153,8 @@ export const App: React.FC = () => {
               <Route path="/admin" element={<RequireRole roles={ROUTE_ROLES.admin}><AdminDashboard /></RequireRole>} />
               <Route path="/reception" element={<RequireRole roles={ROUTE_ROLES.reception}><ReceptionDashboard /></RequireRole>} />
               <Route path="/doctor" element={<RequireRole roles={ROUTE_ROLES.doctor}><DoctorDashboard /></RequireRole>} />
-              <Route path="/pathology-dashboard" element={<RequireRole roles={ROUTE_ROLES.pathology}><PathologyDashboard /></RequireRole>} />
+              {/* The old browser-only lab worklist is retired; reports live on the Pathology orders desk. */}
+              <Route path="/pathology-dashboard" element={<Navigate to="/lab-orders" replace />} />
               <Route path="/lab-orders" element={<RequireRole roles={ROUTE_ROLES.labOrders}><LabOrdersDesk /></RequireRole>} />
             </Route>
 

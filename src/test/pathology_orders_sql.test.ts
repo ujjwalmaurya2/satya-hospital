@@ -186,16 +186,19 @@ describe('reception and pathology workflow', () => {
 
     const upload = (who: Who, test: string, key = `orders/${orderId}/tsh.pdf`, reason: string | null = null) =>
       rpc(who, `SELECT (public.register_lab_report($1, $2, $3, 'tsh.pdf', 2048, NULL, $4)).id r`, [orderId, test, key, reason]);
-    await expect(upload('reception', T.TSH)).rejects.toThrow(/not allowed/);
+    await expect(upload('doctor', T.TSH)).rejects.toThrow(/not allowed/);
+    await expect(upload('patient', T.TSH)).rejects.toThrow(/not allowed/);
     await expect(upload('lab1', T.LFT)).rejects.toThrow(/not part of the order/);
     await expect(upload('lab1', T.TSH, 'orders/elsewhere/x.pdf')).rejects.toThrow(/PDF report/);
     reportId = (await upload('lab1', T.TSH)).rows[0].r;
     await expect(upload('lab1', T.TSH, `orders/${orderId}/tsh2.pdf`)).rejects.toThrow(/reason for the new version/);
   });
 
-  it('requires a second person to verify, and only releases verified reports', async () => {
+  it('enforces independent verification when the hospital turns it on, and only releases verified reports', async () => {
     await expect(rpc('lab1', `SELECT public.release_lab_report($1) r`, [reportId])).rejects.toThrow(/Only verified/);
-    await expect(rpc('lab1', `SELECT public.verify_lab_report($1) r`, [reportId])).rejects.toThrow(/someone other than/);
+    await db.query(`UPDATE public.hospital_settings SET lab_require_independent_verification = true`);
+    await expect(rpc('lab1', `SELECT public.verify_lab_report($1) r`, [reportId])).rejects.toThrow(/different staff member/);
+    await db.query(`UPDATE public.hospital_settings SET lab_require_independent_verification = false`);
     await rpc('lab2', `SELECT public.verify_lab_report($1) r`, [reportId]);
     await rpc('lab2', `SELECT public.release_lab_report($1) r`, [reportId]);
     const r = (await db.query<{ status: string }>(`SELECT status FROM public.pathology_reports WHERE id = $1`, [reportId])).rows[0];
@@ -229,7 +232,7 @@ describe('report visibility', () => {
     await rpc('lab2', `SELECT public.verify_lab_report($1) r`, [id]);
     await rpc('lab2', `SELECT public.release_lab_report($1) r`, [id]);
     expect([await sees('patient'), await sees('doctor'), await file('patient')]).toEqual([true, true, true]);
-    expect([await sees('other'), await file('other'), await file('reception')]).toEqual([false, false, false]);
+    expect([await sees('other'), await file('other'), await file('reception')]).toEqual([false, false, true]);
     expect((await db.query<Order>(`SELECT lab_status FROM public.pathology_orders WHERE id = $1`, [o.id])).rows[0].lab_status).toBe('completed');
   });
 });

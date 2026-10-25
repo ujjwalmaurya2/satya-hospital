@@ -25,7 +25,7 @@ describe('phone tab bar', () => {
   it('sends Profile to the signed-in role’s own workspace', () => {
     expect(homePathForRole('patient')).toBe('/patient/dashboard');
     expect(homePathForRole('reception')).toBe('/staff');
-    expect(homePathForRole('pathology')).toBe('/pathology-dashboard');
+    expect(homePathForRole('pathology')).toBe('/lab-orders');
     expect(homePathForRole('admin')).toBe('/admin');
   });
 });

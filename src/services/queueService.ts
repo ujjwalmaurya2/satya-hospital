@@ -6,6 +6,20 @@
 import { supabase } from '../lib/supabase';
 import { Appointment, AppointmentStatus, FeePaymentMode } from '../types';
 
+export interface ConsultationNotes {
+  complaint: string;
+  notes: string;
+  diagnosis?: string;
+}
+
+export interface VisitSummary {
+  id: string;
+  visitDate: string;
+  doctorName: string;
+  diagnosis?: string;
+  clinicalNotes: string;
+}
+
 export interface WalkInInput {
   fullName: string;
   phone: string;
@@ -114,6 +128,28 @@ export const queueService = {
       p_mode: mode,
     });
     if (error) fail(error);
+  },
+
+  /** Doctor/Super Admin: save visit notes and complete the appointment in one transaction. */
+  async completeConsultation(appointmentId: string, n: ConsultationNotes): Promise<void> {
+    const { error } = await client().rpc('complete_opd_consultation', {
+      p_appointment_id: appointmentId,
+      p_chief_complaint: n.complaint,
+      p_clinical_notes: n.notes,
+      p_diagnosis: n.diagnosis || null,
+    });
+    if (error) fail(error);
+  },
+
+  async visitsFor(patientProfileId: string): Promise<VisitSummary[]> {
+    const { data, error } = await client()
+      .from('patient_visits')
+      .select('id, visit_date, clinical_notes, diagnosis, doctor_signature')
+      .eq('patient_profile_id', patientProfileId)
+      .order('visit_date', { ascending: false })
+      .limit(10);
+    if (error) fail(error);
+    return (data || []).map(v => ({ id: v.id, visitDate: v.visit_date, doctorName: v.doctor_signature ?? 'Doctor', diagnosis: v.diagnosis ?? undefined, clinicalNotes: v.clinical_notes }));
   },
 
   /** Calls onChange whenever any appointment for the date changes. */

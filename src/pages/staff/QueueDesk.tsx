@@ -294,6 +294,7 @@ interface QueueRowProps {
 }
 
 const QueueRow: React.FC<QueueRowProps> = ({ appt, fee, busyKey, onStatus, onFee }) => {
+  const { role } = useAuth();
   const disabled = busyKey !== null;
   const loading = (status: AppointmentStatus) => busyKey === `${appt.id}:${status}`;
   const badge = APPOINTMENT_BADGE[appt.status];
@@ -336,11 +337,12 @@ const QueueRow: React.FC<QueueRowProps> = ({ appt, fee, busyKey, onStatus, onFee
               Check-in
             </Button>
           )}
-          {appt.status === 'in_consultation' && (
+          {appt.status === 'in_consultation' && role === 'admin' && (
             <Button size="sm" variant="accent" leftIcon={<CheckCircle2 className="h-4 w-4" />} disabled={disabled} isLoading={loading('completed')} onClick={() => onStatus('completed')}>
               Mark completed
             </Button>
           )}
+          {appt.status === 'in_consultation' && role !== 'admin' && <span className="text-xs font-medium text-brand-700">With the doctor</span>}
           {appt.status === 'no_show' && (
             <Button size="sm" variant="outline" leftIcon={<UserCheck className="h-4 w-4" />} disabled={disabled} isLoading={loading('checked_in')} onClick={() => onStatus('checked_in')}>
               Re-check-in

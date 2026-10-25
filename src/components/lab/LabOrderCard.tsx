@@ -79,11 +79,28 @@ export const LabOrderCard: React.FC<{
             <span className="shrink-0 tabular-nums text-ink-700">{formatPaise(i.price_paise)}</span>
           </li>
         ))}
+        {order.collection_fee_paise > 0 && (
+          <li className="flex justify-between px-4 py-3 text-sm text-ink-700">
+            <span>Home collection fee</span>
+            <span className="tabular-nums">{formatPaise(order.collection_fee_paise)}</span>
+          </li>
+        )}
         <li className="flex justify-between px-4 py-3 text-sm font-semibold text-ink-900">
           <span>Total</span>
           <span className="tabular-nums">{formatPaise(order.total_paise)}</span>
         </li>
       </ul>
+
+      <p className="mt-3 text-[13px] text-ink-600">
+        {order.collection_method === 'home' ? (
+          <>
+            <strong className="font-semibold text-ink-900">Home collection</strong> · {order.preferred_date && prettyDate(order.preferred_date)} · {order.collection_slot?.replace('-', ' – ')}
+            <span className="block text-ink-500">{order.collection_address} · {order.collection_pincode}</span>
+          </>
+        ) : (
+          <><strong className="font-semibold text-ink-900">Sample at the hospital lab</strong>{order.preferred_date && ` · planned ${prettyDate(order.preferred_date)}`}</>
+        )}
+      </p>
 
       {released.length > 0 && (
         <div className="mt-4">
@@ -104,7 +121,9 @@ export const LabOrderCard: React.FC<{
       {order.status === 'pending' && order.payment_status === 'unpaid' && (
         <p className="mt-4 flex items-start gap-2 rounded-2xl bg-brand-50 p-3 text-[13px] text-brand-900 ring-1 ring-brand-100">
           <FlaskConical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          {onPay ? 'Pay online to confirm, or pay at the lab counter when you visit.' : 'Visit the hospital lab with this order number. Payment is taken at the counter.'}
+          {order.collection_method === 'home'
+            ? 'The hospital will confirm your home visit. Keep your order number handy.'
+            : onPay ? 'Pay online to confirm, or pay at the lab counter when you visit.' : 'Visit the hospital lab with this order number. Payment is taken at the counter.'}
         </p>
       )}
       {order.payment_status === 'needs_reconciliation' && (

@@ -42,7 +42,7 @@ export function homePathForRole(role: UserRole): string {
     case 'doctor':
       return '/doctor';
     case 'pathology':
-      return '/pathology-dashboard';
+      return '/lab-orders';
     default:
       return '/patient/dashboard';
   }

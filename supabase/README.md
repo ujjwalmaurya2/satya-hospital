@@ -213,3 +213,14 @@ supabase functions deploy lab-verify-payment
 supabase functions deploy razorpay-webhook --no-verify-jwt
 ```
 Add `/lab-tests/checkout` (or your origin with `/**`) to **Authentication → Redirect URLs**.
+
+---
+
+## OPD + lab workflow fixes (`20261029000008_opd_lab_workflow_fixes.sql`)
+
+Apply after `20261028000007`. **Deploy the migration before (or together with) the frontend** — the new frontend calls the new `create_lab_order` / `register_lab_report` signatures.
+
+- **OPD:** Reception and Doctor read the same `appointments` rows (Doctor panel now uses the live queue + Realtime). `set_appointment_status` is role-aware: Reception confirms arrival (`checked_in`), no-show, cancel and can call the next patient; only the doctor or Super Admin can `completed`; the doctor can start, complete or send back patients who have arrived. `complete_opd_consultation` saves the visit notes and completes the appointment in one transaction (idempotent). `patient_visits.doctor_id` is now optional; `recorded_by` stores who wrote the note.
+- **Reports:** Reception, pathology and Super Admin can upload; pathology/Super Admin verify and release (both idempotent). The file must exist in the `lab-reports` bucket before a report row is created; a staff uploader may delete a file only while it is unregistered (used to clean up a failed save). `hospital_settings.lab_require_independent_verification` (default `false`) — set `true` to require a different person to verify than the one who uploaded.
+- **PDF compression:** done in the browser (Web Worker, `@cantoo/pdf-lib`), lossless only; files never leave the hospital's own storage. `pathology_reports.original_file_size` records the size before compression.
+- **Home sample collection:** off until the Super Admin saves real values in **Pathology orders → Catalogue & prices → Home sample collection** (service pincodes, time slots, visit fee, optional per-slot capacity, booking window). Visits are offered on OPD days and never on hospital holidays. Address, pincode, slot, date, capacity and fee are validated in `create_lab_order`.

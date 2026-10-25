@@ -4,7 +4,7 @@ import { useHospital } from '../context/HospitalContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { canTransition, STATUS_LABELS, summarizeQueue, todaysQueue } from '../lib/queue';
 import { getHospitalCurrentTime, getHospitalTodayDate } from '../lib/tokens';
-import { queueService, WalkInInput } from '../services/queueService';
+import { ConsultationNotes, queueService, VisitSummary, WalkInInput } from '../services/queueService';
 import { Appointment, AppointmentStatus, FeePaymentMode } from '../types';
 
 export type ActionResult = { ok: true; message: string } | { ok: false; error: string };
@@ -29,7 +29,7 @@ function useIstClock(intervalMs = 30_000) {
  * paths share the transition rules in src/lib/queue.ts.
  */
 export function useQueueDesk() {
-  const { isLiveSession } = useAuth();
+  const { isLiveSession, user } = useAuth();
   const hospital = useHospital();
   const live = isSupabaseConfigured && isLiveSession;
   const { date: today, time } = useIstClock();
@@ -152,6 +152,38 @@ export function useQueueDesk() {
     return { ok: true, message: `Token #${tokenNumber} issued to ${input.fullName}.`, tokenNumber };
   };
 
+  /** Doctor: save notes and complete. Live sessions use one server transaction. */
+  const completeConsultation = async (appt: Appointment, n: ConsultationNotes): Promise<ActionResult> => {
+    const message = `Token #${appt.tokenNumber} completed and notes saved.`;
+    if (live) {
+      try {
+        await queueService.completeConsultation(appt.id, n);
+        await refresh();
+        return { ok: true, message };
+      } catch (err) {
+        return { ok: false, error: errorText(err) };
+      }
+    }
+    hospital.addPatientVisit({
+      patientProfileId: appt.patientProfileId,
+      appointmentId: appt.id,
+      doctorId: user?.id || 'doc-1',
+      doctorName: user?.fullName || 'Doctor',
+      visitDate: appt.appointmentDate,
+      chiefComplaint: n.complaint,
+      clinicalNotes: n.notes,
+      diagnosis: n.diagnosis,
+      doctorSignature: user?.fullName,
+      status: 'completed',
+    });
+    return { ok: true, message };
+  };
+
+  const visitsFor = async (patientProfileId: string): Promise<VisitSummary[]> =>
+    live
+      ? queueService.visitsFor(patientProfileId)
+      : hospital.visits.filter(v => v.patientProfileId === patientProfileId).map(v => ({ id: v.id, visitDate: v.visitDate, doctorName: v.doctorName, diagnosis: v.diagnosis, clinicalNotes: v.clinicalNotes }));
+
   return {
     live,
     loading,
@@ -169,5 +201,7 @@ export function useQueueDesk() {
     setStatus,
     setFee,
     registerWalkIn,
+    completeConsultation,
+    visitsFor,
   };
 }

@@ -13,6 +13,7 @@ import { cn } from '../../lib/cn';
 import { CartEntry, formatPaise, previewCart } from '../../lib/labCart';
 import { newBookingKey } from '../../lib/opdForm';
 import { isValidIndianPhone } from '../../lib/tokens';
+import { formatBytes } from '../../lib/preparePdf';
 import { LabConfig, LabOrder, LabPackage, LabReport, LabTest, labService } from '../../services/labService';
 import { UserRole } from '../../types';
 
@@ -64,8 +65,10 @@ const OrdersView: React.FC<{ role: UserRole }> = ({ role }) => {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<string | null>(null);
 
+  const [requireIndependent, setRequireIndependent] = useState(false);
   const load = useCallback(() => {
     setError(null);
+    labService.config().then(c => setRequireIndependent(c.require_independent_verification));
     return labService.staffOrders().then(setOrders).catch(e => setError(e instanceof Error ? e.message : 'Could not load orders.'));
   }, []);
   useEffect(() => {
@@ -138,7 +141,7 @@ const OrdersView: React.FC<{ role: UserRole }> = ({ role }) => {
                   <ChevronDown className={cn('h-4 w-4 text-ink-400 transition-transform', open === o.id && 'rotate-180')} aria-hidden="true" />
                 </div>
               </button>
-              {open === o.id && <OrderDetail order={o} role={role} reload={load} />}
+              {open === o.id && <OrderDetail order={o} role={role} reload={load} requireIndependent={requireIndependent} />}
             </li>
           ))}
         </ul>
@@ -147,7 +150,7 @@ const OrdersView: React.FC<{ role: UserRole }> = ({ role }) => {
   );
 };
 
-const OrderDetail: React.FC<{ order: LabOrder; role: UserRole; reload: () => Promise<unknown> }> = ({ order: o, role, reload }) => {
+const OrderDetail: React.FC<{ order: LabOrder; role: UserRole; reload: () => Promise<unknown>; requireIndependent: boolean }> = ({ order: o, role, reload, requireIndependent }) => {
   const { user } = useAuth();
   const isDesk = role === 'reception' || role === 'admin';
   const isLab = role === 'pathology' || role === 'admin';
@@ -178,10 +181,17 @@ const OrderDetail: React.FC<{ order: LabOrder; role: UserRole; reload: () => Pro
       {error && <Alert type="error">{error}</Alert>}
       <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-4">
         <Info label="Phone" value={o.contact_phone} />
-        <Info label="Collection" value={o.collection_method === 'home' ? 'Home' : 'Hospital lab'} />
-        <Info label="Planned visit" value={o.preferred_date ? prettyDate(o.preferred_date) : '—'} />
+        <Info label="Collection" value={o.collection_method === 'home' ? 'Home visit' : 'Hospital lab'} />
+        <Info label={o.collection_method === 'home' ? 'Visit date & slot' : 'Planned visit'} value={o.preferred_date ? `${prettyDate(o.preferred_date)}${o.collection_slot ? ` · ${o.collection_slot}` : ''}` : '—'} />
         <Info label="Payment" value={o.payment_mode ? `${o.payment_mode.toUpperCase()} · ${formatPaise(o.total_paise)}` : formatPaise(o.total_paise)} />
       </dl>
+      {o.collection_method === 'home' && (
+        <div className="rounded-2xl bg-white p-3 text-sm ring-1 ring-line">
+          <p className="text-[13px] text-ink-500">Collection address · pincode {o.collection_pincode}</p>
+          <p className="mt-0.5 whitespace-pre-line font-medium text-ink-900">{o.collection_address}</p>
+          {o.collection_fee_paise > 0 && <p className="mt-1 text-[13px] text-ink-500">Home collection fee {formatPaise(o.collection_fee_paise)} (included in the total)</p>}
+        </div>
+      )}
       <ul className="space-y-1 text-sm">
         {o.items.map(i => (
           <li key={i.id} className="flex justify-between gap-4">
@@ -259,7 +269,7 @@ const OrderDetail: React.FC<{ order: LabOrder; role: UserRole; reload: () => Pro
         <h3 className="text-sm font-semibold text-ink-900">Reports</h3>
         <ul className="mt-2 space-y-3">
           {tests.map(t => (
-            <TestReports key={t.id} order={o} test={t} reports={(o.reports ?? []).filter(r => r.test_id === t.id)} canEdit={isLab && o.status === 'confirmed'} canOpen={isLab} myId={user?.id} busy={busy} act={act} />
+            <TestReports key={t.id} order={o} test={t} reports={(o.reports ?? []).filter(r => r.test_id === t.id)} canUpload={(isLab || role === 'reception') && o.status === 'confirmed'} canReview={isLab && o.status === 'confirmed'} canOpen={isLab || role === 'reception'} requireIndependent={requireIndependent} myId={user?.id} reload={reload} />
           ))}
         </ul>
       </section>
@@ -275,19 +285,55 @@ const REPORT_BADGE: Record<LabReport['status'], { label: string; variant: 'warni
   unmatched: { label: 'Unmatched', variant: 'neutral' },
 };
 
+type Stage = 'idle' | 'preparing' | 'uploading' | 'saving';
+const STAGE_TEXT: Record<Stage, string> = { idle: '', preparing: 'Checking & compressing…', uploading: 'Uploading…', saving: 'Saving…' };
+
 const TestReports: React.FC<{
   order: LabOrder;
   test: { id: string; name: string };
   reports: LabReport[];
-  canEdit: boolean;
+  canUpload: boolean;
+  canReview: boolean;
   canOpen: boolean;
+  requireIndependent: boolean;
   myId?: string;
-  busy: boolean;
-  act: (fn: () => Promise<unknown>) => Promise<void>;
-}> = ({ order, test, reports, canEdit, canOpen, myId, busy, act }) => {
+  reload: () => Promise<unknown>;
+}> = ({ order, test, reports, canUpload, canReview, canOpen, requireIndependent, myId, reload }) => {
   const [file, setFile] = useState<File | null>(null);
+  const [inputKey, setInputKey] = useState(0);
   const [reason, setReason] = useState('');
+  const [stage, setStage] = useState<Stage>('idle');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const hasCurrent = reports.some(r => r.status === 'pending_verification' || r.status === 'published');
+
+  // Every mutation waits for the server; the UI only changes after a confirmed success and a refetch.
+  const run = async (key: string, fn: () => Promise<string | void>) => {
+    setBusy(key);
+    setMsg(null);
+    try {
+      const text = await fn();
+      await reload();
+      if (text) setMsg({ type: 'success', text });
+    } catch (e) {
+      setMsg({ type: 'error', text: e instanceof Error ? e.message : 'Action failed.' });
+    } finally {
+      setBusy(null);
+      setStage('idle');
+    }
+  };
+
+  const upload = () =>
+    run('upload', async () => {
+      const r = await labService.uploadReport(order.id, test.id, file!, reason.trim() || null, setStage);
+      setFile(null);
+      setReason('');
+      setInputKey(k => k + 1);
+      const sizes = r.compressed
+        ? `${formatBytes(r.originalSize)} → ${formatBytes(r.finalSize)} (saved ${(((r.originalSize - r.finalSize) / r.originalSize) * 100).toFixed(1)}%)`
+        : `${formatBytes(r.finalSize)}${r.note ? ` · ${r.note}` : ''}`;
+      return `Report uploaded for ${test.name}. ${sizes}. It stays hidden from the patient until verified and released.`;
+    });
 
   return (
     <li className="rounded-2xl border border-line bg-white p-4">
@@ -296,28 +342,45 @@ const TestReports: React.FC<{
       <ul className="mt-2 space-y-2">
         {reports.map(r => {
           const badge = REPORT_BADGE[r.status];
+          const ownUploadBlocked = requireIndependent && r.uploaded_by === myId;
           return (
             <li key={r.id} className="flex flex-wrap items-center gap-2 text-[13px]">
               <span className="text-ink-700">v{r.version_number}</span>
               <Badge size="sm" variant={badge.variant}>{r.status === 'pending_verification' && r.verified_at ? 'Verified · not released' : badge.label}</Badge>
-              {r.correction_reason && <span className="text-ink-500">{r.correction_reason}</span>}
+              <span className="text-ink-500">{r.file_name}</span>
+              {r.correction_reason && <span className="text-ink-500">· {r.correction_reason}</span>}
               {canOpen && (
-                <Button size="sm" variant="ghost" leftIcon={<FileText className="h-3.5 w-3.5" />} onClick={() => act(() => labService.openReport(r.storage_key))}>
+                <Button size="sm" variant="ghost" leftIcon={<FileText className="h-3.5 w-3.5" />} disabled={busy !== null} onClick={() => run(`open-${r.id}`, async () => labService.openReport(r.storage_key))}>
                   View
                 </Button>
               )}
-              {canEdit && r.status === 'pending_verification' && !r.verified_at && (
+              {canReview && r.status === 'pending_verification' && !r.verified_at && (
                 <>
-                  <Button size="sm" variant="soft" disabled={busy || r.uploaded_by === myId} title={r.uploaded_by === myId ? 'Another team member must verify your upload' : undefined} onClick={() => act(() => labService.rpc('verify_lab_report', { p_report_id: r.id }))}>
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    isLoading={busy === `verify-${r.id}`}
+                    loadingText="Verifying…"
+                    disabled={busy !== null || ownUploadBlocked}
+                    title={ownUploadBlocked ? 'Hospital policy: a different staff member must verify your upload' : undefined}
+                    onClick={() => run(`verify-${r.id}`, async () => { await labService.rpc('verify_lab_report', { p_report_id: r.id }); return `${test.name} v${r.version_number} verified. Release it when ready.`; })}
+                  >
                     Verify
                   </Button>
-                  <Button size="sm" variant="ghost" disabled={busy} onClick={() => { const why = window.prompt('Why is this report rejected?')?.trim(); if (why) act(() => labService.rpc('reject_lab_report', { p_report_id: r.id, p_reason: why })); }}>
+                  <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => { const why = window.prompt('Why is this report rejected?')?.trim(); if (why) run(`reject-${r.id}`, async () => { await labService.rpc('reject_lab_report', { p_report_id: r.id, p_reason: why }); return 'Report rejected. Upload a corrected version.'; }); }}>
                     Reject
                   </Button>
                 </>
               )}
-              {canEdit && r.status === 'pending_verification' && r.verified_at && (
-                <Button size="sm" variant="accent" disabled={busy} onClick={() => window.confirm(`Release ${test.name} to ${order.patient_name}?`) && act(() => labService.rpc('release_lab_report', { p_report_id: r.id }))}>
+              {canReview && r.status === 'pending_verification' && r.verified_at && (
+                <Button
+                  size="sm"
+                  variant="accent"
+                  isLoading={busy === `release-${r.id}`}
+                  loadingText="Releasing…"
+                  disabled={busy !== null}
+                  onClick={() => window.confirm(`Release ${test.name} to ${order.patient_name}? The patient will be able to download it.`) && run(`release-${r.id}`, async () => { await labService.rpc('release_lab_report', { p_report_id: r.id }); return `${test.name} released to ${order.patient_name}.`; })}
+                >
                   Release to patient
                 </Button>
               )}
@@ -325,11 +388,11 @@ const TestReports: React.FC<{
           );
         })}
       </ul>
-      {canEdit && (
+      {canUpload && (
         <div className="mt-3 flex flex-wrap items-end gap-2">
-          <div>
+          <div className="min-w-0">
             <label htmlFor={`file-${order.id}-${test.id}`} className="field-label">{hasCurrent ? 'Upload corrected version (PDF)' : 'Upload report (PDF)'}</label>
-            <input id={`file-${order.id}-${test.id}`} type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
+            <input key={inputKey} id={`file-${order.id}-${test.id}`} type="file" accept="application/pdf,.pdf" disabled={busy !== null} onChange={e => setFile(e.target.files?.[0] ?? null)} className="max-w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-800" />
           </div>
           {hasCurrent && (
             <div>
@@ -340,13 +403,16 @@ const TestReports: React.FC<{
           <Button
             size="sm"
             leftIcon={<Upload className="h-4 w-4" />}
-            disabled={busy || !file || (hasCurrent && !reason.trim())}
-            onClick={() => act(async () => { await labService.uploadReport(order.id, test.id, file!, reason.trim() || null); setFile(null); setReason(''); })}
+            isLoading={busy === 'upload'}
+            loadingText={STAGE_TEXT[stage] || 'Working…'}
+            disabled={busy !== null || !file || (hasCurrent && !reason.trim())}
+            onClick={upload}
           >
             Upload
           </Button>
         </div>
       )}
+      {msg && <Alert type={msg.type} className="mt-3 text-[13px]">{msg.text}</Alert>}
     </li>
   );
 };
@@ -492,6 +558,7 @@ const WalkInView: React.FC<{ onDone: () => void }> = ({ onDone }) => {
 
 // ---------------------------------------------------------------- catalogue
 const CatalogueView: React.FC = () => {
+  const { role } = useAuth();
   const { data, error, reload } = useCatalogue();
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -515,6 +582,7 @@ const CatalogueView: React.FC = () => {
       <Alert type="info" className="text-sm">
         Price changes apply to new orders only — existing orders keep the price they were booked at. Fill in sample type, turnaround and preparation only once verified; untick <strong>Demo</strong> when an item is real.
       </Alert>
+      {role === 'admin' && <HomeCollectionSettings config={data.config} onSaved={reload} />}
       <Panel title="Tests" flush>
         <ul className="divide-y divide-line">
           {data.tests.map(t => <TestRow key={t.id} test={t} onSave={row => save(() => labService.saveTest({ id: t.id, ...row }), `${t.name} saved.`)} />)}
@@ -530,6 +598,58 @@ const CatalogueView: React.FC = () => {
         </ul>
       </Panel>
     </div>
+  );
+};
+
+/** Super Admin: home sample collection. Nothing here is pre-filled; the hospital enters its real values. */
+const HomeCollectionSettings: React.FC<{ config: LabConfig; onSaved: () => void }> = ({ config, onSaved }) => {
+  const [enabled, setEnabled] = useState(config.home_collection_switch);
+  const [fee, setFee] = useState(config.home_collection_fee == null ? '' : String(config.home_collection_fee));
+  const [pincodes, setPincodes] = useState(config.home_collection_pincodes.join(', '));
+  const [slots, setSlots] = useState(config.home_collection_slots.join(', '));
+  const [capacity, setCapacity] = useState(config.home_collection_slot_capacity == null ? '' : String(config.home_collection_slot_capacity));
+  const [maxDays, setMaxDays] = useState(String(config.home_collection_max_days));
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const list = (v: string) => v.split(/[,\s]+/).map(x => x.trim()).filter(Boolean);
+
+  const save = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await labService.saveHomeCollection({
+        enabled,
+        fee: fee.trim() === '' ? null : Number(fee),
+        pincodes: list(pincodes),
+        slots: list(slots),
+        slotCapacity: capacity.trim() === '' ? null : Number(capacity),
+        maxDays: Number(maxDays) || 7,
+      });
+      setMsg({ type: 'success', text: enabled ? 'Saved. Home collection is now offered at checkout.' : 'Saved. Home collection is switched off.' });
+      onSaved();
+    } catch (e) {
+      setMsg({ type: 'error', text: e instanceof Error ? e.message : 'Could not save.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel title="Home sample collection" description={config.home_collection_enabled ? 'Offered to patients at checkout.' : 'Not offered yet. Enter the confirmed service details to switch it on.'}>
+      <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-3 sm:p-6">
+        <Field id="hc-pins" label="Service pincodes (comma separated)" value={pincodes} onChange={setPincodes} wide />
+        <Field id="hc-slots" label="Time slots, e.g. 07:00-09:00, 09:00-11:00" value={slots} onChange={setSlots} wide />
+        <Field id="hc-fee" label="Visit fee (₹, 0 if free)" type="number" value={fee} onChange={setFee} />
+        <Field id="hc-cap" label="Visits per slot (empty = no limit)" type="number" value={capacity} onChange={setCapacity} />
+        <Field id="hc-days" label="Book up to (days ahead)" type="number" value={maxDays} onChange={setMaxDays} />
+        <p className="text-[13px] text-ink-500 sm:col-span-3">Visits are offered on OPD days ({config.operating_days.join(', ') || 'not set'}) and not on hospital holidays.</p>
+        <div className="flex flex-wrap items-center gap-4 text-sm sm:col-span-3">
+          <label className="flex items-center gap-2"><input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="accent-brand-700" /> Offer home collection to patients</label>
+          <Button size="sm" className="ml-auto" isLoading={busy} loadingText="Saving…" onClick={save}>Save</Button>
+        </div>
+        {msg && <Alert type={msg.type} className="text-sm sm:col-span-3">{msg.text}</Alert>}
+      </div>
+    </Panel>
   );
 };
 
