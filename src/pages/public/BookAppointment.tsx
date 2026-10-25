@@ -297,7 +297,7 @@ export const BookAppointment: React.FC = () => {
     return (
       <AuthShell
         title="Sign in to book your appointment"
-        description="Use your Google account to book. Your tokens, receipts and reports stay together and private, and you’ll come straight back to the booking form."
+        description="Sign in with Google to book. You’ll come straight back here."
         image={{ src: '/images/pediatric-hero.jpg', alt: 'A pediatrician with a young patient at Satya Hospital' }}
         quote={{ heading: 'Your OPD token in under two minutes.', text: 'Sign in, tell us who is visiting, pay securely and get your token number straight away.' }}
       >
@@ -570,7 +570,7 @@ export const BookAppointment: React.FC = () => {
               <p className="flex items-center gap-2 px-1 text-[13px] text-ink-500">
                 <ShieldCheck className="h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
                 <span className="min-w-0 truncate">Signed in as {user?.email || user?.fullName}</span>
-                <button type="button" onClick={() => logout()} className="link ml-auto shrink-0 cursor-pointer">
+                <button type="button" onClick={() => logout()} className="link -my-2 ml-auto shrink-0 cursor-pointer px-2 py-3">
                   Switch
                 </button>
               </p>

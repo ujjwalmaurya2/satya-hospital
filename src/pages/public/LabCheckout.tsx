@@ -89,7 +89,7 @@ export const LabCheckout: React.FC = () => {
     return (
       <AuthShell
         title="Sign in to book lab tests"
-        description="Use your Google account so your lab orders and reports stay private and in one place. Your cart is kept while you sign in."
+        description="Sign in with Google to place your order. Your cart is saved."
         image={{ src: '/images/satya-hospital-building.jpg', alt: 'Satya Hospital building, Civil Lines, Prayagraj', position: '58% center' }}
         quote={{ heading: 'Verified reports, privately in your account.', text: 'Reports are released only after the lab has checked them.' }}
       >

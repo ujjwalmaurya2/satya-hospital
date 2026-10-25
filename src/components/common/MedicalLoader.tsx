@@ -50,3 +50,10 @@ export const MedicalLoader: React.FC<MedicalLoaderProps> = ({
     </div>
   );
 };
+
+/** Shown while a lazily loaded page chunk downloads; layouts stay mounted around it. */
+export const PageFallback: React.FC = () => (
+  <div className="flex min-h-[50vh] items-center justify-center">
+    <MedicalLoader label="Loading…" />
+  </div>
+);

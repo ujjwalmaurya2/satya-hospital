@@ -57,7 +57,7 @@ export const LabTests: React.FC = () => {
         crumbs={[{ label: 'Pathology lab', to: '/pathology-lab' }, { label: 'Book lab tests' }]}
         eyebrow="Pathology lab"
         title="Book lab tests"
-        description="Choose individual tests or a health-checkup package, pay online or at the lab, and get verified reports in your patient account. This is separate from doctor appointments."
+        description="Tests and health packages — no doctor appointment needed. Verified reports arrive in your account."
       />
       <Section size="md">
         {loading ? (
@@ -68,13 +68,8 @@ export const LabTests: React.FC = () => {
             <button type="button" className="link cursor-pointer" onClick={reload}>Try again</button>
           </Alert>
         ) : (
-          <div className="grid grid-cols-1 gap-8 pb-24 lg:grid-cols-12 lg:pb-0">
+          <div className="grid grid-cols-1 gap-8 pb-20 lg:grid-cols-12 lg:pb-0">
             <div className="space-y-6 lg:col-span-8">
-              {hasDemo && (
-                <Alert type="warning" className="text-sm">
-                  Items marked <strong>Demo</strong> are sample data for testing. Their names and prices have not been confirmed by the hospital.
-                </Alert>
-              )}
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
                 <label htmlFor="lab-search" className="sr-only">Search tests</label>
@@ -103,6 +98,12 @@ export const LabTests: React.FC = () => {
                   </button>
                 ))}
               </div>
+
+              {hasDemo && (
+                <p className="flex items-start gap-2 rounded-2xl bg-warning-50 px-4 py-2.5 text-[13px] text-warning-700 ring-1 ring-inset ring-warning-200">
+                  <strong className="font-semibold">Demo</strong> items are sample data — names and prices are not confirmed by the hospital.
+                </p>
+              )}
 
               {shownPackages.length > 0 && (
                 <section aria-labelledby="pkg-heading" className="space-y-3">
@@ -165,7 +166,7 @@ export const LabTests: React.FC = () => {
 
             {/* Phones: compact bar; the full cart is shown again at checkout. */}
             {cart.length > 0 && (
-              <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+              <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 p-3 backdrop-blur max-md:bottom-[var(--tabbar-space)] lg:hidden">
                 <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
                   <p className="text-sm">
                     <span className="font-semibold text-ink-900">{preview.lines.length} item{preview.lines.length === 1 ? '' : 's'}</span>
@@ -243,7 +244,7 @@ export const CartPanel: React.FC<{ preview: CartPreview; onRemove?: (e: CartEntr
             <div className="flex shrink-0 items-center gap-1">
               <span className="tabular-nums text-ink-700">{formatPaise(l.pricePaise)}</span>
               {onRemove && (
-                <button type="button" onClick={() => onRemove(l.entry)} className="cursor-pointer rounded-full p-1 text-ink-400 hover:bg-ink-50 hover:text-ink-700" aria-label={`Remove ${l.name}`}>
+                <button type="button" onClick={() => onRemove(l.entry)} className="-my-2 -mr-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-ink-400 hover:bg-ink-50 hover:text-ink-700" aria-label={`Remove ${l.name}`}>
                   <X className="h-4 w-4" />
                 </button>
               )}

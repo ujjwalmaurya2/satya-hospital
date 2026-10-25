@@ -258,7 +258,7 @@ export const Navbar: React.FC = () => {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            <LinkButton to="/lab-tests" size="sm" variant="outline" className="hidden md:inline-flex h-10 px-4" leftIcon={<FlaskConical className="w-4 h-4" />}>
+            <LinkButton to="/lab-tests" size="sm" variant="outline" className="hidden md:inline-flex lg:hidden 2xl:inline-flex h-10 px-4" leftIcon={<FlaskConical className="w-4 h-4" />}>
               Book lab tests
             </LinkButton>
             <LinkButton to="/book-appointment" size="sm" className="hidden sm:inline-flex h-10 px-4" leftIcon={<CalendarCheck className="w-4 h-4" />}>

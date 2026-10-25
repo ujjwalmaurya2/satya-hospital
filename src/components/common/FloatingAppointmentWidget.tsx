@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, CalendarCheck, PhoneCall } from 'lucide-react';
+import { ArrowRight, CalendarCheck } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
-import { phoneHref, to12h } from '../../lib/contact';
+import { to12h } from '../../lib/contact';
 
 const HIDDEN_ON = ['/book-appointment', '/patient/login', '/staff/login'];
 
 /**
  * Quiet booking shortcut that appears once the visitor scrolls past the first
- * screen: a pill on tablet/desktop, a two-button action bar on phones.
+ * screen on tablet/desktop. Phones have the persistent MobileTabBar instead.
  */
 export const FloatingAppointmentWidget: React.FC = () => {
   const { pathname } = useLocation();
@@ -41,8 +41,8 @@ export const FloatingAppointmentWidget: React.FC = () => {
     <AnimatePresence>
       {visible && (
         <>
-          {/* Tablet / desktop pill */}
-          <motion.div {...motionProps} className="fixed bottom-6 right-6 z-40 hidden sm:block print:hidden">
+          {/* Tablet / desktop pill (phones use MobileTabBar) */}
+          <motion.div {...motionProps} className="fixed bottom-6 right-6 z-40 hidden md:block print:hidden">
             <Link
               to="/book-appointment"
               className="group flex items-center gap-3 rounded-full bg-white py-2 pl-2 pr-4 shadow-float ring-1 ring-ink-900/5 transition-shadow hover:shadow-lift"
@@ -58,28 +58,6 @@ export const FloatingAppointmentWidget: React.FC = () => {
             </Link>
           </motion.div>
 
-          {/* Phone action bar */}
-          <motion.div
-            {...motionProps}
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 pt-3 backdrop-blur-md sm:hidden print:hidden pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-          >
-            <div className="grid grid-cols-[auto_1fr] gap-2.5">
-              <a
-                href={phoneHref(settings.phone)}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-line-strong px-5 text-sm font-semibold text-ink-800"
-              >
-                <PhoneCall className="h-4 w-4 text-brand-600" aria-hidden="true" />
-                Call
-              </a>
-              <Link
-                to="/book-appointment"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-700 text-sm font-semibold text-white"
-              >
-                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-                Book appointment
-              </Link>
-            </div>
-          </motion.div>
         </>
       )}
     </AnimatePresence>

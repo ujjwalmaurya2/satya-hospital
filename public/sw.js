@@ -11,12 +11,13 @@
  * - Sensitive Medical Data / APIs / Auth: Network-Only (NEVER CACHED)
  */
 
-const CACHE_NAME = 'satya-static-v3';
+const CACHE_NAME = 'satya-static-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.svg',
+  '/icon-192.png',
 ];
 
 // Sensitive patterns that must NEVER be cached
@@ -25,6 +26,8 @@ const SENSITIVE_PATTERNS = [
   /\/prescriptions\//i,
   /\/medical-documents\//i,
   /\/patient\//i,
+  /\/lab-tests\/orders\//i,
+  /\/booking\//i,
   /\/api\//i,
   /supabase\.co/i,
   /r2\.cloudflarestorage\.com/i,

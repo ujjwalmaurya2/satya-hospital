@@ -32,6 +32,7 @@ import { useHospital } from '../../context/HospitalContext';
 import { checkOnlineBookingCutoff, getHospitalDateWithOffset, getHospitalTodayDate, getNextEligibleOpdDate } from '../../lib/tokens';
 import { cleanSettingText, phoneDisplay, phoneHref, to12h } from '../../lib/contact';
 import { cn } from '../../lib/cn';
+import { MobileHome } from './MobileHome';
 
 function prettyDate(iso: string) {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-IN', {
@@ -131,6 +132,10 @@ export const Home: React.FC = () => {
 
   return (
     <div className="overflow-x-clip">
+      {/* Phones get an app-style home; the desktop sections below start at md. */}
+      <MobileHome nextEligibleDate={nextEligibleDate} />
+
+      <div className="hidden md:block">
       {/* ------------------------------------------------------------------ HERO */}
       <section className="relative">
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 via-canvas to-canvas" />
@@ -538,14 +543,16 @@ export const Home: React.FC = () => {
         </div>
       </Section>
 
+      </div>
+
       {/* ----------------------------------------------------- FAQ */}
       <Section size="md" className="border-t border-line">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
-            <p className="eyebrow">Parent support</p>
-            <h2 className="display-2 mt-3">Frequently asked questions</h2>
-            <p className="lead mt-4">OPD timings, the token queue and pathology reports.</p>
-            <LinkButton to="/contact" variant="outline" className="mt-7" rightIcon={<ArrowRight className="h-4 w-4" />}>
+            <p className="eyebrow hidden sm:inline-flex">Parent support</p>
+            <h2 className="display-2 sm:mt-3">Frequently asked questions</h2>
+            <p className="lead mt-4 hidden sm:block">OPD timings, the token queue and pathology reports.</p>
+            <LinkButton to="/contact" variant="outline" className="mt-7 hidden lg:inline-flex" rightIcon={<ArrowRight className="h-4 w-4" />}>
               Ask the reception desk
             </LinkButton>
           </div>
@@ -599,7 +606,7 @@ export const Home: React.FC = () => {
       </Section>
 
       {/* ----------------------------------------------------- VISIT */}
-      <Section size="sm" className="pb-0">
+      <Section size="sm" className="hidden pb-0 md:block">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {[
             {
@@ -649,7 +656,9 @@ export const Home: React.FC = () => {
         </div>
       </Section>
 
-      <CtaBand />
+      <div className="hidden md:block">
+        <CtaBand />
+      </div>
     </div>
   );
 };

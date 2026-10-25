@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Alert } from '../../components/common/Alert';
@@ -7,17 +7,22 @@ import { GoogleIcon } from '../../components/common/GoogleIcon';
 import { AuthShell } from '../../components/site/AuthShell';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
+import { homePathForRole } from '../../lib/access';
 
 export const PatientLogin: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Return to the patient page that sent us here (survives the Google redirect via redirectTo).
+  const fromState = (location.state as { from?: string } | null)?.from;
+  const from = fromState?.startsWith('/patient/') ? fromState : '/patient/dashboard';
   const { loginWithGoogle, loginAsPatient, isAuthenticated, role } = useAuth();
   const { patientProfiles } = useHospital();
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (isAuthenticated && role === 'patient') {
-    return <Navigate to="/patient/dashboard" replace />;
+  if (isAuthenticated) {
+    return <Navigate to={role === 'patient' ? from : homePathForRole(role)} replace />;
   }
 
   const handleGoogleLogin = async () => {
@@ -25,7 +30,7 @@ export const PatientLogin: React.FC = () => {
     setErrorMsg(null);
     try {
       // With Supabase the browser redirects to Google; the demo fallback signs in immediately and the redirect above takes over.
-      await loginWithGoogle();
+      await loginWithGoogle(from);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Google sign-in failed.');
     } finally {

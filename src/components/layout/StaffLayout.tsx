@@ -1,39 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, Menu, Microscope, Stethoscope, X, FlaskConical } from 'lucide-react';
+import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, LucideIcon, Menu, Microscope, Stethoscope, X, FlaskConical } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
 import { homePathForRole, ROLE_LABEL } from '../../lib/access';
 import { cn } from '../../lib/cn';
+import { PageFallback } from '../common/MedicalLoader';
 import { Avatar } from '../dashboard/Dashboard';
 
 interface NavItem {
   label: string;
+  /** Label under the icon in the phone tab bar. */
+  short: string;
   path: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
 }
-
-const icon = 'h-[18px] w-[18px]';
 
 const NAV: Record<Exclude<UserRole, 'patient'>, NavItem[]> = {
   reception: [
-    { label: 'Queue desk', path: '/staff', icon: <ListOrdered className={icon} /> },
-    { label: 'Records & uploads', path: '/reception', icon: <FolderOpen className={icon} /> },
-    { label: 'Pathology orders', path: '/lab-orders', icon: <FlaskConical className={icon} /> },
+    { label: 'Queue desk', short: 'OPD queue', path: '/staff', icon: ListOrdered },
+    { label: 'Pathology orders', short: 'Lab orders', path: '/lab-orders', icon: FlaskConical },
+    { label: 'Records & uploads', short: 'Records', path: '/reception', icon: FolderOpen },
   ],
-  doctor: [{ label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> }],
+  doctor: [{ label: 'Consultations', short: 'Consults', path: '/doctor', icon: Stethoscope }],
   pathology: [
-    { label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> },
-    { label: 'Pathology orders', path: '/lab-orders', icon: <FlaskConical className={icon} /> },
+    { label: 'Pathology orders', short: 'Lab orders', path: '/lab-orders', icon: FlaskConical },
+    { label: 'Lab worklist', short: 'Worklist', path: '/pathology-dashboard', icon: Microscope },
   ],
   admin: [
-    { label: 'Overview', path: '/admin', icon: <Activity className={icon} /> },
-    { label: 'Queue desk', path: '/staff', icon: <ListOrdered className={icon} /> },
-    { label: 'Records & uploads', path: '/reception', icon: <FolderOpen className={icon} /> },
-    { label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> },
-    { label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> },
-    { label: 'Pathology orders', path: '/lab-orders', icon: <FlaskConical className={icon} /> },
+    { label: 'Overview', short: 'Overview', path: '/admin', icon: Activity },
+    { label: 'Queue desk', short: 'OPD queue', path: '/staff', icon: ListOrdered },
+    { label: 'Pathology orders', short: 'Lab orders', path: '/lab-orders', icon: FlaskConical },
+    { label: 'Consultations', short: 'Consults', path: '/doctor', icon: Stethoscope },
+    { label: 'Records & uploads', short: 'Records', path: '/reception', icon: FolderOpen },
+    { label: 'Lab worklist', short: 'Worklist', path: '/pathology-dashboard', icon: Microscope },
   ],
 };
 
@@ -51,6 +52,7 @@ export const StaffLayout: React.FC = () => {
   const showRoleSwitcher = import.meta.env.DEV && !isLiveSession;
 
   const items = role === 'patient' ? [] : NAV[role];
+  const tabs = items.slice(0, 4);
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -95,9 +97,7 @@ export const StaffLayout: React.FC = () => {
                 {({ isActive }) => (
                   <>
                     {isActive && <span className="absolute -left-3 top-2 bottom-2 w-[3px] rounded-r-full bg-brand-400" aria-hidden="true" />}
-                    <span className={isActive ? 'text-brand-300' : ''} aria-hidden="true">
-                      {item.icon}
-                    </span>
+                    <item.icon className={cn('h-[18px] w-[18px]', isActive && 'text-brand-300')} aria-hidden="true" />
                     {item.label}
                   </>
                 )}
@@ -211,9 +211,42 @@ export const StaffLayout: React.FC = () => {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <Outlet />
+      <main className={cn('mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8', tabs.length > 1 && 'max-md:pb-[calc(var(--tabbar-space)+1.5rem)]')}>
+        <Suspense fallback={<PageFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
+
+      {/* Phones: the role's main desks one tap away (the rest stay in the menu). */}
+      {tabs.length > 1 && (
+        <nav aria-label="Workspace shortcuts" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden print:hidden">
+          <ul className="mx-auto grid h-16 max-w-md px-2" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+            {tabs.map(t => (
+              <li key={t.path} className="flex">
+                <NavLink
+                  to={t.path}
+                  end
+                  className={({ isActive }) =>
+                    cn(
+                      'flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl text-[11.5px] font-semibold transition-colors active:scale-95 motion-reduce:active:scale-100',
+                      isActive ? 'text-brand-800' : 'text-ink-500'
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <span className={cn('flex h-8 w-14 items-center justify-center rounded-full transition-colors', isActive && 'bg-brand-100')}>
+                        <t.icon className="h-6 w-6" strokeWidth={isActive ? 2.2 : 1.9} aria-hidden="true" />
+                      </span>
+                      {t.short}
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </div>
   );
 };

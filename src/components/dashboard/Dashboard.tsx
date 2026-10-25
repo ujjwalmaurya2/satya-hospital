@@ -21,7 +21,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, description, eyeb
     <div className="min-w-0">
       {eyebrow && <p className="mb-1.5 text-[13px] font-medium text-ink-500">{eyebrow}</p>}
       <h1 className="text-[1.6rem] font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.85rem]">{title}</h1>
-      {description && <p className="mt-1.5 text-sm text-ink-500">{description}</p>}
+      {description && <p className="mt-1.5 hidden text-sm text-ink-500 sm:block">{description}</p>}
     </div>
     {actions && <div className="flex flex-wrap items-center gap-2.5">{actions}</div>}
   </div>

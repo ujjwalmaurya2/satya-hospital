@@ -20,7 +20,7 @@ const tones = {
   mint: 'bg-leaf-50 border-y border-leaf-100',
   navy: 'bg-ink-800 text-white',
 };
-const pads = { sm: 'py-12 sm:py-14', md: 'py-16 sm:py-20', lg: 'py-20 sm:py-28' };
+const pads = { sm: 'py-8 sm:py-14', md: 'py-8 sm:py-20', lg: 'py-12 sm:py-28' };
 
 export const Section: React.FC<SectionProps> = ({ tone = 'plain', size = 'md', container = true, className, children, ...props }) => (
   <section className={cn(tones[tone], pads[size], className)} {...props}>
@@ -119,19 +119,19 @@ export const PageHero: React.FC<PageHeroProps> = ({ eyebrow, title, description,
         className="pointer-events-none absolute -top-40 right-[-10%] h-[420px] w-[620px] rounded-full bg-brand-200/25 blur-3xl"
       />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 left-[-8%] h-72 w-96 rounded-full bg-leaf-100/70 blur-3xl" />
-      <div className="container-page relative pt-8 pb-14 sm:pt-10 sm:pb-20">
-        <Breadcrumbs items={crumbs} className="animate-fade" />
-        <div className={cn('mt-8 grid gap-10 items-center', hasVisual && 'lg:grid-cols-12 lg:gap-14')}>
+      <div className="container-page relative pt-5 pb-7 sm:pt-10 sm:pb-20">
+        <Breadcrumbs items={crumbs} className="hidden animate-fade sm:block" />
+        <div className={cn('grid gap-6 items-center sm:mt-8 sm:gap-10', hasVisual && 'lg:grid-cols-12 lg:gap-14')}>
           <div className={cn(hasVisual ? 'lg:col-span-7' : 'max-w-3xl')}>
-            {eyebrow && <p className="eyebrow mb-4 animate-rise">{eyebrow}</p>}
+            {eyebrow && <p className="eyebrow mb-4 hidden animate-rise sm:inline-flex">{eyebrow}</p>}
             <h1 className="display-1 animate-rise [animation-delay:60ms]">{title}</h1>
-            {description && <p className="lead mt-5 max-w-2xl animate-rise [animation-delay:120ms]">{description}</p>}
-            {actions && <div className="mt-8 flex flex-wrap items-center gap-3 animate-rise [animation-delay:180ms]">{actions}</div>}
+            {description && <p className="lead mt-2 max-w-2xl animate-rise text-[15px] [animation-delay:120ms] sm:mt-5 sm:text-base">{description}</p>}
+            {actions && <div className="mt-5 flex flex-wrap items-center gap-3 animate-rise [animation-delay:180ms] sm:mt-8">{actions}</div>}
             {children}
           </div>
           {image && (
             <div className="lg:col-span-5 animate-rise [animation-delay:160ms]">
-              <div className="relative overflow-hidden rounded-[28px] ring-1 ring-ink-900/5 shadow-lift aspect-[4/3] bg-ink-50">
+              <div className="relative overflow-hidden rounded-3xl ring-1 ring-ink-900/5 shadow-lift aspect-[16/9] bg-ink-50 sm:aspect-[4/3] sm:rounded-[28px]">
                 <img
                   src={image.src}
                   alt={image.alt}

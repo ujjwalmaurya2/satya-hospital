@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { HospitalProvider } from './context/HospitalContext';
@@ -11,56 +11,58 @@ import { StaffLayout } from './components/layout/StaffLayout';
 
 // Public Pages
 import { Home } from './pages/public/Home';
-import { About } from './pages/public/About';
-import { Services } from './pages/public/Services';
-import { Doctors } from './pages/public/Doctors';
-import { Pathology } from './pages/public/Pathology';
-import { Contact } from './pages/public/Contact';
-import { BookAppointment } from './pages/public/BookAppointment';
-import { BookingStatus } from './pages/public/BookingStatus';
-import { Journey } from './pages/public/Journey';
-import { Facilities } from './pages/public/Facilities';
-import { Gallery } from './pages/public/Gallery';
-import { Testimonials } from './pages/public/Testimonials';
-import { News } from './pages/public/News';
-import { PediatricCare } from './pages/public/PediatricCare';
-import { NewbornCare } from './pages/public/NewbornCare';
-import { PrivacyPolicy } from './pages/public/PrivacyPolicy';
+const About = lazy(() => import('./pages/public/About').then(m => ({ default: m.About })));
+const Services = lazy(() => import('./pages/public/Services').then(m => ({ default: m.Services })));
+const Doctors = lazy(() => import('./pages/public/Doctors').then(m => ({ default: m.Doctors })));
+const Pathology = lazy(() => import('./pages/public/Pathology').then(m => ({ default: m.Pathology })));
+const Contact = lazy(() => import('./pages/public/Contact').then(m => ({ default: m.Contact })));
+const BookAppointment = lazy(() => import('./pages/public/BookAppointment').then(m => ({ default: m.BookAppointment })));
+const BookingStatus = lazy(() => import('./pages/public/BookingStatus').then(m => ({ default: m.BookingStatus })));
+const Journey = lazy(() => import('./pages/public/Journey').then(m => ({ default: m.Journey })));
+const Facilities = lazy(() => import('./pages/public/Facilities').then(m => ({ default: m.Facilities })));
+const Gallery = lazy(() => import('./pages/public/Gallery').then(m => ({ default: m.Gallery })));
+const Testimonials = lazy(() => import('./pages/public/Testimonials').then(m => ({ default: m.Testimonials })));
+const News = lazy(() => import('./pages/public/News').then(m => ({ default: m.News })));
+const PediatricCare = lazy(() => import('./pages/public/PediatricCare').then(m => ({ default: m.PediatricCare })));
+const NewbornCare = lazy(() => import('./pages/public/NewbornCare').then(m => ({ default: m.NewbornCare })));
+const PrivacyPolicy = lazy(() => import('./pages/public/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 import { ScrollToTop } from './components/common/ScrollToTop';
-import { TermsAndConditions } from './pages/public/TermsAndConditions';
-import { CancellationPolicy } from './pages/public/CancellationPolicy';
-import { RefundPolicy } from './pages/public/RefundPolicy';
-import { Accessibility } from './pages/public/Accessibility';
-import { Disclaimer } from './pages/public/Disclaimer';
-import { LabTests } from './pages/public/LabTests';
-import { LabCheckout } from './pages/public/LabCheckout';
-import { LabOrderStatus } from './pages/public/LabOrderStatus';
+const TermsAndConditions = lazy(() => import('./pages/public/TermsAndConditions').then(m => ({ default: m.TermsAndConditions })));
+const CancellationPolicy = lazy(() => import('./pages/public/CancellationPolicy').then(m => ({ default: m.CancellationPolicy })));
+const RefundPolicy = lazy(() => import('./pages/public/RefundPolicy').then(m => ({ default: m.RefundPolicy })));
+const Accessibility = lazy(() => import('./pages/public/Accessibility').then(m => ({ default: m.Accessibility })));
+const Disclaimer = lazy(() => import('./pages/public/Disclaimer').then(m => ({ default: m.Disclaimer })));
+const LabTests = lazy(() => import('./pages/public/LabTests').then(m => ({ default: m.LabTests })));
+const LabCheckout = lazy(() => import('./pages/public/LabCheckout').then(m => ({ default: m.LabCheckout })));
+const LabOrderStatus = lazy(() => import('./pages/public/LabOrderStatus').then(m => ({ default: m.LabOrderStatus })));
 
 // Patient Pages
-import { PatientLogin } from './pages/patient/PatientLogin';
-import { PatientDashboard } from './pages/patient/PatientDashboard';
-import { PatientAppointments } from './pages/patient/PatientAppointments';
-import { PatientReports } from './pages/patient/PatientReports';
-import { PatientPrescriptions } from './pages/patient/PatientPrescriptions';
-import { PatientProfilePage } from './pages/patient/PatientProfile';
-import { PatientConsent } from './pages/patient/PatientConsent';
-import { PatientLabOrders } from './pages/patient/PatientLabOrders';
+const PatientLogin = lazy(() => import('./pages/patient/PatientLogin').then(m => ({ default: m.PatientLogin })));
+const PatientDashboard = lazy(() => import('./pages/patient/PatientDashboard').then(m => ({ default: m.PatientDashboard })));
+const PatientAppointments = lazy(() => import('./pages/patient/PatientAppointments').then(m => ({ default: m.PatientAppointments })));
+const PatientReports = lazy(() => import('./pages/patient/PatientReports').then(m => ({ default: m.PatientReports })));
+const PatientPrescriptions = lazy(() => import('./pages/patient/PatientPrescriptions').then(m => ({ default: m.PatientPrescriptions })));
+const PatientProfilePage = lazy(() => import('./pages/patient/PatientProfile').then(m => ({ default: m.PatientProfilePage })));
+const PatientConsent = lazy(() => import('./pages/patient/PatientConsent').then(m => ({ default: m.PatientConsent })));
+const PatientLabOrders = lazy(() => import('./pages/patient/PatientLabOrders').then(m => ({ default: m.PatientLabOrders })));
 
 // Staff Pages
-import { StaffLogin } from './pages/staff/StaffLogin';
-import { ReceptionDashboard } from './pages/staff/ReceptionDashboard';
-import { DoctorDashboard } from './pages/staff/DoctorDashboard';
-import { PathologyDashboard } from './pages/staff/PathologyDashboard';
-import { AdminDashboard } from './pages/staff/AdminDashboard';
-import { QueueDesk } from './pages/staff/QueueDesk';
-import { LabOrdersDesk } from './pages/staff/LabOrdersDesk';
+const StaffLogin = lazy(() => import('./pages/staff/StaffLogin').then(m => ({ default: m.StaffLogin })));
+const ReceptionDashboard = lazy(() => import('./pages/staff/ReceptionDashboard').then(m => ({ default: m.ReceptionDashboard })));
+const DoctorDashboard = lazy(() => import('./pages/staff/DoctorDashboard').then(m => ({ default: m.DoctorDashboard })));
+const PathologyDashboard = lazy(() => import('./pages/staff/PathologyDashboard').then(m => ({ default: m.PathologyDashboard })));
+const AdminDashboard = lazy(() => import('./pages/staff/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const QueueDesk = lazy(() => import('./pages/staff/QueueDesk').then(m => ({ default: m.QueueDesk })));
+const LabOrdersDesk = lazy(() => import('./pages/staff/LabOrdersDesk').then(m => ({ default: m.LabOrdersDesk })));
 import { RequireRole } from './components/auth/RequireRole';
 import { ROUTE_ROLES } from './lib/access';
 import { UserRole } from './types';
 import { NotFound } from './pages/NotFound';
 import { FloatingAppointmentWidget } from './components/common/FloatingAppointmentWidget';
+import { MobileTabBar } from './components/layout/MobileTabBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { PageTransition } from './components/motion';
+import { PageFallback } from './components/common/MedicalLoader';
 
 const ALL_STAFF_ROLES: UserRole[] = ['reception', 'doctor', 'pathology', 'admin'];
 const PATIENT_ROLES: UserRole[] = ['patient'];
@@ -77,13 +79,17 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     <Navbar />
     <main id="main" className="flex-1">
       <ErrorBoundary>
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <Suspense fallback={<PageFallback />}>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </Suspense>
       </ErrorBoundary>
     </main>
     <FloatingAppointmentWidget />
     <Footer />
+    <div aria-hidden="true" className="h-[var(--tabbar-space)] md:hidden" />
+    <MobileTabBar />
   </div>
 );
 

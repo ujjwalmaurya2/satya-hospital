@@ -1,17 +1,22 @@
 {
+  "id": "/",
   "name": "Satya Hospital & Pathology",
   "short_name": "Satya Hospital",
-  "description": "Complete digital platform for Satya Hospital & Pathology — OPD appointments, medical records, and reports.",
+  "description": "OPD appointments, lab test booking and verified reports — Satya Hospital & Pathology, Prayagraj.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#F4F8FA",
-  "theme_color": "#3DA9DF",
+  "orientation": "portrait",
+  "background_color": "#FCFDFB",
+  "theme_color": "#FFFFFF",
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Book doctor appointment", "short_name": "Book", "url": "/book-appointment" },
+    { "name": "Book lab tests", "short_name": "Lab tests", "url": "/lab-tests" },
+    { "name": "My dashboard", "short_name": "Dashboard", "url": "/patient/dashboard" }
   ]
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CalendarCheck, CalendarDays, FileText, FlaskConical, Home, LogOut, Microscope, ShieldCheck, UserRound } from 'lucide-react';
@@ -7,6 +7,8 @@ import { LinkButton } from '../common/Button';
 import { BrandMark } from '../site/BrandMark';
 import { Avatar } from '../dashboard/Dashboard';
 import { cn } from '../../lib/cn';
+import { PageFallback } from '../common/MedicalLoader';
+import { MobileTabBar } from './MobileTabBar';
 
 const tabs = [
   { label: 'Overview', path: '/patient/dashboard', icon: <Home className="h-4 w-4" /> },
@@ -82,7 +84,9 @@ export const PatientLayout: React.FC = () => {
       </header>
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-        <Outlet />
+        <Suspense fallback={<PageFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="border-t border-line bg-white">
@@ -94,6 +98,8 @@ export const PatientLayout: React.FC = () => {
           </span>
         </div>
       </footer>
+      <div aria-hidden="true" className="h-[var(--tabbar-space)] md:hidden" />
+      <MobileTabBar />
     </div>
   );
 };

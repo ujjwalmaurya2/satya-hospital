@@ -102,6 +102,8 @@
 
 /* Legacy variables kept for any code still referencing them */
 :root {
+  /* Space reserved under page content for the phone tab bar (MobileTabBar). */
+  --tabbar-space: calc(4rem + env(safe-area-inset-bottom));
   --sh-medical-blue: #3DA9DF;
   --sh-lime-green: #91BB40;
   --sh-navy-text: #193247;
@@ -162,10 +164,10 @@
   }
 
   .display-1 {
-    @apply text-ink-900 text-[2.375rem] leading-[1.08] font-bold tracking-[-0.028em] sm:text-5xl lg:text-[3.6rem];
+    @apply text-ink-900 text-[1.75rem] leading-[1.12] font-bold tracking-[-0.024em] sm:text-5xl sm:leading-[1.08] sm:tracking-[-0.028em] lg:text-[3.6rem];
   }
   .display-2 {
-    @apply text-ink-900 text-[1.875rem] leading-[1.15] font-bold tracking-[-0.022em] sm:text-[2.25rem] lg:text-[2.6rem];
+    @apply text-ink-900 text-[1.375rem] leading-[1.2] font-bold tracking-[-0.02em] sm:text-[2.25rem] sm:leading-[1.15] lg:text-[2.6rem];
   }
   .heading-3 {
     @apply text-lg leading-snug font-semibold tracking-[-0.01em] text-ink-900;
