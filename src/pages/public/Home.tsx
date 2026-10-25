@@ -496,7 +496,7 @@ export const Home: React.FC = () => {
                     <div className="min-w-0">
                       <p className="font-medium text-ink-900">{t.name}</p>
                       <p className="mt-0.5 text-[13px] text-ink-500">
-                        {t.category} · {t.specimenType}
+                        {t.category}{t.specimenType ? ` · ${t.specimenType}` : ''}
                         {t.fastingRequired ? ' · Fasting' : ''}
                       </p>
                     </div>

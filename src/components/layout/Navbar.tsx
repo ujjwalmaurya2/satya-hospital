@@ -12,8 +12,7 @@ import {
   PhoneCall,
   ShieldCheck,
   UserRound,
-  X,
-} from 'lucide-react';
+  X, FlaskConical } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useHospital } from '../../context/HospitalContext';
 import { homePathForRole } from '../../lib/access';
@@ -259,6 +258,9 @@ export const Navbar: React.FC = () => {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            <LinkButton to="/lab-tests" size="sm" variant="outline" className="hidden md:inline-flex h-10 px-4" leftIcon={<FlaskConical className="w-4 h-4" />}>
+              Book lab tests
+            </LinkButton>
             <LinkButton to="/book-appointment" size="sm" className="hidden sm:inline-flex h-10 px-4" leftIcon={<CalendarCheck className="w-4 h-4" />}>
               Book appointment
             </LinkButton>
@@ -365,6 +367,9 @@ export const Navbar: React.FC = () => {
               <div className="border-t border-line p-4 space-y-2.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
                 <LinkButton to="/book-appointment" size="lg" className="w-full" leftIcon={<CalendarCheck className="w-[18px] h-[18px]" />}>
                   Book appointment
+                </LinkButton>
+                <LinkButton to="/lab-tests" size="lg" variant="outline" className="w-full" leftIcon={<FlaskConical className="w-[18px] h-[18px]" />}>
+                  Book lab tests
                 </LinkButton>
                 <div className="grid grid-cols-2 gap-2.5">
                   <a

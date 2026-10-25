@@ -231,9 +231,9 @@ describe('Staff route guard', () => {
     const routes = Object.keys(ROUTE_ROLES) as (keyof typeof ROUTE_ROLES)[];
     const allowed = (r: Parameters<typeof auth>[0]) => routes.filter(k => resolveAccess(auth(r), ROUTE_ROLES[k]) === 'allow');
     expect(allowed('admin')).toEqual(routes);
-    expect(allowed('reception')).toEqual(['staffDesk', 'reception']);
+    expect(allowed('reception')).toEqual(['staffDesk', 'reception', 'labOrders']);
     expect(allowed('doctor')).toEqual(['doctor']);
-    expect(allowed('pathology')).toEqual(['pathology']);
+    expect(allowed('pathology')).toEqual(['pathology', 'labOrders']);
     expect(allowed('patient')).toEqual([]);
   });
 

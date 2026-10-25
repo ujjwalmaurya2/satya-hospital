@@ -176,9 +176,9 @@ export interface PathologyTest {
   testCode: string; // e.g. "CBC", "LFT", "KFT"
   name: string;
   category: string;
-  specimenType: string;
+  specimenType: string | null; // null until verified by pathology staff
   fastingRequired: boolean;
-  turnaroundHours: number;
+  turnaroundHours: number | null;
   price: number;
   isActive: boolean;
 }

@@ -191,3 +191,25 @@ A verified payment is never discarded. If it arrives after the booking closed (e
 - [ ] Razorpay **test** keys + webhook configured, end-to-end test payment done.
 - [ ] Switch to live keys, then set `is_online_payment_enabled = true`.
 - [ ] Confirm `max_advance_booking_days`, `opd_days` and `holidays` reflect the real schedule.
+
+---
+
+## Pathology test booking (`/lab-tests`, `/lab-orders`)
+
+Apply `migrations/20261027000006_pathology_orders.sql` (after `20261026000005`). It is separate from OPD: lab orders never create appointments or tokens.
+
+- **Catalogue:** extends `pathology_tests` (`description`, `preparation`, `is_demo`; sample type and turnaround may now be empty until verified) and adds `pathology_packages` + `pathology_package_tests`. The tests from the setup script and the `DEMO-BASIC` package are flagged `is_demo = true` and shown with a **Demo** badge — replace them with the hospital's real tests and prices from **Pathology orders → Catalogue & prices**, then untick Demo.
+- **Orders:** `pathology_orders` (order numbers `LAB-YYMMDD-XXXXXX`), `pathology_order_items` (name, price and package contents are snapshotted), `pathology_samples`. Reports reuse `pathology_reports` (new `test_id`, `order_id` now references the order).
+- **States are separate:** `status` (pending / confirmed / cancelled), `payment_status` (unpaid / paid / refund_due / refunded / needs_reconciliation), `lab_status` (awaiting_sample → sample_collected → processing → completed).
+- **Rules in SQL:** prices only from the catalogue (`lab_price_cart`), duplicate rule `hospital_settings.lab_duplicate_test_rule` (`skip_individual` default, or `reject`), overlapping packages rejected, one order per idempotency key, report verification by a different person than the uploader, patients see released reports only.
+- **Permissions:** patients — own orders; reception — orders, walk-ins, confirm, cash/UPI payment, sample collection, cancel; pathology — sample receipt, report upload/verify/release, catalogue; Super Admin (`admin`) — all of that plus marking refunds resolved. Doctors see released reports only (the old policy let them read unverified ones).
+- **Report files:** private Supabase Storage bucket `lab-reports` (PDF only, 10 MB), created by the migration. Pathology/Super Admin upload; files open through 2-minute signed URLs, allowed by `can_read_lab_report_file()`. Files are never overwritten — corrections are new versions.
+- **Settings:** `lab_online_payment_enabled` (needs `is_policy_approved_by_hospital` too) turns on Razorpay for lab orders; otherwise patients pay at the lab. `lab_home_collection_enabled` stays `false` until the hospital offers home collection.
+
+Deploy the lab payment functions (same Razorpay secrets as OPD; the existing webhook now also confirms lab orders):
+```bash
+supabase functions deploy lab-create-order
+supabase functions deploy lab-verify-payment
+supabase functions deploy razorpay-webhook --no-verify-jwt
+```
+Add `/lab-tests/checkout` (or your origin with `/**`) to **Authentication → Redirect URLs**.

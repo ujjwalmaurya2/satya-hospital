@@ -38,8 +38,11 @@ export const Pathology: React.FC = () => {
         description="Haematology, biochemistry and clinical pathology processed on-site. Every report is validated before it is published to your patient account."
         actions={
           <>
-            <LinkButton to="/patient/reports" leftIcon={<FileText className="h-4 w-4" />}>
-              Access my reports
+            <LinkButton to="/lab-tests" leftIcon={<FlaskConical className="h-4 w-4" />}>
+              Book lab tests
+            </LinkButton>
+            <LinkButton to="/patient/lab-orders" variant="outline" leftIcon={<FileText className="h-4 w-4" />}>
+              My orders & reports
             </LinkButton>
             <AnchorButton href={phoneHref(settings.phone)} variant="outline" leftIcon={<PhoneCall className="h-4 w-4 text-brand-600" />}>
               Call the lab desk
@@ -168,7 +171,7 @@ export const Pathology: React.FC = () => {
                     </div>
                     <p className="text-sm text-ink-700">
                       <span className="text-ink-400 md:hidden">Specimen: </span>
-                      {t.specimenType}
+                      {t.specimenType ?? '—'}
                     </p>
                     <p className="text-sm">
                       {t.fastingRequired ? (
@@ -178,7 +181,7 @@ export const Pathology: React.FC = () => {
                       )}
                     </p>
                     <p className="text-sm text-ink-700">
-                      <span className="text-ink-400 md:hidden">Turnaround: </span>~{t.turnaroundHours} hours
+                      <span className="text-ink-400 md:hidden">Turnaround: </span>{t.turnaroundHours != null ? `~${t.turnaroundHours} hours` : '—'}
                     </p>
                     <p className="hidden w-20 text-right text-base font-semibold tabular-nums text-ink-900 md:block">₹{t.price}</p>
                   </li>

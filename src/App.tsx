@@ -32,6 +32,9 @@ import { CancellationPolicy } from './pages/public/CancellationPolicy';
 import { RefundPolicy } from './pages/public/RefundPolicy';
 import { Accessibility } from './pages/public/Accessibility';
 import { Disclaimer } from './pages/public/Disclaimer';
+import { LabTests } from './pages/public/LabTests';
+import { LabCheckout } from './pages/public/LabCheckout';
+import { LabOrderStatus } from './pages/public/LabOrderStatus';
 
 // Patient Pages
 import { PatientLogin } from './pages/patient/PatientLogin';
@@ -41,6 +44,7 @@ import { PatientReports } from './pages/patient/PatientReports';
 import { PatientPrescriptions } from './pages/patient/PatientPrescriptions';
 import { PatientProfilePage } from './pages/patient/PatientProfile';
 import { PatientConsent } from './pages/patient/PatientConsent';
+import { PatientLabOrders } from './pages/patient/PatientLabOrders';
 
 // Staff Pages
 import { StaffLogin } from './pages/staff/StaffLogin';
@@ -49,6 +53,7 @@ import { DoctorDashboard } from './pages/staff/DoctorDashboard';
 import { PathologyDashboard } from './pages/staff/PathologyDashboard';
 import { AdminDashboard } from './pages/staff/AdminDashboard';
 import { QueueDesk } from './pages/staff/QueueDesk';
+import { LabOrdersDesk } from './pages/staff/LabOrdersDesk';
 import { RequireRole } from './components/auth/RequireRole';
 import { ROUTE_ROLES } from './lib/access';
 import { UserRole } from './types';
@@ -107,6 +112,9 @@ export const App: React.FC = () => {
             <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
             <Route path="/book-appointment" element={<PublicLayout><BookAppointment /></PublicLayout>} />
             <Route path="/booking/:reference" element={<PublicLayout><BookingStatus /></PublicLayout>} />
+            <Route path="/lab-tests" element={<PublicLayout><LabTests /></PublicLayout>} />
+            <Route path="/lab-tests/checkout" element={<PublicLayout><LabCheckout /></PublicLayout>} />
+            <Route path="/lab-tests/orders/:orderNumber" element={<PublicLayout><LabOrderStatus /></PublicLayout>} />
             
             {/* LEGAL & STATUTORY POLICY ROUTES */}
             <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
@@ -125,6 +133,7 @@ export const App: React.FC = () => {
               <Route path="dashboard" element={<PatientDashboard />} />
               <Route path="appointments" element={<PatientAppointments />} />
               <Route path="reports" element={<PatientReports />} />
+              <Route path="lab-orders" element={<PatientLabOrders />} />
               <Route path="prescriptions" element={<PatientPrescriptions />} />
               <Route path="profile" element={<PatientProfilePage />} />
               <Route path="consent-and-privacy" element={<PatientConsent />} />
@@ -140,6 +149,7 @@ export const App: React.FC = () => {
               <Route path="/reception" element={<RequireRole roles={ROUTE_ROLES.reception}><ReceptionDashboard /></RequireRole>} />
               <Route path="/doctor" element={<RequireRole roles={ROUTE_ROLES.doctor}><DoctorDashboard /></RequireRole>} />
               <Route path="/pathology-dashboard" element={<RequireRole roles={ROUTE_ROLES.pathology}><PathologyDashboard /></RequireRole>} />
+              <Route path="/lab-orders" element={<RequireRole roles={ROUTE_ROLES.labOrders}><LabOrdersDesk /></RequireRole>} />
             </Route>
 
             {/* 404 CATCH ALL */}

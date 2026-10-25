@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, Menu, Microscope, Stethoscope, X } from 'lucide-react';
+import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, Menu, Microscope, Stethoscope, X, FlaskConical } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
 import { homePathForRole, ROLE_LABEL } from '../../lib/access';
@@ -20,15 +20,20 @@ const NAV: Record<Exclude<UserRole, 'patient'>, NavItem[]> = {
   reception: [
     { label: 'Queue desk', path: '/staff', icon: <ListOrdered className={icon} /> },
     { label: 'Records & uploads', path: '/reception', icon: <FolderOpen className={icon} /> },
+    { label: 'Pathology orders', path: '/lab-orders', icon: <FlaskConical className={icon} /> },
   ],
   doctor: [{ label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> }],
-  pathology: [{ label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> }],
+  pathology: [
+    { label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> },
+    { label: 'Pathology orders', path: '/lab-orders', icon: <FlaskConical className={icon} /> },
+  ],
   admin: [
     { label: 'Overview', path: '/admin', icon: <Activity className={icon} /> },
     { label: 'Queue desk', path: '/staff', icon: <ListOrdered className={icon} /> },
     { label: 'Records & uploads', path: '/reception', icon: <FolderOpen className={icon} /> },
     { label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> },
     { label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> },
+    { label: 'Pathology orders', path: '/lab-orders', icon: <FlaskConical className={icon} /> },
   ],
 };
 

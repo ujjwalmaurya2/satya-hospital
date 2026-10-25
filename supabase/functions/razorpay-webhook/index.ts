@@ -45,13 +45,11 @@ Deno.serve(async req => {
     case 'payment.captured':
     case 'order.paid': {
       if (!payment || payment.status !== 'captured' || payment.currency !== 'INR') return ok('ignored');
-      const { error } = await db.rpc('confirm_opd_payment', {
-        p_razorpay_order_id: orderId,
-        p_razorpay_payment_id: payment.id,
-        p_amount_paise: payment.amount,
-        p_source: 'webhook',
-      });
-      // Unknown order (not an OPD booking): acknowledge so Razorpay stops retrying.
+      const args = { p_razorpay_order_id: orderId, p_razorpay_payment_id: payment.id, p_amount_paise: payment.amount, p_source: 'webhook' };
+      let { error } = await db.rpc('confirm_opd_payment', args);
+      // Not an OPD booking: try lab orders (P0002 = unknown order in that table).
+      if (error?.code === 'P0002') ({ error } = await db.rpc('confirm_lab_payment', args));
+      // Unknown everywhere: acknowledge so Razorpay stops retrying.
       if (error && error.code !== 'P0002') {
         console.error('razorpay-webhook: confirmation failed', error.code);
         await db.from('razorpay_webhook_events').delete().eq('event_id', eventId); // allow Razorpay's retry
@@ -60,10 +58,9 @@ Deno.serve(async req => {
       return ok();
     }
     case 'payment.failed': {
-      await db.rpc('record_opd_payment_failure', {
-        p_razorpay_order_id: orderId,
-        p_reason: payment?.error_description ?? 'Payment failed',
-      });
+      const failure = { p_razorpay_order_id: orderId, p_reason: payment?.error_description ?? 'Payment failed' };
+      await db.rpc('record_opd_payment_failure', failure);
+      await db.rpc('record_lab_payment_failure', failure);
       return ok();
     }
     default:

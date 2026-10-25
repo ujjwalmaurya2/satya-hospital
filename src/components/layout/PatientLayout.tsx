@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CalendarCheck, CalendarDays, FileText, Home, LogOut, Microscope, ShieldCheck, UserRound } from 'lucide-react';
+import { CalendarCheck, CalendarDays, FileText, FlaskConical, Home, LogOut, Microscope, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LinkButton } from '../common/Button';
 import { BrandMark } from '../site/BrandMark';
@@ -11,6 +11,7 @@ import { cn } from '../../lib/cn';
 const tabs = [
   { label: 'Overview', path: '/patient/dashboard', icon: <Home className="h-4 w-4" /> },
   { label: 'Appointments', path: '/patient/appointments', icon: <CalendarDays className="h-4 w-4" /> },
+  { label: 'Lab orders', path: '/patient/lab-orders', icon: <FlaskConical className="h-4 w-4" /> },
   { label: 'Lab reports', path: '/patient/reports', icon: <Microscope className="h-4 w-4" /> },
   { label: 'Prescriptions', path: '/patient/prescriptions', icon: <FileText className="h-4 w-4" /> },
   { label: 'Profile', path: '/patient/profile', icon: <UserRound className="h-4 w-4" /> },
