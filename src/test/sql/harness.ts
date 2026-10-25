@@ -16,6 +16,7 @@ export const MIGRATIONS = [
   'complete_satya_hospital_setup.sql',
   'migrations/20261024000003_staff_queue_desk.sql',
   'migrations/20261025000004_opd_online_booking_payments.sql',
+  'migrations/20261026000005_staff_rbac_hardening.sql',
 ];
 
 const AUTH_STUB = `
@@ -78,7 +79,7 @@ export async function as<T = Record<string, unknown>>(db: PGlite, caller: Caller
   }
 }
 
-export async function createUser(db: PGlite, id: string, email: string, role: 'patient' | 'reception' | 'admin' | 'doctor' = 'patient', fullName = 'Test User') {
+export async function createUser(db: PGlite, id: string, email: string, role: 'patient' | 'reception' | 'admin' | 'doctor' | 'pathology' = 'patient', fullName = 'Test User') {
   await db.query(`INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES ($1, $2, jsonb_build_object('full_name', $3::text))`, [id, email, fullName]);
   if (role !== 'patient') await db.query(`UPDATE public.profiles SET role = $2 WHERE id = $1`, [id, role]);
 }

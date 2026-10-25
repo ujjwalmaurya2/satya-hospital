@@ -26,6 +26,7 @@ import { auditLogger } from '../../lib/audit';
 import { getSupabaseStatus, checkSupabaseHealth, SupabaseHealthStatus } from '../../lib/supabase';
 import { demoAccounts } from '../../data/mockData';
 import { UserRole } from '../../types';
+import { ROLE_LABEL } from '../../lib/access';
 
 type AdminTab = 'overview' | 'settings' | 'staff' | 'audit' | 'system';
 
@@ -293,7 +294,7 @@ export const AdminDashboard: React.FC = () => {
               <p className="text-[13px] text-ink-500">Access is enforced by database row-level security.</p>
               <p className="inline-flex items-center gap-2 text-[13px] text-ink-600">
                 <UserPlus className="h-4 w-4 text-brand-600" aria-hidden="true" />
-                New staff are added in Supabase Auth, then given a role (see supabase/README.md).
+                New staff sign in once with Google, then the Super Admin assigns their role with set_user_role (see supabase/README.md).
               </p>
             </div>
             <Table
@@ -317,7 +318,7 @@ export const AdminDashboard: React.FC = () => {
                   header: 'Role',
                   cell: item => (
                     <Badge variant={item.role === 'admin' ? 'medical-blue' : item.role === 'doctor' ? 'lime-green' : 'neutral'} size="sm" className="capitalize">
-                      {item.role}
+                      {ROLE_LABEL[item.role]}
                     </Badge>
                   ),
                 },

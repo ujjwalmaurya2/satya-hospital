@@ -1,5 +1,16 @@
 import { UserRole } from '../types';
 
+/** Display names. 'admin' is the Super Admin (hospital owner); reception/doctor/pathology are staff. */
+export const ROLE_LABEL: Record<UserRole, string> = {
+  admin: 'Super Admin',
+  reception: 'Reception',
+  doctor: 'Doctor',
+  pathology: 'Pathology',
+  patient: 'Patient',
+};
+
+export const STAFF_UNAUTHORIZED = 'Your account is not authorized to access this portal. Please contact the hospital administrator.';
+
 export type AccessDecision = 'loading' | 'login' | 'forbidden' | 'allow';
 
 /** Roles allowed into each guarded staff route. Admin can open every desk. */

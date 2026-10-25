@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { resolveAccess, homePathForRole } from '../../lib/access';
+import { resolveAccess, homePathForRole, STAFF_UNAUTHORIZED } from '../../lib/access';
 import { UserRole } from '../../types';
 import { MedicalLoader } from '../common/MedicalLoader';
 
@@ -20,7 +20,7 @@ interface RequireRoleProps {
  */
 export const RequireRole: React.FC<RequireRoleProps> = ({ roles, loginPath = '/staff/login', children }) => {
   const location = useLocation();
-  const { isLoading, isAuthenticated, role, user } = useAuth();
+  const { isLoading, isAuthenticated, role } = useAuth();
   const decision = resolveAccess({ isLoading, isAuthenticated, role }, roles);
 
   if (decision === 'loading') {
@@ -43,10 +43,8 @@ export const RequireRole: React.FC<RequireRoleProps> = ({ roles, loginPath = '/s
             <ShieldAlert className="w-6 h-6" aria-hidden="true" />
           </div>
           <h1 className="text-lg font-semibold text-ink-900">This workspace is restricted</h1>
-          <p className="text-sm text-ink-500">
-            {user?.fullName || 'Your account'} is signed in as <strong>{role}</strong>. This page needs one of:{' '}
-            <strong>{roles.join(', ')}</strong>.
-          </p>
+          {/* Deliberately generic: never reveal which roles a page needs. */}
+          <p className="text-sm text-ink-500">{STAFF_UNAUTHORIZED}</p>
           <div className="flex items-center justify-center gap-3 pt-2 text-sm font-semibold">
             <Link to={homePathForRole(role)} className="link">
               Go to my workspace

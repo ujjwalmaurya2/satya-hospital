@@ -93,14 +93,31 @@ It adds:
 
 The public form calls `supabaseService.submitEnquiry()`. Until this migration is applied, inserts fail and the visitor sees a retryable error; with no Supabase credentials at all, the enquiry is kept in that browser only and the visitor is told to call reception. Reception sees enquiries under **Records & uploads → Enquiries**.
 
-### Provisioning a reception / admin account
-1. **Authentication → Users → Add user**: enter the staff email, set a password (or leave blank and use the magic-link tab on `/staff/login`).
-2. Promote the profile in the SQL Editor:
+### Roles and staff accounts
+Roles live only in `public.profiles.role` and are enforced by RLS and the role-checked RPCs:
+
+| Tier | `role` value | Access |
+|------|--------------|--------|
+| Super Admin (doctor / owner) | `admin` | Settings, audit log, role management, every desk |
+| Staff | `reception`, `doctor`, `pathology` | Their own desk only |
+| User | `patient` | Own bookings and records only |
+
+Every new account — including any Google sign-in — is created as `patient`. Google, the email address and user metadata never grant a staff role. Apply `migrations/20261026000005_staff_rbac_hardening.sql` (deactivated accounts lose access immediately, audit rows can't be forged, adds `set_user_role`).
+
+**Give someone staff access**
+1. They sign in once on `/staff/login` with **Continue with Google** (or you add them under **Authentication → Users**). They'll see "not authorized" — expected.
+2. The Super Admin assigns the role (it's checked, audited, and can't target their own account):
    ```sql
-   UPDATE public.profiles SET role = 'reception', full_name = 'Priya Srivastava'
-   WHERE email = 'reception@satyahospital.in';
+   -- run while signed in as the Super Admin, e.g. supabase.rpc('set_user_role', {...})
+   SELECT public.set_user_role('reception@satyahospital.in', 'reception');
+   -- revoke: SELECT public.set_user_role('reception@satyahospital.in', 'patient', false);
    ```
-   Use `role = 'admin'` for administrators. Set `is_active = false` to revoke access.
+   The **first** Super Admin is set once by the developer in the SQL Editor (which runs as the database owner):
+   ```sql
+   UPDATE public.profiles SET role = 'admin' WHERE email = 'owner@satyahospital.in';
+   ```
+
+Add `/staff/login` (or your origin with `/**`) to **Authentication → URL Configuration → Redirect URLs** so Google returns staff to the portal.
 
 Magic links are sent with `shouldCreateUser: false`, so unknown emails cannot self-register. Add your site URL (e.g. `http://localhost:5173`) under **Authentication → URL Configuration → Redirect URLs**.
 

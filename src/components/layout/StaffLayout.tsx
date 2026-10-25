@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, Menu, Microscope, Stethoscope, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
-import { homePathForRole } from '../../lib/access';
+import { homePathForRole, ROLE_LABEL } from '../../lib/access';
 import { cn } from '../../lib/cn';
 import { Avatar } from '../dashboard/Dashboard';
 
@@ -30,14 +30,6 @@ const NAV: Record<Exclude<UserRole, 'patient'>, NavItem[]> = {
     { label: 'Consultations', path: '/doctor', icon: <Stethoscope className={icon} /> },
     { label: 'Lab worklist', path: '/pathology-dashboard', icon: <Microscope className={icon} /> },
   ],
-};
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  reception: 'Reception',
-  doctor: 'Doctor',
-  pathology: 'Pathology',
-  admin: 'Administrator',
-  patient: 'Patient',
 };
 
 function todayLabel() {

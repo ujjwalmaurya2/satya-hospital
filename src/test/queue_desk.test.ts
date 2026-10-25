@@ -227,6 +227,16 @@ describe('Staff route guard', () => {
     expect(resolveAccess(auth('patient', false), ROUTE_ROLES.staffDesk)).toBe('login');
   });
 
+  it('gives the Super Admin every desk, staff only their own, patients none', () => {
+    const routes = Object.keys(ROUTE_ROLES) as (keyof typeof ROUTE_ROLES)[];
+    const allowed = (r: Parameters<typeof auth>[0]) => routes.filter(k => resolveAccess(auth(r), ROUTE_ROLES[k]) === 'allow');
+    expect(allowed('admin')).toEqual(routes);
+    expect(allowed('reception')).toEqual(['staffDesk', 'reception']);
+    expect(allowed('doctor')).toEqual(['doctor']);
+    expect(allowed('pathology')).toEqual(['pathology']);
+    expect(allowed('patient')).toEqual([]);
+  });
+
   it('sends reception staff to the queue desk after sign-in', () => {
     expect(homePathForRole('reception')).toBe('/staff');
     expect(homePathForRole('admin')).toBe('/admin');

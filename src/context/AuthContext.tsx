@@ -3,6 +3,7 @@ import { UserProfile, UserRole, PatientProfile } from '../types';
 import { demoAccounts, initialPatientProfiles } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { auditLogger } from '../lib/audit';
+import { STAFF_UNAUTHORIZED } from '../lib/access';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -190,11 +191,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const live = await fetchLiveProfile(data.user.id);
     if (!live) {
       await supabase.auth.signOut();
-      throw new Error('This account has no staff profile yet. Ask the hospital administrator to provision it.');
+      throw new Error(STAFF_UNAUTHORIZED);
     }
     if (!live.user.isActive) {
       await supabase.auth.signOut();
-      throw new Error('This staff account has been deactivated.');
+      throw new Error(STAFF_UNAUTHORIZED);
     }
 
     applyLiveProfile(live);

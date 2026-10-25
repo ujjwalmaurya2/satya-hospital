@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ShieldCheck,
   ArrowRight,
@@ -16,9 +16,10 @@ import { Badge } from '../../components/common/Badge';
 import { AuthShell } from '../../components/site/AuthShell';
 import { cn } from '../../lib/cn';
 import { Alert } from '../../components/common/Alert';
+import { GoogleIcon } from '../../components/common/GoogleIcon';
 import { useAuth } from '../../context/AuthContext';
 import { isSupabaseConfigured } from '../../lib/supabase';
-import { homePathForRole } from '../../lib/access';
+import { homePathForRole, ROLE_LABEL, STAFF_UNAUTHORIZED } from '../../lib/access';
 import { UserRole } from '../../types';
 
 type Method = 'password' | 'magic';
@@ -26,9 +27,12 @@ type Method = 'password' | 'magic';
 export const StaffLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signInWithEmail, sendMagicLink, loginAsDemoUser, logout, isAuthenticated, role, user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { signInWithEmail, sendMagicLink, loginWithGoogle, loginAsDemoUser, logout, isAuthenticated, isLiveSession, isLoading, authError, role, user } = useAuth();
 
-  const from = (location.state as { from?: string } | null)?.from;
+  // `next` survives the Google redirect; only same-site paths are accepted.
+  const nextParam = searchParams.get('next');
+  const from = (location.state as { from?: string } | null)?.from ?? (nextParam?.startsWith('/') && !nextParam.startsWith('//') ? nextParam : undefined);
   const goToWorkspace = (r: UserRole) => navigate(from && from !== '/staff/login' ? from : homePathForRole(r), { replace: true });
 
   const [method, setMethod] = useState<Method>('password');
@@ -38,6 +42,32 @@ export const StaffLogin: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [magicSentTo, setMagicSentTo] = useState<string | null>(null);
   const [demoRole, setDemoRole] = useState<UserRole>('reception');
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  // Back from Google: the role comes only from the profiles row loaded by AuthProvider.
+  const viaGoogle = searchParams.get('google') === '1';
+  useEffect(() => {
+    if (!viaGoogle || isLoading) return;
+    if (isLiveSession && role !== 'patient') {
+      goToWorkspace(role);
+      return;
+    }
+    setSearchParams({}, { replace: true });
+    if (isLiveSession) void logout();
+    setErrorMsg(isLiveSession || authError ? STAFF_UNAUTHORIZED : 'Google sign-in didn’t complete. Please try again.');
+  }, [viaGoogle, isLoading, isLiveSession, role, authError]);
+
+  const startGoogle = async () => {
+    setErrorMsg(null);
+    setMagicSentTo(null);
+    setGoogleBusy(true);
+    try {
+      await loginWithGoogle(`/staff/login?google=1${from && from !== '/staff/login' ? `&next=${encodeURIComponent(from)}` : ''}`);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Google sign-in could not start. Please try again.');
+      setGoogleBusy(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +83,7 @@ export const StaffLogin: React.FC = () => {
         const signedIn = await signInWithEmail(email, password);
         if (signedIn.role === 'patient') {
           await logout();
-          setErrorMsg('This is a patient account. Please use the patient portal.');
+          setErrorMsg(STAFF_UNAUTHORIZED);
           return;
         }
         goToWorkspace(signedIn.role);
@@ -89,7 +119,7 @@ export const StaffLogin: React.FC = () => {
           <div className="rounded-2xl border border-line bg-ink-50/60 p-4">
             <p className="text-sm text-ink-700">
               Signed in as <strong className="font-semibold text-ink-900">{user?.fullName}</strong>{' '}
-              <Badge variant="medical-blue" size="sm" className="ml-1 capitalize">{role}</Badge>
+              <Badge variant="medical-blue" size="sm" className="ml-1">{ROLE_LABEL[role]}</Badge>
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button size="sm" onClick={() => goToWorkspace(role)} rightIcon={<ArrowRight className="h-4 w-4" />}>
@@ -101,6 +131,25 @@ export const StaffLogin: React.FC = () => {
             </div>
           </div>
         )}
+
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full gap-3"
+          onClick={startGoogle}
+          isLoading={googleBusy || (viaGoogle && isLoading)}
+          loadingText={viaGoogle ? 'Checking your access…' : 'Opening Google…'}
+          disabled={!isSupabaseConfigured}
+        >
+          <GoogleIcon />
+          Continue with Google
+        </Button>
+
+        <div className="flex items-center gap-4 text-xs font-medium text-ink-400">
+          <span className="h-px flex-1 bg-line" />
+          or sign in with email
+          <span className="h-px flex-1 bg-line" />
+        </div>
 
         <div role="tablist" aria-label="Sign-in method" className="grid grid-cols-2 rounded-full bg-ink-50 p-1 text-sm font-semibold">
           {(['password', 'magic'] as Method[]).map(m => (
@@ -218,7 +267,7 @@ export const StaffLogin: React.FC = () => {
 
         <p className="flex items-start gap-2 border-t border-line pt-5 text-[13px] text-ink-500">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
-          Staff accounts are provisioned by the administrator. Unrecognised email addresses can’t create accounts.
+          Staff access is granted by the hospital administrator. Signing in with Google alone does not give access.
         </p>
       </div>
     </AuthShell>
