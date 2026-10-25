@@ -76,9 +76,11 @@ export const BookAppointment: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { settings, doctors, registerPatient, bookOnlineAppointment, searchPatients } = useHospital();
-  const { user, patientProfile, role, isAuthenticated, isLoading, authError, loginWithGoogle, logout } = useAuth();
+  const { user, patientProfile, role, isAuthenticated: anySession, isLiveSession, isLoading, authError, loginWithGoogle, logout } = useAuth();
 
   const live = isSupabaseConfigured;
+  // With Supabase, a stored demo login has no JWT and every booking RPC would be denied, so only a real session counts.
+  const isAuthenticated = live ? isLiveSession : anySession;
   const isPatient = isAuthenticated && role === 'patient';
   const signedInAsStaff = isAuthenticated && role !== 'patient';
   const maxDays = settings.maxAdvanceBookingDays || 30;
