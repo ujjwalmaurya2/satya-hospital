@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { ArrowRight, IdCard, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Alert } from '../../components/common/Alert';
 import { AuthShell } from '../../components/site/AuthShell';
@@ -21,7 +21,6 @@ export const PatientLogin: React.FC = () => {
   const { loginWithGoogle, loginAsPatient, isAuthenticated, role } = useAuth();
   const { patientProfiles } = useHospital();
 
-  const [patientIdInput, setPatientIdInput] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,26 +32,12 @@ export const PatientLogin: React.FC = () => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
+      // With Supabase the browser redirects to Google; the demo fallback signs in immediately and the redirect above takes over.
       await loginWithGoogle();
-      navigate('/patient/dashboard');
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Google sign-in failed.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handlePatientIdLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    if (!patientIdInput.trim()) {
-      setErrorMsg('Enter your hospital patient ID, e.g. SH-2026-00001.');
-      return;
-    }
-    if (loginAsPatient(patientIdInput.trim())) {
-      navigate('/patient/dashboard');
-    } else {
-      setErrorMsg(`We couldn’t find a record for “${patientIdInput.trim()}”. Check the ID on your OPD slip or use Google sign-in.`);
     }
   };
 
@@ -70,34 +55,6 @@ export const PatientLogin: React.FC = () => {
           <GoogleIcon />
           Continue with Google
         </Button>
-
-        <div className="flex items-center gap-4 text-xs font-medium text-ink-400">
-          <span className="h-px flex-1 bg-line" />
-          or use your patient ID
-          <span className="h-px flex-1 bg-line" />
-        </div>
-
-        <form onSubmit={handlePatientIdLogin} className="space-y-4">
-          <div>
-            <label htmlFor="pid" className="field-label">Hospital patient ID</label>
-            <div className="relative">
-              <IdCard className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
-              <input
-                id="pid"
-                placeholder="SH-2026-00001"
-                value={patientIdInput}
-                onChange={e => setPatientIdInput(e.target.value.toUpperCase())}
-                className="field-control pl-10 font-mono tracking-wide"
-                autoComplete="off"
-                aria-describedby="pid-hint"
-              />
-            </div>
-            <p id="pid-hint" className="field-hint">Printed on your OPD slip, lab receipt or prescription.</p>
-          </div>
-          <Button type="submit" size="lg" className="w-full" rightIcon={<ArrowRight className="h-4 w-4" />}>
-            View my records
-          </Button>
-        </form>
 
         {import.meta.env.DEV && patientProfiles.length > 0 && (
           <div className="rounded-2xl border border-dashed border-line-strong p-4">
@@ -125,7 +82,7 @@ export const PatientLogin: React.FC = () => {
           <Link to="/book-appointment" className="link">
             Book an appointment
           </Link>{' '}
-          and you’ll receive a patient ID.
+          — your account is created when you sign in.
         </p>
 
         <p className="flex items-start gap-2 border-t border-line pt-5 text-[13px] text-ink-500">

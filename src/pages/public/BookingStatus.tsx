@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from '../../lib/supabase';
 import { phoneDisplay, phoneHref, to12h } from '../../lib/contact';
 import { formatInr } from '../../lib/queue';
 import { MyBooking, opdBookingService } from '../../services/opdBookingService';
+import { BookingSteps } from './BookAppointment';
 
 const POLL_MS = 2500;
 const POLL_LIMIT_MS = 90_000;
@@ -83,6 +84,7 @@ export const BookingStatus: React.FC = () => {
   } else if (booking.status === 'confirmed') {
     body = (
       <div className="mx-auto max-w-2xl animate-scale-in">
+        <BookingSteps current={4} className="mb-6 justify-center" />
         <div className="overflow-hidden rounded-[28px] border border-line bg-white shadow-lift">
           <div className="relative bg-ink-800 px-7 py-8 text-white sm:px-10">
             <div aria-hidden="true" className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-500/25 blur-3xl" />

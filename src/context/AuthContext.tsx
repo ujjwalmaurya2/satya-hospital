@@ -18,7 +18,8 @@ interface AuthContextType {
   loginWithGoogle: (redirectPath?: string) => Promise<void>;
   loginAsDemoUser: (role: UserRole) => void;
   loginAsPatient: (patientId: string) => boolean;
-  loginAsQuickPatient: (name?: string, phone?: string) => void;
+  /** Set when Google sign-in succeeded but the account could not be loaded. */
+  authError: string | null;
   logout: () => Promise<void>;
   updateRole: (newRole: UserRole) => void;
 }
@@ -82,14 +83,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLiveSession, setIsLiveSession] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const applyLiveProfile = (live: { user: UserProfile; patient: PatientProfile | null }) => {
+    setAuthError(null);
     setUser(live.user);
     setPatientProfile(live.patient);
     setIsLiveSession(true);
     // A live session supersedes any stored demo session.
     localStorage.removeItem(AUTH_USER_KEY);
     localStorage.removeItem(AUTH_PATIENT_KEY);
+  };
+
+  // Signed in with Supabase but no usable profile row: sign out instead of looping back to the login screen.
+  const rejectSession = async (live: { user: UserProfile } | null) => {
+    setAuthError(
+      live
+        ? 'This account has been deactivated. Please contact the hospital reception.'
+        : 'We signed you in but could not load your account. Please try again, or call reception if it keeps happening.'
+    );
+    await supabase?.auth.signOut();
   };
 
   // Initialize session on mount
@@ -108,6 +121,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               setIsLoading(false);
               return;
             }
+            await rejectSession(live);
           }
         } catch (err) {
           console.warn('Error reading live Supabase session:', err);
@@ -130,14 +144,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (storedPatient) {
             setPatientProfile(JSON.parse(storedPatient));
           }
-        } else if (import.meta.env.DEV) {
-          // Default to demo patient account for immediate local development exploration ONLY
-          const defaultDemo = demoAccounts.find(a => a.role === 'patient') || demoAccounts[0];
-          setUser(defaultDemo);
-          const defaultPat = initialPatientProfiles.find(p => p.profileId === defaultDemo.id) || initialPatientProfiles[0];
-          setPatientProfile(defaultPat);
-          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(defaultDemo));
-          localStorage.setItem(AUTH_PATIENT_KEY, JSON.stringify(defaultPat));
         }
       } catch (err) {
         console.error('Failed to load local auth session:', err);
@@ -156,6 +162,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTimeout(async () => {
           const live = await fetchLiveProfile(userId);
           if (live && live.user.isActive) applyLiveProfile(live);
+          else await rejectSession(live);
         }, 0);
       } else if (event === 'SIGNED_OUT') {
         setIsLiveSession(prev => {
@@ -322,36 +329,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
-  const loginAsQuickPatient = (name = 'OPD Patient', phone = '') => {
-    const quickUser: UserProfile = {
-      id: `usr-${Date.now()}`,
-      email: phone ? `${phone}@satya.patient` : 'patient@satya.patient',
-      fullName: name || 'OPD Patient',
-      role: 'patient',
-      phone: phone || '',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    };
-    const quickProfile: PatientProfile = {
-      id: `pat-${Date.now()}`,
-      profileId: quickUser.id,
-      patientId: `SH-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`,
-      fullName: name || 'OPD Patient',
-      phone: phone || '',
-      dob: '2020-01-01',
-      emergencyContact: phone || '+915322900000',
-      isVerified: true,
-      bloodGroup: 'B+',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setUser(quickUser);
-    setIsLiveSession(true);
-    setPatientProfile(quickProfile);
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(quickUser));
-    localStorage.setItem(AUTH_PATIENT_KEY, JSON.stringify(quickProfile));
-  };
-
   const logout = async () => {
     if (user) {
       auditLogger.record({
@@ -394,7 +371,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loginWithGoogle,
         loginAsDemoUser,
         loginAsPatient,
-        loginAsQuickPatient,
+        authError,
         logout,
         updateRole,
       }}
