@@ -302,9 +302,10 @@ export const labService = {
   async savePackage(pkg: Partial<Omit<LabPackage, 'tests'>> & { id?: string }, testIds?: string[]) {
     const { id, ...row } = pkg;
     const { data, error } = id
-      ? await client().from('pathology_packages').update({ ...row, updated_at: new Date().toISOString() }).eq('id', id).select('id').single()
-      : await client().from('pathology_packages').insert(row).select('id').single();
+      ? await client().from('pathology_packages').update({ ...row, updated_at: new Date().toISOString() }).eq('id', id).select('id').maybeSingle()
+      : await client().from('pathology_packages').insert(row).select('id').maybeSingle();
     if (error) fail(error);
+    if (!data) throw new Error('You don’t have permission to change this package.');
     if (testIds) {
       const { error: delErr } = await client().from('pathology_package_tests').delete().eq('package_id', data.id);
       if (delErr) fail(delErr);

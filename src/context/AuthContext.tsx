@@ -34,7 +34,7 @@ const STAFF_ROLES: UserRole[] = ['reception', 'doctor', 'pathology', 'admin'];
 
 async function fetchLiveProfile(userId: string): Promise<{ user: UserProfile; patient: PatientProfile | null } | null> {
   if (!supabase) return null;
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
   if (!profile) return null;
 
   const userObj: UserProfile = {

@@ -18,6 +18,7 @@ export const MIGRATIONS = [
   'migrations/20261025000004_opd_online_booking_payments.sql',
   'migrations/20261026000005_staff_rbac_hardening.sql',
   'migrations/20261027000006_pathology_orders.sql',
+  'migrations/20261028000007_backfill_profiles.sql',
 ];
 
 const AUTH_STUB = `

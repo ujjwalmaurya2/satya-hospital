@@ -5,6 +5,8 @@
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { as, createDb, createUser } from './sql/harness';
 
 const IDS = {
@@ -46,6 +48,20 @@ describe('new accounts', () => {
   it('a Google sign-up is always a patient, whatever its metadata claims', async () => {
     await db.query(`INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES ($1, 'admin@satyahospital.in', '{"full_name":"X","role":"admin"}')`, [IDS.google]);
     expect((await roleOf(IDS.google)).role).toBe('patient');
+  });
+});
+
+describe('accounts created before the profile trigger existed', () => {
+  it('get a patient profile from the backfill, without touching existing roles', async () => {
+    const OLD = 'a0000000-0000-0000-0000-000000000099';
+    await db.exec(`ALTER TABLE auth.users DISABLE TRIGGER on_auth_user_created`);
+    await db.query(`INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES ($1, 'early@example.com', '{"full_name":"Early User"}')`, [OLD]);
+    await db.exec(`ALTER TABLE auth.users ENABLE TRIGGER on_auth_user_created`);
+    expect(await roleOf(OLD)).toBeUndefined();
+
+    await db.exec(readFileSync(resolve(__dirname, '../../supabase/migrations/20261028000007_backfill_profiles.sql'), 'utf8'));
+    expect(await roleOf(OLD)).toEqual({ role: 'patient', is_active: true });
+    expect((await roleOf(IDS.owner)).role).toBe('admin');
   });
 });
 
