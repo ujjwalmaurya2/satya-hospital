@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Activity, ExternalLink, FolderOpen, ListOrdered, LogOut, LucideIcon, Menu, Stethoscope, X, FlaskConical } from 'lucide-react';
+import { Activity, IndianRupee, ExternalLink, FolderOpen, ListOrdered, LogOut, LucideIcon, Menu, Stethoscope, X, FlaskConical } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
 import { homePathForRole, ROLE_LABEL } from '../../lib/access';
@@ -22,13 +22,16 @@ const NAV: Record<Exclude<UserRole, 'patient'>, NavItem[]> = {
     { label: 'Queue desk', short: 'OPD queue', path: '/staff', icon: ListOrdered },
     { label: 'Pathology orders', short: 'Lab orders', path: '/lab-orders', icon: FlaskConical },
     { label: 'Records & uploads', short: 'Records', path: '/reception', icon: FolderOpen },
+    { label: 'OPD sales', short: 'Sales', path: '/sales', icon: IndianRupee },
   ],
   doctor: [{ label: 'Consultations', short: 'Consults', path: '/doctor', icon: Stethoscope }],
   pathology: [
     { label: 'Pathology orders', short: 'Lab orders', path: '/lab-orders', icon: FlaskConical },
+    { label: 'Lab sales', short: 'Sales', path: '/sales', icon: IndianRupee },
   ],
   admin: [
     { label: 'Overview', short: 'Overview', path: '/admin', icon: Activity },
+    { label: 'Sales & Revenue', short: 'Sales', path: '/sales', icon: IndianRupee },
     { label: 'Queue desk', short: 'OPD queue', path: '/staff', icon: ListOrdered },
     { label: 'Pathology orders', short: 'Lab orders', path: '/lab-orders', icon: FlaskConical },
     { label: 'Consultations', short: 'Consults', path: '/doctor', icon: Stethoscope },

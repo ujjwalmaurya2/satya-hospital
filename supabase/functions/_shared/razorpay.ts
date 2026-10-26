@@ -77,6 +77,7 @@ export interface RazorpayPayment {
   amount: number;
   currency: string;
   status: 'created' | 'authorized' | 'captured' | 'refunded' | 'failed';
+  method?: string; // upi | card | netbanking | wallet | emi
   error_description?: string | null;
 }
 

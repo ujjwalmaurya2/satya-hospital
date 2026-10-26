@@ -1,6 +1,6 @@
 import { getHospitalDateWithOffset } from './tokens';
 
-export type DateFilter = 'today' | 'tomorrow' | 'upcoming' | 'past' | 'all' | 'date' | 'range';
+export type DateFilter = 'today' | 'tomorrow' | 'yesterday' | 'week' | 'month' | 'upcoming' | 'past' | 'all' | 'date' | 'range';
 
 export interface DateRange {
   from: string | null;
@@ -20,6 +20,17 @@ export function rangeFor(filter: DateFilter, today: string, custom: { date?: str
       const t = getHospitalDateWithOffset(1, today);
       return { from: t, to: t };
     }
+    case 'yesterday': {
+      const y = getHospitalDateWithOffset(-1, today);
+      return { from: y, to: y };
+    }
+    case 'week': {
+      // Monday-start week in IST, up to today.
+      const dow = new Date(`${today}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+      return { from: getHospitalDateWithOffset(-((dow + 6) % 7), today), to: today };
+    }
+    case 'month':
+      return { from: `${today.slice(0, 8)}01`, to: today };
     case 'upcoming':
       return { from: getHospitalDateWithOffset(1, today), to: null };
     case 'past':

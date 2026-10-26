@@ -233,3 +233,15 @@ Apply after `20261029000008`, before deploying the matching frontend.
 
 - **Appointments:** `reception_search_appointments` (any IST date range, status/type/payment filters, name/phone/patient-ID/booking-ID search, paging) and `reception_appointment_summary` run with the caller's own RLS (reception, doctor, Super Admin). `update_appointment_details` lets reception correct the contact number and keep desk notes (`appointments.reception_notes`); clinical fields are not editable. Every status change is written to `audit_logs`.
 - **Medical records:** private bucket `medical-records` (PDF/JPEG/PNG, 10 MB), created by the migration. `register_medical_document` validates patient, appointment ownership, type, extension/MIME, size, storage path and that the file exists; replacements keep the old version (`superseded_by_id`) and need a reason. Staff can only read `medical_documents` directly — the old policy that let reception/doctors edit or delete rows is replaced. Reception uploads stay hidden from the patient until a doctor runs `verify_medical_document` (Doctor panel → "Documents awaiting your sign-off"); patients see only their own verified, current documents.
+
+---
+
+## Sales & revenue ledger (`20261031000010_payment_ledger.sql`)
+
+Apply after `20261030000009`, then redeploy `opd-verify-payment`, `lab-verify-payment` and `razorpay-webhook` (they now record the online payment method).
+
+- **One ledger, `payment_transactions`:** every real money movement for OPD and Pathology — `payment`, `refund` (with the payment it refunds) and `void` (a mistaken counter entry; the original stays but stops counting). Written only by triggers on the existing payment columns and by RPCs; staff can read their own service (reception → OPD, pathology → lab, Super Admin → all) and nobody can insert/update/delete directly.
+- **Channels:** `online` = verified Razorpay payment (idempotent on the Razorpay payment id, so callback + webhook never double count); `counter` = cash/UPI taken at the desk. Method (`cash`, `upi`, `card`, …) is stored separately from channel.
+- **Reporting policy (IST):** gross = payments by the IST date they were collected; refunds by the IST date they were made; net = gross − refunds; pending (unpaid bookings/orders) is shown separately and never counted. Total = OPD + Pathology, and online + offline = total, by construction.
+- **Corrections:** reception can change/clear a desk fee or void a counter payment only on the same IST day (the Super Admin any day); the Super Admin records refunds already made (partial allowed). Nothing here sends money.
+- **Backfill:** existing payments with a real payment time are copied in once. Anything that can't be placed reliably (e.g. desk fees without a collection time) is listed under *Sales & Revenue → Records needing reconciliation* — nothing is guessed.

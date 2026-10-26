@@ -18,6 +18,12 @@ describe('reception date filters (Asia/Kolkata)', () => {
     expect(rangeFor('today', t)).toEqual({ from: t, to: t });
     expect(rangeFor('tomorrow', t)).toEqual({ from: '2026-11-01', to: '2026-11-01' }); // month rollover
     expect(rangeFor('upcoming', t)).toEqual({ from: '2026-11-01', to: null });
+    expect(rangeFor('yesterday', t)).toEqual({ from: '2026-10-30', to: '2026-10-30' });
+    expect(rangeFor('week', t)).toEqual({ from: '2026-10-26', to: t }); // 31 Oct 2026 is a Saturday; week starts Monday 26th
+    expect(rangeFor('week', '2026-10-26')).toEqual({ from: '2026-10-26', to: '2026-10-26' });
+    expect(rangeFor('week', '2026-11-01')).toEqual({ from: '2026-10-26', to: '2026-11-01' }); // Sunday
+    expect(rangeFor('month', t)).toEqual({ from: '2026-10-01', to: t });
+    expect(rangeFor('yesterday', '2026-11-01')).toEqual({ from: '2026-10-31', to: '2026-10-31' });
     expect(rangeFor('past', t)).toEqual({ from: null, to: '2026-10-30' });
     expect(rangeFor('all', t)).toEqual({ from: null, to: null });
     expect(rangeFor('date', t, { date: '2026-09-15' })).toEqual({ from: '2026-09-15', to: '2026-09-15' });

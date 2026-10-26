@@ -49,6 +49,7 @@ Deno.serve(async req => {
       let { error } = await db.rpc('confirm_opd_payment', args);
       // Not an OPD booking: try lab orders (P0002 = unknown order in that table).
       if (error?.code === 'P0002') ({ error } = await db.rpc('confirm_lab_payment', args));
+      if (!error && payment.method) await db.rpc('set_online_payment_method', { p_external_id: payment.id, p_method: payment.method });
       // Unknown everywhere: acknowledge so Razorpay stops retrying.
       if (error && error.code !== 'P0002') {
         console.error('razorpay-webhook: confirmation failed', error.code);

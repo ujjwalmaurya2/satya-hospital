@@ -66,6 +66,8 @@ Deno.serve(async req => {
     p_amount_paise: payment.amount,
     p_source: 'checkout_verify',
   });
+  // Ledger: record how the patient paid (UPI, card, …) for sales reporting.
+  if (!error && payment.method) await asServer.rpc('set_online_payment_method', { p_external_id: payment.id, p_method: payment.method });
   if (error) {
     console.error('opd-verify-payment: confirmation failed', error.code);
     return json({ status: 'pending_verification', bookingReference: own.booking_reference }, 202);

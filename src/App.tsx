@@ -52,6 +52,7 @@ const ReceptionDashboard = lazy(() => import('./pages/staff/ReceptionDashboard')
 const DoctorDashboard = lazy(() => import('./pages/staff/DoctorDashboard').then(m => ({ default: m.DoctorDashboard })));
 const AdminDashboard = lazy(() => import('./pages/staff/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const QueueDesk = lazy(() => import('./pages/staff/QueueDesk').then(m => ({ default: m.QueueDesk })));
+const SalesPage = lazy(() => import('./pages/staff/SalesPage').then(m => ({ default: m.SalesPage })));
 const LabOrdersDesk = lazy(() => import('./pages/staff/LabOrdersDesk').then(m => ({ default: m.LabOrdersDesk })));
 import { RequireRole } from './components/auth/RequireRole';
 import { ROUTE_ROLES } from './lib/access';
@@ -156,6 +157,7 @@ export const App: React.FC = () => {
               {/* The old browser-only lab worklist is retired; reports live on the Pathology orders desk. */}
               <Route path="/pathology-dashboard" element={<Navigate to="/lab-orders" replace />} />
               <Route path="/lab-orders" element={<RequireRole roles={ROUTE_ROLES.labOrders}><LabOrdersDesk /></RequireRole>} />
+              <Route path="/sales" element={<RequireRole roles={ROUTE_ROLES.sales}><SalesPage /></RequireRole>} />
             </Route>
 
             {/* 404 CATCH ALL */}

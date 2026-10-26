@@ -165,14 +165,16 @@ describe('reception and pathology workflow', () => {
   let orderId = '';
   let reportId = '';
 
-  it('reception registers a paid walk-in and collects the sample; pathology cannot take payments', async () => {
+  it('reception registers a paid walk-in and collects the sample; pathology cannot touch OPD fees', async () => {
     const r = await rpc('reception', `SELECT public.register_lab_walk_in($1::jsonb, 'Walk In Child', '9123456780', 'female', NULL, 'cash', 'w1') r`, [
       JSON.stringify([{ type: 'test', id: T.TSH }, { type: 'test', id: T.CBC }]),
     ]);
     const o = r.rows[0].r as Order;
     orderId = o.id;
     expect([o.status, o.payment_status]).toEqual(['confirmed', 'paid']);
-    await expect(rpc('lab1', `SELECT public.record_lab_payment($1, 'cash') r`, [orderId])).rejects.toThrow(/not allowed/);
+    // Pathology may take lab payments (already paid here), but never touches OPD fees.
+    await expect(rpc('lab1', `SELECT public.record_lab_payment($1, 'cash') r`, [orderId])).rejects.toThrow(/unpaid, active order/);
+    await expect(rpc('lab1', `SELECT public.record_consultation_fee(gen_random_uuid(), 'cash') r`)).rejects.toThrow(/not allowed/);
     await expect(rpc('lab1', `SELECT public.register_lab_walk_in('[]'::jsonb, 'X', '9123456780', NULL, NULL, NULL, 'w2') r`)).rejects.toThrow(/not allowed/);
     await rpc('reception', `SELECT public.record_lab_sample($1, 'Blood (EDTA)') r`, [orderId]);
     expect((await db.query<Order>(`SELECT lab_status FROM public.pathology_orders WHERE id = $1`, [orderId])).rows[0].lab_status).toBe('sample_collected');

@@ -207,16 +207,16 @@ const OrderDetail: React.FC<{ order: LabOrder; role: UserRole; reload: () => Pro
         <Alert type="warning" className="text-sm">{o.reconciliation_reason || o.cancel_reason || `Last payment attempt: ${o.last_payment_error}`}</Alert>
       )}
 
-      {isDesk && active && (
+      {(isDesk || role === 'pathology') && active && (
         <div className="flex flex-wrap items-end gap-2">
-          {o.status === 'pending' && <Button size="sm" disabled={busy} onClick={() => act(() => labService.rpc('confirm_lab_order', { p_order_id: o.id }))}>Confirm order</Button>}
+          {isDesk && o.status === 'pending' && <Button size="sm" disabled={busy} onClick={() => act(() => labService.rpc('confirm_lab_order', { p_order_id: o.id }))}>Confirm order</Button>}
           {o.payment_status === 'unpaid' && (
             <>
               <Button size="sm" variant="accent" disabled={busy} onClick={() => window.confirm(`Record ${formatPaise(o.total_paise)} received in cash?`) && act(() => labService.rpc('record_lab_payment', { p_order_id: o.id, p_mode: 'cash' }))}>Paid in cash</Button>
               <Button size="sm" variant="accent" disabled={busy} onClick={() => window.confirm(`Record ${formatPaise(o.total_paise)} received by UPI?`) && act(() => labService.rpc('record_lab_payment', { p_order_id: o.id, p_mode: 'upi' }))}>Paid by UPI</Button>
             </>
           )}
-          {o.lab_status === 'awaiting_sample' && (
+          {isDesk && o.lab_status === 'awaiting_sample' && (
             <Button size="sm" variant="ghost" disabled={busy} onClick={() => { const r = ask('Reason for cancelling this order?'); if (r) act(() => labService.rpc('cancel_lab_order', { p_order_id: o.id, p_reason: r })); }}>
               Cancel order
             </Button>

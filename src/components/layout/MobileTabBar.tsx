@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { homePathForRole } from '../../lib/access';
 import { cn } from '../../lib/cn';
 
-const STAFF_PATHS = ['/staff', '/admin', '/reception', '/doctor', '/pathology-dashboard', '/lab-orders'];
+const STAFF_PATHS = ['/staff', '/admin', '/reception', '/doctor', '/pathology-dashboard', '/lab-orders', '/sales'];
 
 /** Which tab the current route belongs to (exported for tests). */
 export function activeTab(pathname: string): 'home' | 'lab' | 'book' | 'profile' | null {

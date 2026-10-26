@@ -445,6 +445,22 @@ const AppointmentDetail: React.FC<{
             </Button>
           )}
           {appt.status === 'in_consultation' && <span className="text-sm text-brand-700">With the doctor{role === 'admin' ? ' — complete it from the Doctor panel.' : '.'}</span>}
+          {appt.paymentProvider !== 'razorpay' && !appt.feePaymentMode && appt.status !== 'cancelled' && (role === 'reception' || role === 'admin') &&
+            (['cash', 'upi'] as const).map(mode => (
+              <Button
+                key={mode}
+                size="sm"
+                variant="accent"
+                isLoading={busy === `fee-${mode}`}
+                disabled={busy !== null}
+                onClick={() =>
+                  window.confirm(`Record ₹${appt.consultationFeeAmount ?? 500} received by ${mode === 'cash' ? 'cash' : 'UPI'} at the counter for token #${appt.tokenNumber} (${appt.patientName})?`) &&
+                  act(`fee-${mode}`, () => queueService.setFee(appt.id, mode), `Payment recorded. Receipt is in OPD sales.`)
+                }
+              >
+                Paid {mode === 'cash' ? 'in cash' : 'by UPI'}
+              </Button>
+            ))}
           {appt.paymentProvider === 'razorpay' && appt.status === 'cancelled' && (
             <span className="text-[13px] text-warning-700">Paid online: any refund is handled by the Super Admin, not from this screen.</span>
           )}

@@ -21,6 +21,7 @@ export const ROUTE_ROLES = {
   doctor: ['doctor', 'admin'],
   pathology: ['pathology', 'admin'],
   labOrders: ['reception', 'pathology', 'admin'],
+  sales: ['reception', 'pathology', 'admin'],
 } as const satisfies Record<string, readonly UserRole[]>;
 
 export function resolveAccess(
