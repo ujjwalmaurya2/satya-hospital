@@ -20,6 +20,7 @@ export const MIGRATIONS = [
   'migrations/20261027000006_pathology_orders.sql',
   'migrations/20261028000007_backfill_profiles.sql',
   'migrations/20261029000008_opd_lab_workflow_fixes.sql',
+  'migrations/20261030000009_reception_records.sql',
 ];
 
 const AUTH_STUB = `

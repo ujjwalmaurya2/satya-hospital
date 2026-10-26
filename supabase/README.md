@@ -224,3 +224,12 @@ Apply after `20261028000007`. **Deploy the migration before (or together with) t
 - **Reports:** Reception, pathology and Super Admin can upload; pathology/Super Admin verify and release (both idempotent). The file must exist in the `lab-reports` bucket before a report row is created; a staff uploader may delete a file only while it is unregistered (used to clean up a failed save). `hospital_settings.lab_require_independent_verification` (default `false`) — set `true` to require a different person to verify than the one who uploaded.
 - **PDF compression:** done in the browser (Web Worker, `@cantoo/pdf-lib`), lossless only; files never leave the hospital's own storage. `pathology_reports.original_file_size` records the size before compression.
 - **Home sample collection:** off until the Super Admin saves real values in **Pathology orders → Catalogue & prices → Home sample collection** (service pincodes, time slots, visit fee, optional per-slot capacity, booking window). Visits are offered on OPD days and never on hospital holidays. Address, pincode, slot, date, capacity and fee are validated in `create_lab_order`.
+
+---
+
+## Reception appointments & medical records (`20261030000009_reception_records.sql`)
+
+Apply after `20261029000008`, before deploying the matching frontend.
+
+- **Appointments:** `reception_search_appointments` (any IST date range, status/type/payment filters, name/phone/patient-ID/booking-ID search, paging) and `reception_appointment_summary` run with the caller's own RLS (reception, doctor, Super Admin). `update_appointment_details` lets reception correct the contact number and keep desk notes (`appointments.reception_notes`); clinical fields are not editable. Every status change is written to `audit_logs`.
+- **Medical records:** private bucket `medical-records` (PDF/JPEG/PNG, 10 MB), created by the migration. `register_medical_document` validates patient, appointment ownership, type, extension/MIME, size, storage path and that the file exists; replacements keep the old version (`superseded_by_id`) and need a reason. Staff can only read `medical_documents` directly — the old policy that let reception/doctors edit or delete rows is replaced. Reception uploads stay hidden from the patient until a doctor runs `verify_medical_document` (Doctor panel → "Documents awaiting your sign-off"); patients see only their own verified, current documents.

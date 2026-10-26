@@ -14,6 +14,7 @@ import { formatPaise } from '../../lib/labCart';
 import { Badge } from '../../components/common/Badge';
 import { LAB_STATUS, PAYMENT_STATUS } from '../../components/lab/LabOrderCard';
 import { LabOrder, labService } from '../../services/labService';
+import { receptionService } from '../../services/receptionService';
 
 export const PatientDashboard: React.FC = () => {
   const { user, patientProfile, isLiveSession } = useAuth();
@@ -25,7 +26,15 @@ export const PatientDashboard: React.FC = () => {
   const myReports = pathologyReports.filter(
     r => (r.patientProfileId === patientProfile?.id || r.patientId === patientProfile?.patientId) && r.status === 'published'
   );
-  const myPrescriptions = medicalDocuments.filter(d => d.patientProfileId === patientProfile?.id && d.verificationStatus === 'verified');
+  // Live sessions: the patient's own doctor-verified documents from the database (RLS); demo sessions: local samples.
+  const [liveRx, setLiveRx] = useState<{ id: string; title: string; verifiedBy?: string; createdAt: string; storageKey: string }[]>([]);
+  const [rxError, setRxError] = useState<string | null>(null);
+  useEffect(() => {
+    if (isLiveSession)
+      receptionService.documents({ limit: 20 }).then(rows => setLiveRx(rows.map(d => ({ id: d.id, title: d.title, verifiedBy: d.verified_by ?? undefined, createdAt: d.record_date ?? d.created_at, storageKey: d.storage_key })))).catch(() => setLiveRx([]));
+  }, [isLiveSession]);
+  const myPrescriptions = isLiveSession ? liveRx : medicalDocuments.filter(d => d.patientProfileId === patientProfile?.id && d.verificationStatus === 'verified');
+  const openRx = (key: string) => (isLiveSession ? receptionService.openDocument(key).catch(e => setRxError(e instanceof Error ? e.message : 'Could not open this document.')) : docs.open(key));
   const upcoming = myAppointments.filter(a => a.status === 'booked' || a.status === 'checked_in' || a.status === 'in_consultation');
   const next = upcoming[0];
 
@@ -124,7 +133,7 @@ export const PatientDashboard: React.FC = () => {
         </div>
       </section>
 
-      {docs.error && <Alert type="error">{docs.error}</Alert>}
+      {(docs.error || rxError) && <Alert type="error">{docs.error || rxError}</Alert>}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-7">
@@ -187,7 +196,7 @@ export const PatientDashboard: React.FC = () => {
                         Verified by {doc.verifiedBy} · {prettyDate(doc.createdAt)}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm" leftIcon={<Download className="h-4 w-4" />} onClick={() => docs.open(doc.storageKey)}>
+                    <Button variant="outline" size="sm" leftIcon={<Download className="h-4 w-4" />} onClick={() => openRx(doc.storageKey)}>
                       Open
                     </Button>
                   </li>

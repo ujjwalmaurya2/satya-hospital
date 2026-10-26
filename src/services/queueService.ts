@@ -66,6 +66,7 @@ export function mapAppointmentRow(row: any): Appointment {
     paymentReference: row.payment_reference ?? null,
     amountPaid: row.amount_paid != null ? Number(row.amount_paid) : null,
     paidAt: row.paid_at ?? undefined,
+    receptionNotes: row.reception_notes ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

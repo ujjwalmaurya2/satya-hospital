@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BellRing, CheckCircle2, ClipboardCheck, Eye, FileText, History, PenLine, RefreshCw, Stethoscope, UserRound } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
@@ -13,6 +13,8 @@ import { useQueueDesk } from '../../hooks/useQueueDesk';
 import { getAuthorizedSignedDocumentUrl } from '../../lib/storage';
 import { cn } from '../../lib/cn';
 import { VisitSummary } from '../../services/queueService';
+import { MedicalDocumentRow, receptionService } from '../../services/receptionService';
+import { RecordsList } from '../../components/staff/MedicalRecords';
 import { Appointment } from '../../types';
 
 type View = 'active' | 'completed' | 'missed' | 'all';
@@ -53,8 +55,15 @@ export const DoctorDashboard: React.FC = () => {
   const notArrived = appointments.filter(a => a.status === 'booked');
   const completed = appointments.filter(a => a.status === 'completed');
   const list = appointments.filter(VIEWS[view]);
-  // Prescription scans are still kept in the local demo store; hide them for real sessions rather than show unsaved data.
+  // Demo sessions keep the local sample scans; live sessions load the real ones below.
   const unverifiedPrescriptions = live ? [] : medicalDocuments.filter(d => d.verificationStatus === 'unverified');
+  const [pendingDocs, setPendingDocs] = useState<MedicalDocumentRow[] | null>(null);
+  const [pendingError, setPendingError] = useState<string | null>(null);
+  const loadPending = () =>
+    receptionService.documents({ unverifiedOnly: true }).then(d => { setPendingDocs(d); setPendingError(null); }).catch(e => setPendingError(e instanceof Error ? e.message : 'Could not load documents.'));
+  useEffect(() => {
+    if (live) void loadPending();
+  }, [live]);
 
   // Fresh appointment row (Realtime may have updated it while the modal is open).
   const current = open ? appointments.find(a => a.id === open.id) ?? open : null;
@@ -181,6 +190,14 @@ export const DoctorDashboard: React.FC = () => {
               </li>
             ))}
           </ul>
+        </Panel>
+      )}
+
+      {live && (pendingError || (pendingDocs && pendingDocs.length > 0)) && (
+        <Panel title="Documents awaiting your sign-off" description="Scans uploaded at reception. Verifying one makes it visible to the patient.">
+          <div className="p-4 sm:p-5">
+            <RecordsList docs={pendingDocs} error={pendingError} showPatient onVerify={async d => { await receptionService.verifyDocument(d.id); await loadPending(); }} />
+          </div>
         </Panel>
       )}
 

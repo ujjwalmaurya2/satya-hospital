@@ -40,6 +40,7 @@ export type QueueType = 'online' | 'walk_in';
 
 export type PaymentStatus = 
   | 'unpaid'
+  | 'pay_at_reception' // online booking while online payment is off (set by book_opd_pay_at_reception)
   | 'not_applicable' 
   | 'pending' 
   | 'captured' 
@@ -76,6 +77,7 @@ export interface Appointment {
   paymentReference?: string | null;
   amountPaid?: number | null;
   paidAt?: string;
+  receptionNotes?: string; // desk-only notes, never clinical
   feePaymentMode?: FeePaymentMode | null;
   feeCollectedAt?: string;
   checkedInAt?: string;

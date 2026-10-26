@@ -1,588 +1,708 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CalendarPlus, FileUp, Phone, RefreshCw, Search, Upload, UploadCloud, UserPlus, X } from 'lucide-react';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
-import { Modal } from '../../components/common/Modal';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, ExternalLink, RefreshCw, Search, Upload, UserPlus } from 'lucide-react';
 import { Alert } from '../../components/common/Alert';
-import { Table } from '../../components/common/Table';
-import { APPOINTMENT_BADGE, Avatar, PageHeader, Panel, StatCard, Tabs } from '../../components/dashboard/Dashboard';
-import { useHospital } from '../../context/HospitalContext';
+import { Badge } from '../../components/common/Badge';
+import { Button, LinkButton } from '../../components/common/Button';
+import { Modal } from '../../components/common/Modal';
+import { SkeletonRows } from '../../components/common/Skeleton';
+import { APPOINTMENT_BADGE, PageHeader, Panel, Segmented, StatCard, Tabs } from '../../components/dashboard/Dashboard';
+import { EnquiriesPanel } from '../../components/staff/EnquiriesPanel';
+import { PatientPicker, RecordsList, UploadRecordModal } from '../../components/staff/MedicalRecords';
 import { useAuth } from '../../context/AuthContext';
-import { getHospitalTodayDate, isValidIndianPhone } from '../../lib/tokens';
-import { uploadDocumentToSecureStorage } from '../../lib/storage';
+import { useHospital } from '../../context/HospitalContext';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { getHospitalTodayDate } from '../../lib/tokens';
+import { DateFilter, rangeFor, rangeLabel } from '../../lib/dateFilters';
 import { to12h } from '../../lib/contact';
 import { cn } from '../../lib/cn';
-import { EnquiryRecord, EnquiryStatus, supabaseService } from '../../services/supabaseService';
+import { queueService } from '../../services/queueService';
+import { DaySummary, MedicalDocumentRow, PatientRow, RECORD_TYPES, receptionService } from '../../services/receptionService';
+import { Appointment, AppointmentStatus } from '../../types';
 
-type Tab = 'queue' | 'search' | 'upload' | 'enquiries';
+type Tab = 'appointments' | 'patients' | 'records' | 'enquiries';
+const PAGE = 25;
 
-const ENQUIRY_BADGE: Record<EnquiryStatus, { label: string; variant: 'warning' | 'medical-blue' | 'neutral' }> = {
-  new: { label: 'New', variant: 'warning' },
-  contacted: { label: 'Contacted', variant: 'medical-blue' },
-  closed: { label: 'Closed', variant: 'neutral' },
-};
+const fmtDate = (iso?: string | null) => (iso ? new Date(`${iso.slice(0, 10)}T12:00:00Z`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '—');
+const fmtTime = (iso?: string | null) => (iso ? new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : '');
 
+/** Payment wording from the existing fields; payment stays separate from appointment status. */
+function paymentOf(a: Appointment): { label: string; variant: 'success' | 'warning' | 'neutral' } {
+  if (a.paymentProvider === 'razorpay' && a.paymentStatus === 'paid') return { label: 'Paid online', variant: 'success' };
+  if (a.feePaymentMode) return { label: `Paid at desk (${a.feePaymentMode.toUpperCase()})`, variant: 'success' };
+  if (a.paymentStatus === 'pay_at_reception') return { label: 'Pay at reception', variant: 'warning' };
+  return { label: a.paymentStatus === 'paid' ? 'Paid' : 'Unpaid', variant: a.paymentStatus === 'paid' ? 'success' : 'neutral' };
+}
+
+const toPatient = (a: Appointment): PatientRow => ({
+  id: a.patientProfileId, patient_id: a.patientId, full_name: a.patientName, phone: a.patientPhone, gender: null, dob: null, profile_id: null, created_at: a.createdAt,
+});
+
+/**
+ * Reception workspace: appointments on any date (same rows the Doctor panel
+ * and queue desk use), patient lookup, and private medical records. Every
+ * control reads or writes the live database; nothing here is sample data.
+ */
 export const ReceptionDashboard: React.FC = () => {
-  const { user } = useAuth();
-  const { settings, appointments, doctors, patientProfiles, registerPatient, registerWalkInAppointment, updateAppointmentStatus, uploadMedicalDocument, getTodayQueueStats, searchPatients } =
-    useHospital();
-
-  const today = getHospitalTodayDate();
-  const queueStats = getTodayQueueStats();
-
-  const [patientSearchQuery, setPatientSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<Tab>('queue');
-
-  // Walk-in registration modal
-  const [walkInModalOpen, setWalkInModalOpen] = useState(false);
-  const [walkInName, setWalkInName] = useState('');
-  const [walkInPhone, setWalkInPhone] = useState('');
-  const [walkInGender, setWalkInGender] = useState<'male' | 'female' | 'other'>('male');
-  const [walkInAge, setWalkInAge] = useState('4');
-  const [walkInDoctorId, setWalkInDoctorId] = useState(doctors[0]?.id || '');
-  const [walkInNotes, setWalkInNotes] = useState('');
-  const [walkInError, setWalkInError] = useState<string | null>(null);
-
-  // Document upload
-  const [uploadPatientId, setUploadPatientId] = useState('');
-  const [uploadDocTitle, setUploadDocTitle] = useState('Handwritten prescription scan');
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInput = useRef<HTMLInputElement>(null);
-
-  // Contact-form enquiries
-  const [enquiries, setEnquiries] = useState<EnquiryRecord[]>([]);
-  const [enquirySource, setEnquirySource] = useState<'supabase' | 'local'>('supabase');
-  const [enquiriesLoading, setEnquiriesLoading] = useState(false);
-  const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
-  const [enquiryBusyId, setEnquiryBusyId] = useState<string | null>(null);
-
-  const loadEnquiries = useCallback(async () => {
-    setEnquiriesLoading(true);
-    setEnquiriesError(null);
-    const res = await supabaseService.listEnquiries();
-    setEnquiries(res.enquiries);
-    setEnquirySource(res.source);
-    setEnquiriesError(res.error || null);
-    setEnquiriesLoading(false);
-  }, []);
-
-  useEffect(() => {
-    void loadEnquiries();
-  }, [loadEnquiries]);
-
-  const setEnquiryStatus = async (id: string, status: EnquiryStatus) => {
-    setEnquiryBusyId(id);
-    setEnquiriesError(null);
-    const res = await supabaseService.updateEnquiryStatus(id, status);
-    setEnquiryBusyId(null);
-    if (!res.success) return setEnquiriesError(res.error || 'Could not update the enquiry.');
-    setEnquiries(list => list.map(e => (e.id === id ? { ...e, status } : e)));
-  };
-
-  const newEnquiryCount = enquiries.filter(e => e.status === 'new').length;
-
-  const todayAppointments = appointments.filter(a => a.appointmentDate === today).sort((a, b) => a.tokenNumber - b.tokenNumber);
-
-  const handleWalkInSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setWalkInError(null);
-    if (!walkInName.trim()) return setWalkInError('Patient name is required.');
-    if (!isValidIndianPhone(walkInPhone)) return setWalkInError('A valid 10-digit phone number is required.');
-
-    const regRes = registerPatient(
-      { fullName: walkInName.trim(), phone: walkInPhone.trim(), gender: walkInGender, age: parseInt(walkInAge, 10) || undefined },
-      'reception'
-    );
-    if (!regRes.success || !regRes.patient) return setWalkInError(regRes.error || 'Failed to register patient profile.');
-
-    const walkInRes = registerWalkInAppointment({ patientProfileId: regRes.patient.id, doctorId: walkInDoctorId, notes: walkInNotes.trim() });
-    if (!walkInRes.success || !walkInRes.appointment) return setWalkInError(walkInRes.error || 'Failed to allocate walk-in token.');
-
-    setWalkInModalOpen(false);
-    setWalkInName('');
-    setWalkInPhone('');
-    setWalkInNotes('');
-  };
-
-  const handleUploadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUploadError(null);
-    setUploadSuccess(null);
-    if (!uploadFile) return setUploadError('Choose a scanned PDF or image.');
-
-    const patient = patientProfiles.find(p => p.patientId.toLowerCase() === uploadPatientId.trim().toLowerCase());
-    if (!patient) return setUploadError(`No patient found with ID “${uploadPatientId}”.`);
-
-    setUploading(true);
-    try {
-      const uploadRes = await uploadDocumentToSecureStorage(uploadFile, 'prescriptions', patient.patientId);
-      if (!uploadRes.success || !uploadRes.storageKey) {
-        setUploadError(uploadRes.error || 'File upload failed.');
-        return;
-      }
-      uploadMedicalDocument({
-        patientProfileId: patient.id,
-        documentType: 'handwritten_prescription_scan',
-        title: `${uploadDocTitle} - ${patient.fullName}`,
-        fileName: uploadRes.fileName || uploadFile.name,
-        fileSize: uploadRes.fileSize || uploadFile.size,
-        mimeType: uploadRes.mimeType || uploadFile.type,
-        storageKey: uploadRes.storageKey,
-        uploaderId: user?.id || 'reception',
-        uploaderName: user?.fullName || 'Reception Desk',
-        uploaderRole: 'reception',
-        verificationStatus: 'unverified', // Doctor must verify before publishing
-        notes: 'Uploaded at reception desk. Awaiting doctor review.',
-      });
-      setUploadSuccess(`Uploaded for ${patient.fullName} (${patient.patientId}). It is now waiting in the doctor’s verification queue.`);
-      setUploadFile(null);
-      setUploadPatientId('');
-    } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : 'Unknown upload error.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const searchedPatients = searchPatients(patientSearchQuery);
+  const { isLiveSession } = useAuth();
+  const { settings } = useHospital();
+  const live = isSupabaseConfigured && isLiveSession;
+  const [tab, setTab] = useState<Tab>('appointments');
+  const [newEnquiries, setNewEnquiries] = useState(0);
+  const [openPatient, setOpenPatient] = useState<PatientRow | null>(null);
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Reception"
-        title="Records & uploads"
-        description={`Today’s list, patient directory and prescription scans · OPD from ${to12h(settings.opdStartTime)}`}
-        actions={
-          <Button variant="accent" onClick={() => setWalkInModalOpen(true)} leftIcon={<UserPlus className="h-4 w-4" />} disabled={queueStats.isCapacityFull}>
-            Register walk-in
-          </Button>
-        }
+        title="Appointments & records"
+        description={`Every booking, any date · OPD from ${to12h(settings.opdStartTime)}, online booking closes ${to12h(settings.onlineCutoffTime)} IST`}
+        actions={<LinkButton to="/staff" variant="accent" leftIcon={<UserPlus className="h-4 w-4" />}>Walk-in & queue desk</LinkButton>}
       />
-
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Registered today" value={queueStats.totalBooked} hint={`${queueStats.onlineCount} online · ${queueStats.walkInCount} walk-in`} />
-        <StatCard label="Waiting" value={queueStats.waitingCount} hint="Booked or arrived" />
-        <StatCard label="Completed" value={queueStats.completedCount} hint="Seen by a doctor" />
-        <StatCard
-          label="Daily intake"
-          value={queueStats.remainingCapacity !== null ? queueStats.remainingCapacity : 'Open'}
-          hint={settings.maxDailyCapacity ? `Cap ${settings.maxDailyCapacity}` : 'No daily cap'}
-        />
-      </div>
+      {!live && (
+        <Alert type="warning" title="Not connected to the hospital database">
+          Appointments, patients and records need a signed-in staff account on the live system. Only enquiries are available in this session.
+        </Alert>
+      )}
 
       <Panel flush>
         <Tabs
           label="Reception sections"
           layoutId="reception-tab"
-          value={activeTab}
-          onChange={setActiveTab}
+          value={tab}
+          onChange={setTab}
           className="px-3 sm:px-4"
           items={[
-            { id: 'queue', label: 'Today’s list', count: todayAppointments.length },
-            { id: 'search', label: 'Patient directory' },
-            { id: 'upload', label: 'Upload scan' },
-            { id: 'enquiries', label: 'Enquiries', count: newEnquiryCount },
+            { id: 'appointments', label: 'Appointments' },
+            { id: 'patients', label: 'Patients' },
+            { id: 'records', label: 'Records' },
+            { id: 'enquiries', label: 'Enquiries', count: newEnquiries },
           ]}
         />
-
-        {activeTab === 'queue' && (
-          <Table
-            caption="Today's OPD appointments"
-            data={todayAppointments}
-            keyExtractor={item => item.id}
-            emptyMessage="No patients scheduled today"
-            emptyHint="Online bookings and walk-ins will appear here."
-            columns={[
-              {
-                header: 'Token',
-                cell: item => <span className="inline-flex h-8 min-w-11 items-center justify-center rounded-lg bg-ink-800 px-2 font-mono text-xs font-bold text-white">#{item.tokenNumber}</span>,
-              },
-              {
-                header: 'Patient',
-                cell: item => (
-                  <div>
-                    <p className="font-semibold text-ink-900">{item.patientName}</p>
-                    <p className="font-mono text-xs text-ink-500">
-                      {item.patientId} · +91 {item.patientPhone}
-                    </p>
-                  </div>
-                ),
-              },
-              {
-                header: 'Type',
-                cell: item => (
-                  <Badge variant={item.queueType === 'online' ? 'medical-blue' : 'mint'} size="sm">
-                    {item.queueType === 'online' ? 'Online' : 'Walk-in'}
-                  </Badge>
-                ),
-              },
-              { header: 'Doctor', cell: item => <span className="text-ink-700">{item.doctorName}</span> },
-              {
-                header: 'Status',
-                cell: item => (
-                  <Badge variant={APPOINTMENT_BADGE[item.status].variant} size="sm" dot>
-                    {APPOINTMENT_BADGE[item.status].label}
-                  </Badge>
-                ),
-              },
-              {
-                header: 'Actions',
-                cell: item => (
-                  <div className="flex items-center gap-1.5">
-                    {item.status === 'booked' && (
-                      <Button variant="accent" size="sm" onClick={() => updateAppointmentStatus(item.id, 'checked_in', 'reception')}>
-                        Mark arrival
-                      </Button>
-                    )}
-                    {item.status === 'checked_in' && (
-                      <Button variant="outline" size="sm" onClick={() => updateAppointmentStatus(item.id, 'in_consultation', 'reception')}>
-                        Call to room
-                      </Button>
-                    )}
-                    {item.status !== 'completed' && item.status !== 'cancelled' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
-                        onClick={() => updateAppointmentStatus(item.id, 'cancelled', 'reception', 'Cancelled at desk')}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                ),
-              },
-            ]}
-          />
-        )}
-
-        {activeTab === 'search' && (
-          <>
-            <div className="border-b border-line p-4 sm:px-6">
-              <div className="relative max-w-xl">
-                <label htmlFor="patient-search" className="sr-only">Search patients</label>
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
-                <input
-                  id="patient-search"
-                  type="search"
-                  placeholder="Search by patient ID, name or phone"
-                  value={patientSearchQuery}
-                  onChange={e => setPatientSearchQuery(e.target.value)}
-                  className="field-control pl-10"
-                />
-              </div>
-            </div>
-            <Table
-              caption="Patient directory"
-              data={searchedPatients}
-              keyExtractor={item => item.id}
-              emptyMessage="No patients match your search"
-              emptyHint="Try a patient ID such as SH-2026-00001, a name or a phone number."
-              columns={[
-                {
-                  header: 'Patient',
-                  cell: item => (
-                    <div className="flex items-center gap-3">
-                      <Avatar name={item.fullName} size="sm" />
-                      <div>
-                        <p className="font-semibold text-ink-900">{item.fullName}</p>
-                        <p className="font-mono text-xs text-brand-700">{item.patientId}</p>
-                      </div>
-                    </div>
-                  ),
-                },
-                { header: 'Phone', cell: item => <span className="tabular-nums">+91 {item.phone}</span> },
-                {
-                  header: 'Details',
-                  cell: item => (
-                    <span className="capitalize text-ink-500">
-                      {[item.gender, item.age ? `${item.age} yrs` : null, item.bloodGroup].filter(Boolean).join(' · ')}
-                    </span>
-                  ),
-                },
-                { header: 'Address', cell: item => <span className="text-ink-500">{item.address || 'Prayagraj'}</span> },
-                {
-                  header: '',
-                  cell: item => (
-                    <Button
-                      variant="soft"
-                      size="sm"
-                      leftIcon={<CalendarPlus className="h-4 w-4" />}
-                      onClick={() => {
-                        setWalkInName(item.fullName);
-                        setWalkInPhone(item.phone);
-                        if (item.gender) setWalkInGender(item.gender);
-                        if (item.age) setWalkInAge(item.age.toString());
-                        setWalkInModalOpen(true);
-                      }}
-                    >
-                      Issue token
-                    </Button>
-                  ),
-                },
-              ]}
-            />
-          </>
-        )}
-
-        {activeTab === 'upload' && (
-          <div className="max-w-2xl p-5 sm:p-6">
-            <h2 className="text-[15px] font-semibold text-ink-900">Attach a scanned prescription</h2>
-            <p className="mt-1 text-[13px] text-ink-500">Scans go to the doctor’s verification queue before patients can see them.</p>
-
-            <div className="mt-5 space-y-3">
-              {uploadSuccess && <Alert type="success" title="Upload complete">{uploadSuccess}</Alert>}
-              {uploadError && <Alert type="error" title="Upload not completed">{uploadError}</Alert>}
-            </div>
-
-            <form onSubmit={handleUploadSubmit} className="mt-5 space-y-5">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="up-pid" className="field-label">Patient ID</label>
-                  <input
-                    id="up-pid"
-                    placeholder="SH-2026-00001"
-                    value={uploadPatientId}
-                    onChange={e => setUploadPatientId(e.target.value.toUpperCase())}
-                    className="field-control font-mono"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="up-title" className="field-label">Document title</label>
-                  <input id="up-title" value={uploadDocTitle} onChange={e => setUploadDocTitle(e.target.value)} className="field-control" required />
-                </div>
-              </div>
-
-              <div>
-                <p className="field-label" id="up-file-label">File</p>
-                <div
-                  onDragOver={e => {
-                    e.preventDefault();
-                    setDragOver(true);
-                  }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={e => {
-                    e.preventDefault();
-                    setDragOver(false);
-                    const f = e.dataTransfer.files?.[0];
-                    if (f) setUploadFile(f);
-                  }}
-                  className={cn(
-                    'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-colors',
-                    dragOver ? 'border-brand-500 bg-brand-50' : 'border-line-strong bg-ink-50/40'
-                  )}
-                >
-                  {uploadFile ? (
-                    <div className="flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left ring-1 ring-line">
-                      <FileUp className="h-5 w-5 shrink-0 text-brand-600" aria-hidden="true" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-ink-900">{uploadFile.name}</p>
-                        <p className="text-xs text-ink-500">{(uploadFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setUploadFile(null)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-50 hover:text-ink-900 cursor-pointer"
-                        aria-label="Remove file"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <UploadCloud className="h-8 w-8 text-brand-500" aria-hidden="true" />
-                      <p className="mt-3 text-sm font-medium text-ink-800">Drag a file here, or</p>
-                      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInput.current?.click()}>
-                        Choose file
-                      </Button>
-                      <p className="mt-3 text-xs text-ink-500">PDF, PNG or JPG · up to 10 MB</p>
-                    </>
-                  )}
-                  <input
-                    ref={fileInput}
-                    type="file"
-                    accept="application/pdf,image/png,image/jpeg"
-                    onChange={e => setUploadFile(e.target.files?.[0] || null)}
-                    className="sr-only"
-                    aria-labelledby="up-file-label"
-                  />
-                </div>
-              </div>
-
-              <Button type="submit" isLoading={uploading} loadingText="Uploading…" leftIcon={<Upload className="h-4 w-4" />}>
-                Upload & send to doctor
-              </Button>
-            </form>
-          </div>
-        )}
-        {activeTab === 'enquiries' && (
-          <>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4 sm:px-6">
-              <p className="text-[13px] text-ink-500">Messages sent from the public Contact page, newest first.</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void loadEnquiries()}
-                isLoading={enquiriesLoading}
-                loadingText="Refreshing…"
-                leftIcon={<RefreshCw className="h-4 w-4" />}
-              >
-                Refresh
-              </Button>
-            </div>
-            {(enquiriesError || enquirySource === 'local') && (
-              <div className="space-y-3 border-b border-line p-4 sm:px-6">
-                {enquiriesError && (
-                  <Alert
-                    type="error"
-                    title="Enquiries not updated"
-                    action={
-                      <Button variant="outline" size="sm" onClick={() => void loadEnquiries()}>
-                        Try again
-                      </Button>
-                    }
-                  >
-                    {enquiriesError}
-                  </Alert>
-                )}
-                {enquirySource === 'local' && (
-                  <Alert type="warning" title="Local demo mode">
-                    Supabase is not configured, so only enquiries typed in this browser are listed. Visitors are told to call reception instead.
-                  </Alert>
-                )}
-              </div>
-            )}
-            <Table
-              caption="Contact enquiries"
-              data={enquiries}
-              keyExtractor={item => item.id}
-              emptyMessage={enquiriesLoading ? 'Loading enquiries…' : 'No enquiries yet'}
-              emptyHint="New messages from the Contact page will appear here."
-              columns={[
-                {
-                  header: 'From',
-                  cell: item => (
-                    <div>
-                      <p className="font-semibold text-ink-900">{item.name}</p>
-                      <a href={`tel:+91${item.phone}`} className="inline-flex items-center gap-1 font-mono text-xs text-brand-700 hover:underline">
-                        <Phone className="h-3 w-3" aria-hidden="true" />
-                        +91 {item.phone}
-                      </a>
-                      {item.email && <p className="text-xs text-ink-500">{item.email}</p>}
-                    </div>
-                  ),
-                },
-                { header: 'Topic', cell: item => <span className="text-ink-700">{item.topic}</span> },
-                { header: 'Message', cell: item => <p className="max-w-md whitespace-pre-line break-words text-ink-700">{item.message}</p> },
-                {
-                  header: 'Received',
-                  cell: item => (
-                    <span className="whitespace-nowrap text-xs text-ink-500">
-                      {new Date(item.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })}
-                    </span>
-                  ),
-                },
-                {
-                  header: 'Status',
-                  cell: item => (
-                    <Badge variant={ENQUIRY_BADGE[item.status].variant} size="sm" dot>
-                      {ENQUIRY_BADGE[item.status].label}
-                    </Badge>
-                  ),
-                },
-                {
-                  header: 'Actions',
-                  cell: item => (
-                    <div className="flex items-center gap-1.5">
-                      {item.status === 'new' && (
-                        <Button variant="accent" size="sm" disabled={enquiryBusyId === item.id} onClick={() => void setEnquiryStatus(item.id, 'contacted')}>
-                          Mark contacted
-                        </Button>
-                      )}
-                      {item.status !== 'closed' ? (
-                        <Button variant="ghost" size="sm" disabled={enquiryBusyId === item.id} onClick={() => void setEnquiryStatus(item.id, 'closed')}>
-                          Close
-                        </Button>
-                      ) : (
-                        <Button variant="ghost" size="sm" disabled={enquiryBusyId === item.id} onClick={() => void setEnquiryStatus(item.id, 'new')}>
-                          Reopen
-                        </Button>
-                      )}
-                    </div>
-                  ),
-                },
-              ]}
-            />
-          </>
-        )}
+        {tab === 'appointments' && live && <AppointmentsView onOpenPatient={p => { setOpenPatient(p); setTab('patients'); }} />}
+        {tab === 'patients' && live && <PatientsView initial={openPatient} />}
+        {tab === 'records' && live && <RecordsView />}
+        {tab === 'enquiries' && <EnquiriesPanel onCount={setNewEnquiries} />}
+        {tab !== 'enquiries' && !live && <p className="p-6 text-sm text-ink-500">Sign in with a staff account to use this section.</p>}
       </Panel>
+    </div>
+  );
+};
 
-      <Modal isOpen={walkInModalOpen} onClose={() => setWalkInModalOpen(false)} title="Register walk-in patient" description="Assigns the next token in today’s shared queue.">
-        <form onSubmit={handleWalkInSubmit} className="space-y-4">
-          {walkInError && <Alert type="error">{walkInError}</Alert>}
+// ------------------------------------------------------------------ appointments
+const QUICK: { id: DateFilter; label: string }[] = [
+  { id: 'today', label: 'Today' },
+  { id: 'tomorrow', label: 'Tomorrow' },
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'past', label: 'Past' },
+  { id: 'all', label: 'All' },
+  { id: 'date', label: 'Pick a date' },
+  { id: 'range', label: 'Date range' },
+];
+
+const AppointmentsView: React.FC<{ onOpenPatient: (p: PatientRow) => void }> = ({ onOpenPatient }) => {
+  const today = getHospitalTodayDate();
+  const [filter, setFilter] = useState<DateFilter>('today');
+  const [customDate, setCustomDate] = useState(today);
+  const [rangeFrom, setRangeFrom] = useState(today);
+  const [rangeTo, setRangeTo] = useState(today);
+  const [query, setQuery] = useState('');
+  const [debounced, setDebounced] = useState('');
+  const [status, setStatus] = useState<AppointmentStatus | ''>('');
+  const [type, setType] = useState<'online' | 'walk_in' | ''>('');
+  const [payment, setPayment] = useState<'paid' | 'unpaid' | ''>('');
+  const [sort, setSort] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(0);
+  const [data, setData] = useState<{ total: number; rows: Appointment[] } | null>(null);
+  const [summary, setSummary] = useState<DaySummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Appointment | null>(null);
+
+  const range = useMemo(() => rangeFor(filter, today, { date: customDate, from: rangeFrom, to: rangeTo }), [filter, today, customDate, rangeFrom, rangeTo]);
+  // Single-day views summarise that day; wider views summarise today.
+  const summaryDate = range.from && range.from === range.to ? range.from : today;
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+  // Filters change the result set, so go back to the first page (search/status filters are kept).
+  useEffect(() => setPage(0), [range.from, range.to, debounced, status, type, payment, sort]);
+
+  const reqId = useRef(0);
+  const load = useCallback(async () => {
+    const id = ++reqId.current;
+    setLoading(true);
+    try {
+      const [res, sum] = await Promise.all([
+        receptionService.searchAppointments({
+          from: range.from, to: range.to, statuses: status ? [status] : [], queueType: type || null, payment: payment || null,
+          query: debounced, sort, limit: PAGE, offset: page * PAGE,
+        }),
+        receptionService.summary(summaryDate),
+      ]);
+      if (id !== reqId.current) return; // a newer filter change won
+      setData(res);
+      setSummary(sum);
+      setError(null);
+    } catch (e) {
+      if (id === reqId.current) setError(e instanceof Error ? e.message : 'Could not load appointments.');
+    } finally {
+      if (id === reqId.current) setLoading(false);
+    }
+  }, [range.from, range.to, status, type, payment, debounced, sort, page, summaryDate]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  // Realtime: any change by Reception, the Doctor or online booking refreshes the list.
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    const unsubscribe = receptionService.subscribe(() => {
+      clearTimeout(t);
+      t = setTimeout(() => void load(), 400);
+    });
+    const onVisible = () => document.visibilityState === 'visible' && void load();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearTimeout(t);
+      unsubscribe();
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [load]);
+
+  const pages = data ? Math.max(1, Math.ceil(data.total / PAGE)) : 1;
+
+  return (
+    <div>
+      {/* Summary cards (real counts for the selected day) */}
+      <div className="grid grid-cols-2 gap-3 border-b border-line p-4 sm:grid-cols-4 sm:px-6 xl:grid-cols-7">
+        <StatCard label={summaryDate === today ? 'Today' : fmtDate(summaryDate)} value={summary?.total ?? '—'} hint={summary ? `${summary.online} online · ${summary.walk_in} walk-in` : ' '} />
+        <StatCard label="Booked, not arrived" value={summary?.booked ?? '—'} hint="Confirmed bookings" />
+        <StatCard label="Arrived / waiting" value={summary?.checked_in ?? '—'} hint="Checked in" tone="warning" />
+        <StatCard label="With doctor" value={summary?.in_consultation ?? '—'} hint="In consultation" tone="brand" />
+        <StatCard label="Completed" value={summary?.completed ?? '—'} hint="Seen by doctor" tone="leaf" />
+        <StatCard label="Cancelled / no-show" value={summary ? summary.cancelled + summary.no_show : '—'} hint={summary ? `${summary.cancelled} cancelled · ${summary.no_show} no-show` : ' '} />
+        <StatCard label="Upcoming" value={summary?.upcoming ?? '—'} hint={`After ${fmtDate(summaryDate)}`} />
+      </div>
+
+      {/* Date filters */}
+      <div className="space-y-3 border-b border-line p-4 sm:px-6">
+        <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1" role="group" aria-label="Appointment dates">
+          {QUICK.map(f => (
+            <button
+              key={f.id}
+              type="button"
+              aria-pressed={filter === f.id}
+              onClick={() => setFilter(f.id)}
+              className={cn('h-10 shrink-0 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors', filter === f.id ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-line bg-white text-ink-600 hover:border-brand-300')}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {filter === 'date' && (
           <div>
-            <label htmlFor="m-name" className="field-label">Patient full name</label>
-            <input id="m-name" placeholder="e.g. Sunil Yadav" value={walkInName} onChange={e => setWalkInName(e.target.value)} className="field-control" required />
+            <label htmlFor="r-date" className="field-label">Date</label>
+            <input id="r-date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value || today)} className="field-control w-auto" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+        )}
+        {filter === 'range' && (
+          <div className="flex flex-wrap gap-3">
             <div>
-              <label htmlFor="m-phone" className="field-label">Mobile number</label>
-              <input
-                id="m-phone"
-                type="tel"
-                inputMode="numeric"
-                maxLength={10}
-                placeholder="10 digits"
-                value={walkInPhone}
-                onChange={e => setWalkInPhone(e.target.value.replace(/\D/g, ''))}
-                className="field-control"
-                required
-              />
+              <label htmlFor="r-from" className="field-label">From</label>
+              <input id="r-from" type="date" value={rangeFrom} onChange={e => setRangeFrom(e.target.value)} className="field-control w-auto" />
             </div>
             <div>
-              <label htmlFor="m-age" className="field-label">Age (years)</label>
-              <input id="m-age" type="number" min={0} max={120} value={walkInAge} onChange={e => setWalkInAge(e.target.value)} className="field-control" required />
+              <label htmlFor="r-to" className="field-label">To (included)</label>
+              <input id="r-to" type="date" value={rangeTo} onChange={e => setRangeTo(e.target.value)} className="field-control w-auto" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="m-gender" className="field-label">Sex</label>
-              <select id="m-gender" value={walkInGender} onChange={e => setWalkInGender(e.target.value as 'male' | 'female' | 'other')} className="field-control">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="m-doctor" className="field-label">Doctor</label>
-              <select id="m-doctor" value={walkInDoctorId} onChange={e => setWalkInDoctorId(e.target.value)} className="field-control">
-                {doctors.map(d => (
-                  <option key={d.id} value={d.id}>
-                    {d.fullName}
-                  </option>
-                ))}
-              </select>
-            </div>
+        )}
+
+        {/* Search + filters */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="relative sm:col-span-2">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <label htmlFor="r-search" className="sr-only">Search appointments</label>
+            <input id="r-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Name, phone, booking ID or patient ID" className="field-control pl-10" />
           </div>
-          <div>
-            <label htmlFor="m-notes" className="field-label">
-              Reason for visit <span className="font-normal text-ink-400">(optional)</span>
-            </label>
-            <input id="m-notes" placeholder="e.g. Abdominal discomfort" value={walkInNotes} onChange={e => setWalkInNotes(e.target.value)} className="field-control" />
+          <Select id="r-status" label="Status" value={status} onChange={v => setStatus(v as AppointmentStatus | '')} options={[['', 'All statuses'], ...Object.entries(APPOINTMENT_BADGE).map(([k, v]) => [k, v.label] as [string, string])]} />
+          <Select id="r-type" label="Type" value={type} onChange={v => setType(v as typeof type)} options={[['', 'Online & walk-in'], ['online', 'Online'], ['walk_in', 'Walk-in']]} />
+          <Select id="r-pay" label="Payment" value={payment} onChange={v => setPayment(v as typeof payment)} options={[['', 'Any payment'], ['paid', 'Paid'], ['unpaid', 'Not paid yet']]} />
+          <Select id="r-sort" label="Sort" value={sort} onChange={v => setSort(v as typeof sort)} options={[['asc', 'Date: earliest first'], ['desc', 'Date: latest first']]} />
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <p className="text-ink-700">
+            <strong className="font-semibold text-ink-900">{rangeLabel(range)}</strong>
+            {data && <span className="text-ink-500"> · {data.total} appointment{data.total === 1 ? '' : 's'}</span>}
+          </p>
+          <Button size="sm" variant="ghost" onClick={() => void load()} leftIcon={<RefreshCw className="h-4 w-4" />} isLoading={loading} loadingText="Loading…">Refresh</Button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="p-4 sm:px-6">
+          <Alert type="error" title="Couldn’t load appointments" action={<Button size="sm" variant="outline" onClick={() => void load()}>Try again</Button>}>{error}</Alert>
+        </div>
+      )}
+
+      {!data && loading ? (
+        <SkeletonRows rows={5} label="Loading appointments" />
+      ) : data && data.rows.length === 0 ? (
+        <div className="px-6 py-12 text-center">
+          <p className="font-semibold text-ink-900">No appointments match these filters</p>
+          <p className="mt-1 text-sm text-ink-500">Try another date, or clear the search and status filters.</p>
+        </div>
+      ) : data ? (
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto lg:block">
+            <table className="w-full text-left text-sm">
+              <caption className="sr-only">Appointments for {rangeLabel(range)}</caption>
+              <thead className="border-b border-line bg-ink-50/60 text-[12px] uppercase tracking-wide text-ink-500">
+                <tr>
+                  {['Token / booking', 'Patient', 'Phone', 'Date', 'Time', 'Type', 'Payment', 'Status', ''].map(h => (
+                    <th key={h} scope="col" className="px-4 py-3 font-semibold">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {data.rows.map(a => {
+                  const pay = paymentOf(a);
+                  return (
+                    <tr key={a.id} className="hover:bg-ink-50/40">
+                      <td className="px-4 py-3">
+                        <span className="font-mono font-semibold text-ink-900">#{a.tokenNumber}</span>
+                        <span className="block font-mono text-xs text-ink-500">{a.bookingReference || a.appointmentCode}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="font-medium text-ink-900">{a.patientName || 'Unnamed patient'}</span>
+                        {a.patientId && <span className="block font-mono text-xs text-brand-700">{a.patientId}</span>}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-ink-700">{a.contactPhone || a.patientPhone || '—'}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-ink-700">{fmtDate(a.appointmentDate)}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-xs text-ink-600">
+                        {a.checkedInAt ? `Arrived ${fmtTime(a.checkedInAt)}` : `Booked ${fmtTime(a.createdAt)}`}
+                      </td>
+                      <td className="px-4 py-3"><Badge size="sm" variant={a.queueType === 'online' ? 'sky-blue' : 'peach'}>{a.queueType === 'online' ? 'Online' : 'Walk-in'}</Badge></td>
+                      <td className="px-4 py-3"><Badge size="sm" variant={pay.variant}>{pay.label}</Badge></td>
+                      <td className="px-4 py-3"><Badge size="sm" dot variant={APPOINTMENT_BADGE[a.status].variant}>{APPOINTMENT_BADGE[a.status].label}</Badge></td>
+                      <td className="px-4 py-3 text-right"><Button size="sm" variant="outline" onClick={() => setSelected(a)}>View</Button></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-          <div className="flex justify-end gap-2 border-t border-line pt-4">
-            <Button variant="ghost" type="button" onClick={() => setWalkInModalOpen(false)}>
-              Cancel
+          {/* Phone / tablet cards */}
+          <ul className="divide-y divide-line lg:hidden">
+            {data.rows.map(a => {
+              const pay = paymentOf(a);
+              return (
+                <li key={a.id}>
+                  <button type="button" onClick={() => setSelected(a)} className="flex w-full cursor-pointer items-start gap-3 px-4 py-4 text-left hover:bg-ink-50/40 sm:px-6">
+                    <span className="flex h-11 w-12 shrink-0 items-center justify-center rounded-xl bg-ink-800 font-mono text-sm font-bold text-white">#{a.tokenNumber}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold text-ink-900">{a.patientName || 'Unnamed patient'}</span>
+                      <span className="block text-[13px] text-ink-500">{fmtDate(a.appointmentDate)} · {a.contactPhone || a.patientPhone || 'no phone'}</span>
+                      <span className="mt-1.5 flex flex-wrap gap-1.5">
+                        <Badge size="sm" dot variant={APPOINTMENT_BADGE[a.status].variant}>{APPOINTMENT_BADGE[a.status].label}</Badge>
+                        <Badge size="sm" variant={a.queueType === 'online' ? 'sky-blue' : 'peach'}>{a.queueType === 'online' ? 'Online' : 'Walk-in'}</Badge>
+                        <Badge size="sm" variant={pay.variant}>{pay.label}</Badge>
+                      </span>
+                    </span>
+                    <ChevronRight className="mt-3 h-4 w-4 shrink-0 text-ink-400" aria-hidden="true" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {pages > 1 && (
+            <div className="flex items-center justify-between border-t border-line px-4 py-3 text-sm sm:px-6">
+              <Button size="sm" variant="ghost" disabled={page === 0 || loading} onClick={() => setPage(p => p - 1)} leftIcon={<ChevronLeft className="h-4 w-4" />}>Previous</Button>
+              <span className="text-ink-500">Page {page + 1} of {pages}</span>
+              <Button size="sm" variant="ghost" disabled={page + 1 >= pages || loading} onClick={() => setPage(p => p + 1)} rightIcon={<ChevronRight className="h-4 w-4" />}>Next</Button>
+            </div>
+          )}
+        </>
+      ) : null}
+
+      <AppointmentDetail appointment={selected} onClose={() => setSelected(null)} onChanged={load} onOpenPatient={p => { setSelected(null); onOpenPatient(p); }} />
+    </div>
+  );
+};
+
+const Select: React.FC<{ id: string; label: string; value: string; onChange: (v: string) => void; options: [string, string][] }> = ({ id, label, value, onChange, options }) => (
+  <div>
+    <label htmlFor={id} className="sr-only">{label}</label>
+    <select id={id} value={value} onChange={e => onChange(e.target.value)} className="field-control" aria-label={label}>
+      {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+    </select>
+  </div>
+);
+
+// ------------------------------------------------------------------ appointment detail
+const AppointmentDetail: React.FC<{
+  appointment: Appointment | null;
+  onClose: () => void;
+  onChanged: () => Promise<void> | void;
+  onOpenPatient: (p: PatientRow) => void;
+}> = ({ appointment, onClose, onChanged, onOpenPatient }) => {
+  const { role } = useAuth();
+  const [appt, setAppt] = useState<Appointment | null>(appointment);
+  const [phone, setPhone] = useState('');
+  const [notes, setNotes] = useState('');
+  const [history, setHistory] = useState<Appointment[] | null>(null);
+  const [docs, setDocs] = useState<MedicalDocumentRow[] | null>(null);
+  const [docsError, setDocsError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [upload, setUpload] = useState<{ replaces?: MedicalDocumentRow } | null>(null);
+
+  const loadRelated = useCallback(async (a: Appointment) => {
+    setDocsError(null);
+    try {
+      const [h, d] = await Promise.all([receptionService.patientAppointments(a.patientProfileId), receptionService.documents({ patientProfileId: a.patientProfileId })]);
+      setHistory(h);
+      setDocs(d);
+      const fresh = h.find(x => x.id === a.id);
+      if (fresh) setAppt(fresh);
+    } catch (e) {
+      setDocsError(e instanceof Error ? e.message : 'Could not load records.');
+    }
+  }, []);
+
+  useEffect(() => {
+    setAppt(appointment);
+    setMsg(null);
+    setHistory(null);
+    setDocs(null);
+    if (appointment) {
+      setPhone(appointment.contactPhone || appointment.patientPhone || '');
+      setNotes(appointment.receptionNotes || '');
+      void loadRelated(appointment);
+    }
+  }, [appointment, loadRelated]);
+
+  if (!appt) return null;
+  const pay = paymentOf(appt);
+
+  const act = async (key: string, fn: () => Promise<void>, ok: string) => {
+    setBusy(key);
+    setMsg(null);
+    try {
+      await fn(); // the UI changes only after the server confirms
+      await Promise.all([onChanged(), loadRelated(appt)]);
+      setMsg({ type: 'success', text: ok });
+    } catch (e) {
+      setMsg({ type: 'error', text: e instanceof Error ? e.message : 'Action failed.' });
+    } finally {
+      setBusy(null);
+    }
+  };
+  const status = (s: AppointmentStatus, label: string, reason?: string) => act(s, () => queueService.setStatus(appt.id, s, reason), `Token #${appt.tokenNumber} ${label}.`);
+
+  return (
+    <Modal isOpen onClose={onClose} title={appt.patientName || 'Appointment'} description={`Token #${appt.tokenNumber} · ${fmtDate(appt.appointmentDate)} · ${appt.queueType === 'online' ? 'Online booking' : 'Walk-in'}`} maxWidth="2xl">
+      <div className="space-y-6">
+        {msg && <Alert type={msg.type}>{msg.text}</Alert>}
+
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+          <Info label="Patient ID" value={appt.patientId || '—'} mono />
+          <Info label="Booking ID" value={appt.bookingReference || appt.appointmentCode} mono />
+          <Info label="Status" value={APPOINTMENT_BADGE[appt.status].label} />
+          <Info label="Payment" value={pay.label} />
+          <Info label="Booked at" value={`${fmtDate(appt.createdAt)} ${fmtTime(appt.createdAt)}`} />
+          <Info label="Arrived" value={appt.checkedInAt ? fmtTime(appt.checkedInAt) : '—'} />
+          <Info label="Reason for visit" value={appt.visitReason || appt.notes || '—'} />
+          {appt.cancellationReason && <Info label="Cancellation reason" value={appt.cancellationReason} />}
+          {appt.doctorName && <Info label="Doctor" value={appt.doctorName} />}
+        </dl>
+
+        {/* Status: Reception confirms arrival / no-show / cancels. Completing a consultation is the doctor's. */}
+        <div className="flex flex-wrap gap-2">
+          {(appt.status === 'booked' || appt.status === 'no_show') && (
+            <Button size="sm" isLoading={busy === 'checked_in'} disabled={busy !== null} onClick={() => status('checked_in', 'checked in')}>Mark arrived</Button>
+          )}
+          {appt.status === 'booked' && (
+            <Button size="sm" variant="outline" isLoading={busy === 'no_show'} disabled={busy !== null} onClick={() => window.confirm(`Mark token #${appt.tokenNumber} (${appt.patientName}) as a no-show?`) && status('no_show', 'marked no-show')}>No-show</Button>
+          )}
+          {(appt.status === 'booked' || appt.status === 'checked_in') && (
+            <Button
+              size="sm"
+              variant="ghost"
+              isLoading={busy === 'cancelled'}
+              disabled={busy !== null}
+              onClick={() => {
+                const reason = window.prompt(`Cancel token #${appt.tokenNumber} for ${appt.patientName}? Enter a reason:`)?.trim();
+                if (reason) void status('cancelled', 'cancelled', reason);
+              }}
+            >
+              Cancel appointment
             </Button>
-            <Button type="submit">Register & issue token</Button>
+          )}
+          {appt.status === 'in_consultation' && <span className="text-sm text-brand-700">With the doctor{role === 'admin' ? ' — complete it from the Doctor panel.' : '.'}</span>}
+          {appt.paymentProvider === 'razorpay' && appt.status === 'cancelled' && (
+            <span className="text-[13px] text-warning-700">Paid online: any refund is handled by the Super Admin, not from this screen.</span>
+          )}
+        </div>
+
+        {/* Corrections and desk notes (no clinical fields) */}
+        {(role === 'reception' || role === 'admin') && (
+          <form
+            className="grid grid-cols-1 gap-3 rounded-2xl bg-ink-50/70 p-4 ring-1 ring-inset ring-line sm:grid-cols-3"
+            onSubmit={e => {
+              e.preventDefault();
+              void act('details', () => receptionService.updateDetails(appt.id, phone, notes), 'Details saved.');
+            }}
+          >
+            <div>
+              <label htmlFor="d-phone" className="field-label">Contact mobile</label>
+              <input id="d-phone" inputMode="numeric" maxLength={10} value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, ''))} className="field-control" />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="d-notes" className="field-label">Reception notes</label>
+              <input id="d-notes" value={notes} maxLength={1000} onChange={e => setNotes(e.target.value)} placeholder="e.g. Called to confirm, will arrive late" className="field-control" />
+            </div>
+            <div className="flex justify-end sm:col-span-3">
+              <Button type="submit" size="sm" variant="soft" isLoading={busy === 'details'} disabled={busy !== null}>Save details</Button>
+            </div>
+          </form>
+        )}
+
+        <section>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-ink-900">Medical records</h3>
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" rightIcon={<ExternalLink className="h-3.5 w-3.5" />} onClick={() => onOpenPatient(toPatient(appt))}>Patient file</Button>
+              <Button size="sm" leftIcon={<Upload className="h-4 w-4" />} onClick={() => setUpload({})}>Upload record</Button>
+            </div>
           </div>
-        </form>
+          <div className="mt-2">
+            <RecordsList docs={docs} error={docsError} onReplace={d => setUpload({ replaces: d })} empty="No records for this patient yet." />
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-sm font-semibold text-ink-900">Previous appointments</h3>
+          {history === null ? (
+            <SkeletonRows rows={2} label="Loading history" />
+          ) : (
+            <ul className="mt-2 divide-y divide-line rounded-2xl border border-line">
+              {history.filter(h => h.id !== appt.id).slice(0, 10).map(h => (
+                <li key={h.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                  <span>{fmtDate(h.appointmentDate)} · token #{h.tokenNumber}</span>
+                  <Badge size="sm" variant={APPOINTMENT_BADGE[h.status].variant}>{APPOINTMENT_BADGE[h.status].label}</Badge>
+                </li>
+              ))}
+              {history.filter(h => h.id !== appt.id).length === 0 && <li className="px-4 py-3 text-sm text-ink-500">No other appointments.</li>}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <UploadRecordModal
+        isOpen={upload !== null}
+        onClose={() => setUpload(null)}
+        onUploaded={() => void loadRelated(appt)}
+        patient={toPatient(appt)}
+        appointment={appt}
+        replaces={upload?.replaces ?? null}
+      />
+    </Modal>
+  );
+};
+
+const Info: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (
+  <div className="min-w-0">
+    <dt className="text-[13px] text-ink-500">{label}</dt>
+    <dd className={cn('break-words font-medium text-ink-900', mono && 'font-mono text-[13px]')}>{value}</dd>
+  </div>
+);
+
+// ------------------------------------------------------------------ patients
+const PatientsView: React.FC<{ initial: PatientRow | null }> = ({ initial }) => {
+  const [patient, setPatient] = useState<PatientRow | null>(initial);
+  const [appointments, setAppointments] = useState<Appointment[] | null>(null);
+  const [docs, setDocs] = useState<MedicalDocumentRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [upload, setUpload] = useState<{ replaces?: MedicalDocumentRow } | null>(null);
+  const [selected, setSelected] = useState<Appointment | null>(null);
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async (p: PatientRow) => {
+    setError(null);
+    try {
+      const [full, a, d] = await Promise.all([receptionService.patient(p.id), receptionService.patientAppointments(p.id), receptionService.documents({ patientProfileId: p.id })]);
+      if (full) setPatient(full);
+      setAppointments(a);
+      setDocs(d);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load this patient.');
+    }
+  }, []);
+
+  useEffect(() => {
+    setPatient(initial);
+  }, [initial]);
+  useEffect(() => {
+    setAppointments(null);
+    setDocs(null);
+    setMsg(null);
+    if (patient) void load(patient);
+  }, [patient?.id]);
+
+  // Uses the existing walk-in RPC, which reuses this patient (matched on name + phone) instead of creating a duplicate.
+  const walkIn = async () => {
+    if (!patient || !window.confirm(`Issue today's walk-in token to ${patient.full_name}?`)) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await queueService.registerWalkIn({ fullName: patient.full_name, phone: patient.phone, gender: (patient.gender as 'male' | 'female' | 'other') || 'other' });
+      setMsg({ type: 'success', text: `Token #${r.tokenNumber} issued for today.` });
+      await load(patient);
+    } catch (e) {
+      setMsg({ type: 'error', text: e instanceof Error ? e.message : 'Could not issue a token.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!patient) {
+    return (
+      <div className="space-y-4 p-4 sm:p-6">
+        <PatientPicker onPick={setPatient} />
+        <p className="text-[13px] text-ink-500">
+          New patient? Register them as a walk-in from the <Link to="/staff" className="link">queue desk</Link> — an existing record with the same name and mobile is reused, not duplicated.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-4 sm:p-6">
+      <button type="button" onClick={() => setPatient(null)} className="link inline-flex cursor-pointer items-center gap-1 text-sm"><ChevronLeft className="h-4 w-4" /> Search another patient</button>
+      {msg && <Alert type={msg.type}>{msg.text}</Alert>}
+      {error && <Alert type="error">{error}</Alert>}
+      <div className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-lg font-semibold text-ink-900">{patient.full_name}</p>
+          <p className="text-sm text-ink-500">
+            <span className="font-mono">{patient.patient_id}</span> · +91 {patient.phone}
+            {patient.gender && ` · ${patient.gender}`}
+            {patient.dob && ` · born ${fmtDate(patient.dob)}`}
+            {patient.profile_id ? ' · has an online account' : ' · registered at the desk'}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" isLoading={busy} onClick={walkIn}>Walk-in token today</Button>
+          <Button leftIcon={<Upload className="h-4 w-4" />} onClick={() => setUpload({})}>Upload record</Button>
+        </div>
+      </div>
+
+      <section>
+        <h3 className="text-sm font-semibold text-ink-900">Appointments</h3>
+        {appointments === null ? <SkeletonRows rows={3} label="Loading appointments" /> : appointments.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-500">No appointments yet.</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-line rounded-2xl border border-line">
+            {appointments.map(a => (
+              <li key={a.id}>
+                <button type="button" onClick={() => setSelected(a)} className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-ink-50/50">
+                  <span>{fmtDate(a.appointmentDate)} · token #{a.tokenNumber} · {a.queueType === 'online' ? 'Online' : 'Walk-in'}</span>
+                  <Badge size="sm" variant={APPOINTMENT_BADGE[a.status].variant}>{APPOINTMENT_BADGE[a.status].label}</Badge>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section>
+        <h3 className="text-sm font-semibold text-ink-900">Medical records</h3>
+        <div className="mt-2"><RecordsList docs={docs} onReplace={d => setUpload({ replaces: d })} empty="No records uploaded for this patient." /></div>
+      </section>
+
+      <UploadRecordModal isOpen={upload !== null} onClose={() => setUpload(null)} onUploaded={() => void load(patient)} patient={patient} replaces={upload?.replaces ?? null} />
+      <AppointmentDetail appointment={selected} onClose={() => setSelected(null)} onChanged={() => load(patient)} onOpenPatient={() => setSelected(null)} />
+    </div>
+  );
+};
+
+// ------------------------------------------------------------------ records
+const RecordsView: React.FC = () => {
+  const [patient, setPatient] = useState<PatientRow | null>(null);
+  const [type, setType] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [showReplaced, setShowReplaced] = useState(false);
+  const [docs, setDocs] = useState<MedicalDocumentRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [upload, setUpload] = useState<{ replaces?: MedicalDocumentRow } | null>(null);
+  const [picking, setPicking] = useState(false);
+
+  const load = useCallback(async () => {
+    setDocs(null);
+    setError(null);
+    try {
+      setDocs(await receptionService.documents({ patientProfileId: patient?.id, type: type || undefined, from: from || undefined, to: to || undefined, includeReplaced: showReplaced }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load records.');
+    }
+  }, [patient, type, from, to, showReplaced]);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  return (
+    <div className="space-y-4 p-4 sm:p-6">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-0">
+          <span className="field-label">Patient</span>
+          {patient ? (
+            <div className="flex items-center gap-2 text-sm">
+              <strong className="text-ink-900">{patient.full_name}</strong> <span className="font-mono text-ink-500">{patient.patient_id}</span>
+              <Button size="sm" variant="ghost" onClick={() => setPatient(null)}>All patients</Button>
+            </div>
+          ) : (
+            <Button size="sm" variant="outline" leftIcon={<Search className="h-4 w-4" />} onClick={() => setPicking(true)}>Find a patient</Button>
+          )}
+        </div>
+        <div>
+          <label htmlFor="rv-type" className="field-label">Type</label>
+          <select id="rv-type" value={type} onChange={e => setType(e.target.value)} className="field-control w-auto">
+            <option value="">All types</option>
+            {RECORD_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="rv-from" className="field-label">Record date from</label>
+          <input id="rv-from" type="date" value={from} onChange={e => setFrom(e.target.value)} className="field-control w-auto" />
+        </div>
+        <div>
+          <label htmlFor="rv-to" className="field-label">to</label>
+          <input id="rv-to" type="date" value={to} onChange={e => setTo(e.target.value)} className="field-control w-auto" />
+        </div>
+        <label className="flex h-11 items-center gap-2 text-sm"><input type="checkbox" checked={showReplaced} onChange={e => setShowReplaced(e.target.checked)} className="accent-brand-700" /> Show replaced versions</label>
+        <Button className="ml-auto" leftIcon={<Upload className="h-4 w-4" />} onClick={() => setUpload({})}>Upload record</Button>
+      </div>
+      <p className="text-[13px] text-ink-500">Latest 100 documents{patient ? ` for ${patient.full_name}` : ''}. Pathology lab reports are managed on the Pathology orders desk.</p>
+      <RecordsList docs={docs} error={error} showPatient={!patient} onReplace={d => setUpload({ replaces: d })} empty="No documents match these filters." />
+
+      <Modal isOpen={picking} onClose={() => setPicking(false)} title="Find a patient">
+        <PatientPicker autoFocus onPick={p => { setPatient(p); setPicking(false); }} />
       </Modal>
+      <UploadRecordModal
+        isOpen={upload !== null}
+        onClose={() => setUpload(null)}
+        onUploaded={() => void load()}
+        patient={upload?.replaces ? (upload.replaces.patient ? { id: upload.replaces.patient_profile_id, patient_id: upload.replaces.patient.patient_id, full_name: upload.replaces.patient.full_name, phone: '', gender: null, dob: null, profile_id: null, created_at: '' } : null) : patient}
+        replaces={upload?.replaces ?? null}
+      />
     </div>
   );
 };
